@@ -1,0 +1,17 @@
+{
+  "wheelbase": 1.34,
+  "front_track": 1.00,
+  "rear_track": 1.04,
+  "front_radius": 0.275,
+  "rear_radius": 0.425,
+  "tire_radius": 0.018,
+  "tube_radius": 0.018,
+  "frame_width": 0.50,
+  "rail_height": 0.50,
+  "kingpin_inset": 0.11,
+  "steering_arm": 0.12,
+  "column_x": 0.95,
+  "column_limit_deg": 30,
+  "front_spokes": 24,
+  "rear_spokes": 32
+}

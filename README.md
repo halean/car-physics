@@ -73,6 +73,20 @@ flat launch, hill starts, powered turns and braking against the engine.
 .venv/bin/python experiments/005_engine_drive/run.py --viewer
 ```
 
+## Second car: Benz Velo
+
+[Experiment 006](experiments/006_benz_velo/README.md) builds the 1894 Benz Velo
+gate-first. It has a four-wheeled chassis with a real double-pivot steering
+linkage in physics, a two-speed belt drive, and band and drum brakes. Every
+declared join is checked to touch, and every other part pair to stay apart,
+across the full steering range.
+
+```bash
+.venv/bin/python experiments/006_benz_velo/run.py --stage full --viewer
+```
+
+![Benz Velo study](experiments/006_benz_velo/output/full/preview.png)
+
 ## Required build validation
 
 [Car Downhill Check](skills/car-downhill-check/SKILL.md) defines the build gate:

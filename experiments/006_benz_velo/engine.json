@@ -1,0 +1,10 @@
+{
+  "rated_power_w": 1100,
+  "governed_rpm": 450,
+  "no_load_rpm": 470,
+  "belt_shift_seconds": 0.5,
+  "brake_capacity_nm_at_wheels": 350,
+  "brake_ramp_seconds": 0.25,
+  "source": "Early Velo: 1045 cc, 1.5 hp (1.1 kW) at 450 rpm, two forward speeds by belt, chain final drive (The Motor Museum in Miniature; Wikipedia). Torque follows from power and speed (23.3 N m); Wikipedia's 4.4 N m is inconsistent with its own rating and is not used. Governor droop, belt-shift time and the countershaft band brake capacity are assumptions. The hand brake (drums with the rear sprockets, 100 N m each) is also an assumption; a contemporary Benz (1894 Victoria) had a hand and a foot brake (Jalopnik), but the Velo's brake locations are not sourced.",
+  "rear_drum_capacity_nm_each": 100
+}

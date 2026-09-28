@@ -90,6 +90,33 @@ engine and a half-timestep launch. Speed and distance are compared with a 1-D
 reference model. Limits are in `LIMITS` at the top of the runner. The drivetrain
 is massless; there is no rolling resistance or drag.
 
+## Benz Velo (experiment 006)
+
+The Velo has its own body-tagged generator and MuJoCo adapter. Do not run the
+Motorwagen commands on it.
+
+```bash
+blender --background --factory-startup --python-exit-code 1 --python experiments/006_benz_velo/generate.py -- --config experiments/006_benz_velo/parameters.json --output experiments/006_benz_velo/output/chassis --stage chassis
+.venv/bin/python experiments/006_benz_velo/run.py --stage chassis
+blender --background --factory-startup --python-exit-code 1 --python experiments/006_benz_velo/generate.py -- --config experiments/006_benz_velo/parameters.json --output experiments/006_benz_velo/output/full --stage full --render
+.venv/bin/python experiments/006_benz_velo/run.py --stage full
+.venv/bin/python experiments/006_benz_velo/record.py
+```
+
+- **Part tags.** Each part carries `body`, `joins` and `mates` properties.
+- **Checks in `run.py`.** Every declared join must touch at every column angle.
+  Every other collider pair, same-body pairs included, must stay 1 mm apart, or
+  5 mm when the parts move relative to each other. Rotating drive parts count as
+  their swept solids. Three planted defects must be caught.
+- **Gate.** The unpowered gate follows those checks, with its blocked-wheel
+  control.
+- **Full stage.** It also runs the scenarios in `dynamics.py`, with thresholds
+  in `LIMITS`.
+- **Adapter.** Linkage loops are closed with connect constraints. Tyres are
+  compliant ellipsoid crowns, and the road never touches the wheel clearance
+  envelopes.
+- **Review.** Read `output/full/validation.md` and the README's open finding.
+
 ## New cars and adapter limitations
 
 These commands currently target experiment 001. The exporter expects its named

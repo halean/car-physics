@@ -13,6 +13,7 @@ import mujoco
 HERE=Path(__file__).resolve().parent
 sys.path.insert(0,str(HERE))
 from control import MAX_TORQUE, EngineControl, Tiller
+from visual import LEGEND, add_force_arrows
 
 
 def load(name,path):
@@ -41,6 +42,8 @@ labels=[f"drawtext=text='{title}':x={20+i*width}:y=16:fontcolor=white:fontsize=2
 labels+=[f"drawtext=text='BELT ENGAGED':x={20+i*width}:y=46:fontcolor=yellow:fontsize=20:enable='gte(t,0.5)'"
          for i in range(3)]
 labels+=[f"drawtext=text='BRAKE RELEASED':x={20+width}:y=74:fontcolor=orange:fontsize=20:enable='gte(t,1.5)'",
+         "drawtext=text='"+LEGEND.replace(':','\\:').replace(',','\\,')+"':"
+         f"x=20:y={height-56}:fontcolor=white:fontsize=17",
          "drawtext=text='0.5 kW governed at 400 rpm; tracking camera (left, centre), fixed overhead (right)':"
          f"x=20:y={height-30}:fontcolor=white:fontsize=17"]
 renderers=[mujoco.Renderer(model,height,width) for model in models]
@@ -63,6 +66,7 @@ try:
                 camera.distance,camera.azimuth,camera.elevation=17,0,-85
                 camera.lookat[:]=[1,6.2,0]
             renderer.update_scene(data,camera=camera,scene_option=options)
+            add_force_arrows(model,data,renderer.scene)
             images.append(renderer.render())
         process.stdin.write(np.concatenate(images,axis=1).tobytes())
 finally:

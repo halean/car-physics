@@ -41,6 +41,17 @@ The last command writes the inspection views to `output/views/`, with the
 drivetrain in orange and the brakes in red. The engine assumptions are in
 `engine.json`.
 
+The video and `--viewer` draw per-wheel contact-force arrows (`visual.py`),
+summed from `mj_contactForce` over each tire's contacts:
+- **Blue: tire load.** 1 m per 1000 N.
+- **Orange: road force on the tire** (drive, braking, cornering). 1 m per 200 N.
+
+Each arrow has its own scale, because MuJoCo's built-in contact arrows share
+one, which shrinks the ~57 N drive force to a tenth of the ~530 N load. MuJoCo
+3.14 draws `mjGEOM_ARROW` at half the length set by `mjv_connector`
+(measured). The helper doubles it, so the stated scales are true. The arrows
+are display only; the tests do not use them.
+
 ## Model
 
 **Differential.** The drive is a MuJoCo motor on a fixed tendon, ½·θ_left +
@@ -141,6 +152,27 @@ and holds with 0.02 mm drift.
 
 **Half timestep:** changes are below 1e-6. Acceleration is constant before the
 governor cuts in, so the result barely depends on timestep.
+
+## Engine and brakes together
+
+```bash
+.venv/bin/python experiments/005_engine_drive/brake_with_engine.py
+```
+
+This compares three flat-road runs with the belt engaged throughout; in two of
+them the rear brakes come on at 5 s. It writes `brake_with_engine.json`, one CSV
+per case and `brake_with_engine.mp4` with force arrows. It exits nonzero if any
+verdict fails. The light-brake prediction was written down before the first run.
+
+| Case | Result |
+| --- | --- |
+| Engine only | 4.60 m/s at 14 s; governor near no-load (420 rpm), almost no drive torque left |
+| Full brakes, 75 N m per wheel (150 total vs 57 N m of drive at the wheels) | Stops from 3.23 m/s and holds while the engine still commands its full 11.9 N m. The belt slips with the engine held at governed speed; about 1.3 kJ goes into brake heat. |
+| Light brakes, 20 N m per wheel (40 total, below the drive) | Keeps going. The governor settles where engine torque × 4.78 = 40 N m: 405.9 rpm and 4.4454 m/s, against 406.0 rpm and 4.4467 m/s predicted. About 356 W of engine power goes into the dragging brakes (2.9 kJ in 9 s). |
+
+While the full brakes are slowing the car, each rear tire takes about 87 N
+backward. The front tire's load rises from 260 N to 387 N as weight shifts
+forward. The video shows both. The simulation has no brake heating or fade.
 
 ## Not modeled
 

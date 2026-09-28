@@ -1,0 +1,39 @@
+{
+  "total_mass_kg": 280,
+  "mass_source": "Early (1894) Velo curb weight, 280 kg (Wikipedia; The Motor Museum in Miniature)",
+  "masses_kg": {
+    "rear_wheel": 9.0,
+    "front_wheel": 5.0,
+    "knuckle": 2.0,
+    "tie_rod": 1.0,
+    "drag_link": 0.8,
+    "column": 2.5
+  },
+  "chassis_com": [
+    0.45,
+    0.0,
+    0.6
+  ],
+  "chassis_inertia": [
+    40,
+    90,
+    100
+  ],
+  "tire_friction": 0.8,
+  "steering_servo": {
+    "kp": 1000,
+    "kv": 30,
+    "force_limit_nm": 40,
+    "note": "Driver's grip on the handwheel. First full run used kp 150, kv 10: it lagged 5 degrees under the ~13 N m holding torque; raised to a firmer grip. The 40 N m hand-torque limit is unchanged."
+  },
+  "assumptions": "Mass split, centre of mass (rear engine) and inertia are estimates; no occupants.",
+  "tire": {
+    "contact_shape": "ellipsoid",
+    "section_half_width_m": 0.018,
+    "contact_solref": [
+      0.02,
+      1
+    ],
+    "note": "Solid rubber tyre: round crown (ellipsoid, 18 mm half-width) with vertical compliance of roughly 0.3-0.4 MN/m per wheel at these loads (assumed), i.e. a 0.02 s contact time constant. A flat 60 mm cylinder with the default 0.005 s contact (about 100 MN/m) chattered in cornering: edge-to-edge rocking, 16% of steps with no contact and load spikes of 2.6x weight. A separate full-width envelope, which never touches the road, keeps spoke clearance checks conservative."
+  }
+}

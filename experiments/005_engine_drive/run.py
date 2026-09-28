@@ -17,6 +17,7 @@ HERE=Path(__file__).resolve().parent
 ROOT=HERE.parents[1]
 sys.path.insert(0,str(HERE))
 from control import ENGINE, GOVERNED, NO_LOAD, MAX_TORQUE, EngineControl, Tiller, engine_torque
+from visual import add_force_arrows
 
 
 def load(name,path):
@@ -109,6 +110,9 @@ def simulate(model,geometry,control,seconds,angle,timestep=None,viewer=False):
                 if not handle.is_running():
                     raise RuntimeError('Viewer closed before the test completed')
                 handle.cam.lookat[:]=data.body('chassis').xpos+[.3,0,.4]
+                with handle.lock():
+                    handle.user_scn.ngeom=0
+                    add_force_arrows(model,data,handle.user_scn)
                 handle.sync()
                 time.sleep(max(0,model.opt.timestep-(time.monotonic()-start)))
     finally:

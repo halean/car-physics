@@ -7,9 +7,10 @@
 | [003](003_brakes/README.md) | Rear brake: stop, hold and release in MuJoCo | Implemented |
 | [004](004_steering/README.md) | Tiller steering: travel clearance, steered descent and braking in a turn | Implemented |
 | [005](005_engine_drive/README.md) | Engine drive: belt, countershaft, differential and chains; powered launch, climb, turns | Implemented |
-| 006 (planned) | Lofted body cross sections; enclosed car envelope | Not implemented |
-| 007 (planned) | Geometry Nodes instancing for wheels and trim | Not implemented |
-| 008 (planned) | Simplified aero geometry and controlled parameter sweeps | Not implemented |
+| [006](006_benz_velo/README.md) | Benz Velo (1894): second car, gate-first; double-pivot steering linkage, two-speed drive, two brakes | Implemented |
+| 007 (planned) | Lofted body cross sections; enclosed car envelope | Not implemented |
+| 008 (planned) | Geometry Nodes instancing for wheels and trim | Not implemented |
+| 009 (planned) | Simplified aero geometry and controlled parameter sweeps | Not implemented |
 
 Give each experiment an input configuration, generator, README, generated output,
 and validation report. Keep source inputs separate from rebuildable artifacts.
