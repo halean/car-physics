@@ -1,0 +1,11 @@
+{
+  "rated_power_w": 1290,
+  "governed_rpm": 1500,
+  "no_load_rpm": 1560,
+  "clutch_seconds": 0.5,
+  "gearbox_ratios": {"first": 3.0, "second": 1.8, "third": 1.0},
+  "final_drive_ratio": 5.8,
+  "rear_drum_capacity_nm_each": 100,
+  "brake_ramp_seconds": 0.25,
+  "source": "De Dion-Bouton single at the front, 270-273 cc, 1.75 hp; three speeds plus reverse with direct-drive third ('prise directe'); cardan shaft, rear axle and differential; one pedal for brake and declutch (Renault Histoire; Wikipedia). Governed speed, gearbox ratios, the 5.8 bevel final drive (direct third gives about 32 km/h, Wikipedia's top speed) and the rear-drum brake location and capacity are assumptions. Reverse gear is not simulated."
+}

@@ -1,0 +1,46 @@
+{
+  "total_mass_kg": 250,
+  "mass_source": "Renault Histoire: 250 kg (Wikipedia gives 200 kg). No occupants.",
+  "masses_kg": {
+    "rear_wheel": 5.0,
+    "front_wheel": 4.0,
+    "knuckle": 1.5,
+    "tie_rod": 0.7,
+    "drag_link": 0.6,
+    "column": 1.5
+  },
+  "chassis_com": [
+    0.55,
+    0.0,
+    0.45
+  ],
+  "chassis_inertia": [
+    18,
+    40,
+    45
+  ],
+  "tire_friction": 0.8,
+  "steering_servo": {
+    "kp": 1000,
+    "kv": 30,
+    "force_limit_nm": 30,
+    "note": "Driver's grip on the handlebar (0.2 m half-width: 30 N m is 150 N)."
+  },
+  "tire": {
+    "contact_shape": "ellipsoid",
+    "section_half_width_m": 0.03,
+    "contact_solref": [
+      -2300,
+      -48
+    ],
+    "note": "Pneumatic tyre (the Type A used Continental tyres): same stated compliance as 006/007 (k 2300 s^-2, b 48 s^-1 per unit mass, ~6 Hz), round crown with 30 mm half-width. Pneumatic tyres are softer than solid ones; the common compliance is an approximation.",
+    "contact_solimp": [
+      0.5,
+      0.95,
+      0.01,
+      0.5,
+      2
+    ]
+  },
+  "assumptions": "Mass split, centre of mass (front engine, rear seat, no occupants) and inertia are estimates."
+}

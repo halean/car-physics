@@ -130,6 +130,14 @@ per unit mass (about 6 Hz, 1–1.5 mm sag), building over 10 mm (solimp
 jitter at ~95 Hz in turns; a regression guard now checks powered-turn tyre
 loads.
 
+## Renault Type A (experiment 008)
+
+As for 007: replace `007_panhard_1891` with `008_renault_1898` and
+`panhard_1891` with `renault_1898`. Scenarios include the combined
+clutch/brake pedal, which must cut drive to zero while braking. The gated
+powered turns run in first gear; second gear exceeds the tyres' grip and is
+reported as a finding.
+
 ## New cars and adapter limitations
 
 These commands currently target experiment 001. The exporter expects its named

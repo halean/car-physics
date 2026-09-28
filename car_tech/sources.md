@@ -20,5 +20,8 @@ road-car performance. Automotive modeling implications are our own applications.
 - **S12** Wikipedia, [Panhard et Levassor](https://en.wikipedia.org/wiki/Panhard_et_Levassor) (consulted 2026-09-29): Système Panhard layout (front engine, rear-wheel drive, sliding-gear transmission); the steering wheel was fitted to a Panhard in 1894.
 - **S13** Carfolio, [1891 Panhard et Levassor](https://www.carfolio.com/panhard-et-levassor--123046): 1.1 L two-cylinder, 4 bhp, 19 km/h. Seen only as a search-result snippet; the page refused automated access, so these figures are unverified.
 
+- **S14** Association Renault Histoire, [La voiturette Type A](https://sites.google.com/view/associationrenaulthistoire/un-peu-d-histoire/les-modeles-phares-de-renault-par-michel-jullien/breve-histoire-de-la-voiturette) (consulted 2026-09-29): front De Dion-Bouton single, 270 cc, 1.75 hp; three speeds plus reverse with direct drive in third; cardan shaft, rear axle and differential; handlebar steering; one pedal for brake and declutch; 1900 × 1150 × 1400 mm; 250 kg; 50 km/h.
+- **S15** Wikipedia, [Renault Voiturette](https://en.wikipedia.org/wiki/Renault_Voiturette) (consulted 2026-09-29): 273 cc 1.75 CV De Dion-Bouton engine, three gears, 200 kg, 32 km/h, Continental tyres.
+
 Next research: source measured drawings for the exact historical variant; collect
 an open automotive aerodynamic benchmark before introducing CFD comparisons.

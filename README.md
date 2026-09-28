@@ -98,6 +98,16 @@ adapter, checks and double-pivot front axle.
 .venv/bin/python experiments/007_panhard_1891/run.py --stage full
 ```
 
+## Fourth car: Renault Type A 1898
+
+[Experiment 008](experiments/008_renault_1898/README.md) replaces chains with a
+propeller shaft and universal joints to a live axle, with a direct-drive third
+gear and a single pedal that declutches and brakes.
+
+```bash
+.venv/bin/python experiments/008_renault_1898/run.py --stage full
+```
+
 ## Required build validation
 
 [Car Downhill Check](skills/car-downhill-check/SKILL.md) defines the build gate:
