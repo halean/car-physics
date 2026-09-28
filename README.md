@@ -87,6 +87,17 @@ across the full steering range.
 
 ![Benz Velo study](experiments/006_benz_velo/output/full/preview.png)
 
+## Third car: Panhard et Levassor 1891
+
+[Experiment 007](experiments/007_panhard_1891/README.md) builds the "Système
+Panhard": a front engine with clutch, three-speed gearbox, differential and
+chains, a tiller and rear rim-block brakes. It reuses the Velo's validated
+adapter, checks and double-pivot front axle.
+
+```bash
+.venv/bin/python experiments/007_panhard_1891/run.py --stage full
+```
+
 ## Required build validation
 
 [Car Downhill Check](skills/car-downhill-check/SKILL.md) defines the build gate:

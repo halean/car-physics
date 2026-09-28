@@ -1,6 +1,6 @@
 """Render Velo inspection views at both steering locks (never saves the scene).
 
-blender --background <blend> --python render_views.py -- <geometry.json> <output dir>
+blender --background <blend> --python render_views.py -- <geometry.json> <output dir> [extra_views.json]
 Steering bodies are posed with linkage.py, the same kinematics the tests use.
 """
 import json
@@ -23,7 +23,7 @@ scene = bpy.context.scene
 objects = [o for o in bpy.data.collections[report['collection']].objects if o.type in {'MESH', 'CURVE'}]
 rest = {o.name: o.matrix_world.copy() for o in objects}
 steer = {'knuckle_left', 'knuckle_right', 'tie_rod', 'column', 'drag_link', 'front_left', 'front_right'}
-body_parts = ('Seat', 'Bench', 'Body', 'Bonnet', 'Dash', 'Footboard', 'Fuel tank', 'Mudguard', 'Floor')
+body_parts = ('Seat', 'Bench', 'Body', 'Bonnet', 'Engine box', 'Dash', 'Footboard', 'Fuel tank', 'Mudguard', 'Floor')
 colors = {'chassis': (.2, .45, .3, 1)}
 for o in objects:
     b = o['body']
@@ -72,11 +72,15 @@ views = {'top': ((wb/2, 0, 6), 'ORTHO', 2.6, (wb/2, 0, .3), None),
          'linkage_top': ((wb-.1, 0, 3), 'ORTHO', 1.3, (wb-.1, 0, .2), 'body'),
          'rear_brake': ((.55, .05, .95), 'PERSP', None, (0, .42, .45), 'body'),
          'drive_under': ((-.2, -.9, -.25), 'PERSP', None, (-.35, .1, .33), 'body')}
+if len(argv) > 2:   # optional JSON of extra close-ups: {name: [camera, 'PERSP'|'ORTHO', scale, target, hide]}
+    views.update({k: tuple(v) for k, v in json.loads(Path(argv[2]).read_text()).items()})
+rest_only = {'side', 'rear_brake', 'drive_under'} | (set(views) - {'top', 'front', 'perspective', 'front_linkage',
+                                                                    'linkage_top'})
 limit = bodies['column']['joint']['range_deg'][1]
 for angle in (-limit, 0, limit):
     pose(math.radians(angle))
     for name, (loc, kind, scale, target, hide) in views.items():
-        if angle and name in ('side', 'rear_brake', 'drive_under'):
+        if angle and name in rest_only:
             continue
         for o in objects:
             o.hide_render = hide == 'body' and o.name.startswith(body_parts+('Handwheel',))

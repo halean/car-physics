@@ -66,6 +66,92 @@ def wheel(name, center, radius, spokes, tire, mats, collection, axle):
     return hub
 
 
+def handwheel(V, cx, column_top, brass, wood):
+    """Velo column top: a small three-spoke handwheel."""
+    ring('Handwheel rim', (cx, 0, column_top), .13, .011, wood, V, 'column')
+    part(rod('Handwheel boss', (cx, 0, column_top-.02), (cx, 0, column_top+.015), .025, brass, V), 'column',
+         joins=['Steering column'])
+    for i in range(3):
+        a = math.tau*i/3
+        part(rod(f'Handwheel spoke {i}', (cx+.02*math.cos(a), .02*math.sin(a), column_top),
+                 (cx+.13*math.cos(a), .13*math.sin(a), column_top), .008, brass, V), 'column',
+             joins=['Handwheel boss', 'Handwheel rim'])
+
+
+def double_pivot_front(V, p, m, kp, cx, top, column_top=1.05, cy=0.0):
+    """Beam axle with kingpin knuckles, Jeantaud trapezoid and drag link from a
+    central column (Benz double-pivot steering). The column must pass through a
+    'Column bearing' supplied by the frame; top(V, x, y, z) adds the driver's control.
+    cy moves the column sideways (e.g. clear of a central drive shaft)."""
+    wb, ft, fr = p['wheelbase'], p['front_track'], p['front_radius']
+    frame_mat, steel, brass = m['frame'], m['steel'], m['brass']
+    part(rod('Front beam', (wb, -(kp-.03), fr), (wb, kp-.03, fr), .022, frame_mat, V),
+         joins=['Axle eye -1', 'Axle eye 1'])
+
+    # --- Double-pivot steering: kingpin knuckles, trapezoid tie rod aimed at
+    # the rear-axle centre (Ackermann/Jeantaud), drag link from the column.
+    # Heights: tie rod, drag link (on ball studs below its arms), drag arm, pitman arm.
+    zt, zl, zd, zp = .13, .172, .20, .215
+    arm = p['steering_arm']
+    alpha = math.atan2(kp, wb)
+    balls = {}
+    for s, side in ((1, 'left'), (-1, 'right')):
+        body = f'knuckle_{side}'
+        part(rod(f'Axle eye {s}', (wb, s*kp, fr-.025), (wb, s*kp, fr+.025), .03, frame_mat, V))
+        web_y = s*(kp+.048)   # 6 mm outside the eye, 10 mm inside the hub
+        part(rod(f'Kingpin {s}', (wb, s*kp, zt-.01), (wb, s*kp, fr+.05), .012, steel, V), body,
+             joins=[f'Axle eye {s}'])
+        for z, name in ((fr+.041, 'upper'), (fr-.041, 'lower')):
+            part(rod(f'Knuckle {name} ear {s}', (wb, s*kp, z), (wb, web_y, z), .012, steel, V), body,
+                 joins=[f'Kingpin {s}', f'Knuckle web {s}'], mates=[f'Axle eye {s}'])
+        part(rod(f'Knuckle web {s}', (wb, web_y, fr-.041), (wb, web_y, fr+.041), .012, steel, V), body)
+        part(rod(f'Stub axle {s}', (wb, web_y, fr), (wb, s*(ft/2+.06), fr), .015, steel, V), body,
+             role='axle', joins=[f'Knuckle web {s}'])
+        ball = (wb-arm*math.cos(alpha), s*(kp-arm*math.sin(alpha)), zt)
+        part(rod(f'Steering arm {s}', (wb, s*kp, zt), ball, .011, steel, V), body,
+             joins=[f'Kingpin {s}'])
+        balls[side] = ball
+    drag_ball = (wb, kp-.10, zl)
+    part(rod('Drag arm', (wb, kp, zd), (wb, kp-.10, zd), .011, steel, V), 'knuckle_left', joins=['Kingpin 1'])
+    part(rod('Drag arm stud', (wb, kp-.10, zd), drag_ball, .008, steel, V), 'knuckle_left',
+         joins=['Drag arm'])
+    part(rod('Tie rod', balls['left'], balls['right'], .011, steel, V), 'tie_rod',
+         joins=['Steering arm 1', 'Steering arm -1'])
+    pitman_ball = (cx, cy-.10, zl)  # on the right, so turning the control left steers left
+    part(rod('Steering column', (cx, cy, zp), (cx, cy, column_top), .016, brass, V), 'column',
+         joins=['Column bearing'])
+    part(rod('Pitman arm', (cx, cy, zp), (cx, cy-.10, zp), .011, steel, V), 'column', joins=['Steering column'])
+    part(rod('Pitman stud', (cx, cy-.10, zp), pitman_ball, .008, steel, V), 'column', joins=['Pitman arm'])
+    part(rod('Drag link', pitman_ball, drag_ball, .011, steel, V), 'drag_link',
+         joins=['Pitman stud', 'Drag arm stud'])
+    top(V, cx, cy, column_top)
+    return dict(balls=balls, drag_ball=drag_ball, pitman_ball=pitman_ball, zd=zd)
+
+
+def steering_bodies(p, kp, cx, front, cy=0.0):
+    """Physics bodies, loop closures and plan geometry of the double-pivot front."""
+    wb, fr = p['wheelbase'], p['front_radius']
+    balls, drag_ball, pitman_ball = front['balls'], front['drag_ball'], front['pitman_ball']
+    limit = p['column_limit_deg']
+    bodies = {}
+    for side, s in (('left', 1), ('right', -1)):
+        bodies[f'knuckle_{side}'] = dict(parent='chassis', origin=[wb, s*kp, fr],
+                                         joint=dict(type='hinge', axis=[0, 0, 1]))
+    bodies['tie_rod'] = dict(parent='knuckle_left', origin=list(balls['left']),
+                             joint=dict(type='hinge', axis=[0, 0, 1]))
+    bodies['column'] = dict(parent='chassis', origin=[cx, cy, front['zd']],
+                            joint=dict(type='hinge', axis=[0, 0, 1], range_deg=[-limit, limit]))
+    bodies['drag_link'] = dict(parent='column', origin=list(pitman_ball),  # at the stud's ball
+                               joint=dict(type='hinge', axis=[0, 0, 1]))
+    loops = [dict(body1='tie_rod', body2='knuckle_right', point=list(balls['right'])),
+             dict(body1='drag_link', body2='knuckle_left', point=list(drag_ball))]
+    steering = dict(column=[cx, cy], pitman_ball=list(pitman_ball[:2]), drag_ball=list(drag_ball[:2]),
+                    kingpins={'left': [wb, kp], 'right': [wb, -kp]},
+                    arm_balls={k: list(v[:2]) for k, v in balls.items()}, column_limit_deg=limit,
+                    kingpin_track=2*kp, wheelbase=wb)
+    return bodies, loops, steering
+
+
 def build_full(V, p, m):
     """Drivetrain (two belt speeds, countershaft differential, chains), band brake, bodywork."""
     wb, rt, rr, fw, h = p['wheelbase'], p['rear_track'], p['rear_radius'], p['frame_width'], p['rail_height']
@@ -250,54 +336,9 @@ def main():
         part(rod(f'Front hanger {s}', (wb, s*fw/2, h), (wb, s*fw/2, fr), .02, frame_mat, V),
              joins=[f'Frame rail {s}', 'Front beam'])
     part(rod('Rear axle', (0, -(rt/2+.06), rr), (0, rt/2+.06, rr), .027, steel, V), role='axle')
-    part(rod('Front beam', (wb, -(kp-.03), fr), (wb, kp-.03, fr), .022, frame_mat, V),
-         joins=['Axle eye -1', 'Axle eye 1'])
-
-    # --- Double-pivot steering: kingpin knuckles, trapezoid tie rod aimed at
-    # the rear-axle centre (Ackermann/Jeantaud), drag link from the column.
-    # Heights: tie rod, drag link (on ball studs below its arms), drag arm, pitman arm.
-    zt, zl, zd, zp = .13, .172, .20, .215
-    arm = p['steering_arm']
-    alpha = math.atan2(kp, wb)
-    balls = {}
-    for s, side in ((1, 'left'), (-1, 'right')):
-        body = f'knuckle_{side}'
-        part(rod(f'Axle eye {s}', (wb, s*kp, fr-.025), (wb, s*kp, fr+.025), .03, frame_mat, V))
-        web_y = s*(kp+.048)   # 6 mm outside the eye, 10 mm inside the hub
-        part(rod(f'Kingpin {s}', (wb, s*kp, zt-.01), (wb, s*kp, fr+.05), .012, steel, V), body,
-             joins=[f'Axle eye {s}'])
-        for z, name in ((fr+.041, 'upper'), (fr-.041, 'lower')):
-            part(rod(f'Knuckle {name} ear {s}', (wb, s*kp, z), (wb, web_y, z), .012, steel, V), body,
-                 joins=[f'Kingpin {s}', f'Knuckle web {s}'], mates=[f'Axle eye {s}'])
-        part(rod(f'Knuckle web {s}', (wb, web_y, fr-.041), (wb, web_y, fr+.041), .012, steel, V), body)
-        part(rod(f'Stub axle {s}', (wb, web_y, fr), (wb, s*(ft/2+.06), fr), .015, steel, V), body,
-             role='axle', joins=[f'Knuckle web {s}'])
-        ball = (wb-arm*math.cos(alpha), s*(kp-arm*math.sin(alpha)), zt)
-        part(rod(f'Steering arm {s}', (wb, s*kp, zt), ball, .011, steel, V), body,
-             joins=[f'Kingpin {s}'])
-        balls[side] = ball
-    drag_ball = (wb, kp-.10, zl)
-    part(rod('Drag arm', (wb, kp, zd), (wb, kp-.10, zd), .011, steel, V), 'knuckle_left', joins=['Kingpin 1'])
-    part(rod('Drag arm stud', (wb, kp-.10, zd), drag_ball, .008, steel, V), 'knuckle_left',
-         joins=['Drag arm'])
-    part(rod('Tie rod', balls['left'], balls['right'], .011, steel, V), 'tie_rod',
-         joins=['Steering arm 1', 'Steering arm -1'])
-    column_top = 1.05
-    pitman_ball = (cx, -.10, zl)  # on the right, so turning the handwheel left steers left
-    part(rod('Steering column', (cx, 0, zp), (cx, 0, column_top), .016, brass, V), 'column',
-         joins=['Column bearing'])
-    part(rod('Pitman arm', (cx, 0, zp), (cx, -.10, zp), .011, steel, V), 'column', joins=['Steering column'])
-    part(rod('Pitman stud', (cx, -.10, zp), pitman_ball, .008, steel, V), 'column', joins=['Pitman arm'])
-    part(rod('Drag link', pitman_ball, drag_ball, .011, steel, V), 'drag_link',
-         joins=['Pitman stud', 'Drag arm stud'])
-    ring('Handwheel rim', (cx, 0, column_top), .13, .011, wood, V, 'column')
-    part(rod('Handwheel boss', (cx, 0, column_top-.02), (cx, 0, column_top+.015), .025, brass, V), 'column',
-         joins=['Steering column'])
-    for i in range(3):
-        a = math.tau*i/3
-        part(rod(f'Handwheel spoke {i}', (cx+.02*math.cos(a), .02*math.sin(a), column_top),
-                 (cx+.13*math.cos(a), .13*math.sin(a), column_top), .008, brass, V), 'column',
-             joins=['Handwheel boss', 'Handwheel rim'])
+    front = double_pivot_front(V, p, dict(frame=frame_mat, steel=steel, brass=brass, wood=wood), kp, cx,
+                               top=lambda V, x, y, z: handwheel(V, x, z, brass, wood))
+    balls, drag_ball, pitman_ball, zd = front['balls'], front['drag_ball'], front['pitman_ball'], front['zd']
 
     # --- Wheels: 850 mm rear, 550 mm front wire wheels on solid tyres.
     wheels = []
@@ -317,28 +358,14 @@ def main():
                                       leather=material('Black leather', (.03, .025, .022), 0, .45)))
 
     # --- Assembly description for the physics adapter (rest pose = straight ahead).
-    limit = p['column_limit_deg']
     bodies = {'chassis': dict(parent=None, origin=[0, 0, 0], joint='free')}
-    for side, s in (('left', 1), ('right', -1)):
-        bodies[f'knuckle_{side}'] = dict(parent='chassis', origin=[wb, s*kp, fr],
-                                         joint=dict(type='hinge', axis=[0, 0, 1]))
-    bodies['tie_rod'] = dict(parent='knuckle_left', origin=list(balls['left']),
-                             joint=dict(type='hinge', axis=[0, 0, 1]))
-    bodies['column'] = dict(parent='chassis', origin=[cx, 0, zd],
-                            joint=dict(type='hinge', axis=[0, 0, 1], range_deg=[-limit, limit]))
-    bodies['drag_link'] = dict(parent='column', origin=list(pitman_ball),  # at the stud's ball
-                               joint=dict(type='hinge', axis=[0, 0, 1]))
+    steer_bodies, loops, steering = steering_bodies(p, kp, cx, front)
+    bodies.update(steer_bodies)
     for w in wheels:
         bodies[w['name']] = dict(parent=w['parent'], origin=w['center'],
                                  joint=dict(type='hinge', axis=[0, 1, 0]),
                                  wheel=dict(radius=w['radius'], half_width=max(tire, .03),
                                             driven=w['driven'], braked=w['braked']))
-    loops = [dict(body1='tie_rod', body2='knuckle_right', point=list(balls['right'])),
-             dict(body1='drag_link', body2='knuckle_left', point=list(drag_ball))]
-    steering = dict(column=[cx, 0], pitman_ball=list(pitman_ball[:2]), drag_ball=list(drag_ball[:2]),
-                    kingpins={'left': [wb, kp], 'right': [wb, -kp]},
-                    arm_balls={k: list(v[:2]) for k, v in balls.items()}, column_limit_deg=limit,
-                    kingpin_track=2*kp, wheelbase=wb)
 
     bpy.context.view_layer.update()
     objects = [o for o in V.objects if o.type in {'MESH', 'CURVE'}]

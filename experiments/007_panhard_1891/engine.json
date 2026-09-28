@@ -1,0 +1,10 @@
+{
+  "rated_power_w": 2980,
+  "governed_rpm": 750,
+  "no_load_rpm": 780,
+  "clutch_seconds": 0.5,
+  "gearbox_ratios": {"first": 5.16, "second": 3.13, "third": 2.02},
+  "rim_brake_capacity_nm_each": 180,
+  "brake_ramp_seconds": 0.25,
+  "source": "Layout, friction clutch, sliding three-speed gearbox, chain final drive and hand-lever leather-faced wooden block brakes on the rear wheel rims: The Motor Museum in Miniature; Wikipedia. 1.1 L V-twin, 4 bhp and 19 km/h: Carfolio via search snippet (page blocked, unverified). Governed speed, gearbox ratios (third gives about 19 km/h) and brake capacity are assumptions."
+}

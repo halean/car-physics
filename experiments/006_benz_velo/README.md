@@ -68,7 +68,7 @@ blender --background experiments/006_benz_velo/output/full/benz_velo.blend --pyt
   - One-dimensional reference model.
   - Locked-differential and too-steep-hill negative controls.
   - Half-timestep repeats.
-  - Force-arrow video.
+  - Force-arrow video, with arrows averaged over 50 ms since 007.
 
 ## Model notes and changes made during validation
 
@@ -113,7 +113,7 @@ stopping time. The 0.02 m/s threshold is unchanged.
 **Reference model.** Engine torque, 23.3 N m, follows from 1.1 kW at 450 rpm.
 Wikipedia's 4.4 N m is inconsistent with its own rating and is not used.
 
-## Result (MuJoCo 3.14.0, full build `d4eacc91…`)
+## Result (MuJoCo 3.14.0, full build `6ecd8208…`)
 
 **Build checks**
 - 97,472 collider pairs at 121 steering angles.

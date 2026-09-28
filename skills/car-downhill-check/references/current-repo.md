@@ -117,6 +117,16 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
   envelopes.
 - **Review.** Read `output/full/validation.md` and the README's open finding.
 
+## Panhard et Levassor (experiment 007)
+
+Built on experiment 006's tooling. Replace `006_benz_velo` with
+`007_panhard_1891` and `benz_velo` with `panhard_1891` in the commands above.
+The runner imports 006's adapter and supplies its own `vehicle.json`, controls,
+scenarios and planted defects. Tyre forces jitter at about 95 Hz in powered
+turns, at micrometre scale. The averages used by the checks are correct, but
+instantaneous contact forces in turns are not. Use `visual.ForceAverager` for
+force visuals, and see the 007 README.
+
 ## New cars and adapter limitations
 
 These commands currently target experiment 001. The exporter expects its named

@@ -1,0 +1,14 @@
+{
+  "total_mass_kg": 600,
+  "mass_source": "Assumption: no sourced curb weight for the 1891 car; wooden chassis, front V-twin, three-speed gearbox, iron-hubbed artillery wheels.",
+  "masses_kg": {"rear_wheel": 18.0, "front_wheel": 11.0, "knuckle": 2.5, "tie_rod": 1.2,
+                "drag_link": 1.0, "column": 3.0},
+  "chassis_com": [0.80, 0.0, 0.62],
+  "chassis_inertia": [90, 260, 290],
+  "tire_friction": 0.8,
+  "steering_servo": {"kp": 1000, "kv": 30, "force_limit_nm": 60,
+                     "note": "Driver's grip on the tiller (0.30 m arm: 60 N m is 200 N at the grip)."},
+  "tire": {"contact_shape": "ellipsoid", "section_half_width_m": 0.020, "contact_solref": [0.02, 1],
+           "note": "Solid rubber on artillery wheels: round crown and compliant contact, as learned on the Velo (flat stiff cylinders chatter when cornering)."},
+  "assumptions": "Mass split, centre of mass (front engine, behind the front axle) and inertia are estimates; no occupants."
+}

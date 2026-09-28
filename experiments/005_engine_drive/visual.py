@@ -6,6 +6,7 @@ with mj_contactForce and split into a load arrow (along the contact normal)
 and a tire-force arrow (in the road plane: drive, braking and cornering),
 each with its own scale.
 """
+from collections import deque
 import numpy as np
 import mujoco
 
@@ -58,3 +59,33 @@ def add_force_arrows(model,data,scene):
         lifted=point+.01*load/max(np.linalg.norm(load),1e-9)
         _arrow(scene,lifted,load*LOAD_M_PER_N,LOAD_RGBA)
         _arrow(scene,lifted,tire*TIRE_M_PER_N,TIRE_RGBA)
+
+
+class ForceAverager:
+    """Mean per-wheel force over a short window, sampled every physics step.
+
+    Stiff contacts can make instantaneous tyre forces jitter at high frequency
+    (micrometre motion, large force swings) while the averages stay correct;
+    averaged arrows show the physically meaningful force. A step without
+    contact counts as zero force for that wheel.
+    """
+    def __init__(self, window_s=.05):
+        self.window = window_s
+        self.samples = deque()
+
+    def sample(self, model, data):
+        self.samples.append((data.time, wheel_forces(model, data)))
+        while self.samples and self.samples[0][0] < data.time-self.window:
+            self.samples.popleft()
+
+    def draw(self, scene):
+        wheels = {w for _, f in self.samples for w in f}
+        n = max(len(self.samples), 1)
+        for w in wheels:
+            present = [f[w] for _, f in self.samples if w in f]
+            point = np.mean([p for p, _, _ in present], axis=0)
+            load = sum(l for _, l, _ in present)/n
+            tire = sum(t for _, _, t in present)/n
+            lifted = point+.01*load/max(np.linalg.norm(load), 1e-9)
+            _arrow(scene, lifted, load*LOAD_M_PER_N, LOAD_RGBA)
+            _arrow(scene, lifted, tire*TIRE_M_PER_N, TIRE_RGBA)
