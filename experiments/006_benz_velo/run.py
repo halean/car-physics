@@ -60,6 +60,7 @@ def simulate(model, geometry, seconds, slope_rad, control=None, viewer=False):
     last = {n: data.body(n).xpos.copy() for n in wheels}
     path = {n: 0.0 for n in wheels}
     bad, touched, rows = set(), set(), []
+    loads = {n: [] for n in wheels}   # per-step tyre normal load over the last second
     peak = dict(tilt=0.0, loop=0.0, engine=0.0, power=0.0)
     kinematic_yaw = 0.0
     wb = geometry['parameters']['wheelbase']
@@ -86,6 +87,17 @@ def simulate(model, geometry, seconds, slope_rad, control=None, viewer=False):
             pairs, ground = contacts(model, data)
             bad |= pairs
             touched |= ground
+            if data.time > seconds-1:
+                step_load = dict.fromkeys(wheels, 0.0)
+                force = np.zeros(6)
+                for i in range(data.ncon):
+                    name = next((model.geom(g).name for g in (data.contact[i].geom1, data.contact[i].geom2)
+                                 if model.geom(g).name.endswith('_rolling')), None)
+                    if name:
+                        mujoco.mj_contactForce(model, data, i, force)
+                        step_load[name.removesuffix('_rolling')] += force[0]
+                for n in wheels:
+                    loads[n].append(step_load[n])
             for n in wheels:
                 pos = data.body(n).xpos.copy()
                 d = pos-last[n]
@@ -124,6 +136,7 @@ def simulate(model, geometry, seconds, slope_rad, control=None, viewer=False):
                    final_speed_mps=float(data.qvel[:3]@tangent), max_tilt_deg=peak['tilt'],
                    max_loop_violation_m=peak['loop'], wheel_paths_m=path, wheel_rolled_m=rolled,
                    rolling_error=error, forbidden_contacts=sorted(bad), wheels_touching=sorted(touched),
+                   tyre_load_variation_last_s={n: float(np.std(v)/max(np.mean(v), 1e-9)) for n, v in loads.items() if v},
                    solver_warnings=warnings)
     common = dict(no_interference=not bad, all_wheels_contact=set(wheels) <= touched,
                   rolls_not_slides=max(error.values()) < LIMITS['rolling_error'],

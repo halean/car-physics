@@ -88,12 +88,19 @@ steering needs about 6.6 N m at 20° under way.
 That pushed the steering under acceleration. Centre of mass and inertia now
 come from each body's colliders.
 
-**Tyres.** A flat 60 mm cylinder with the inherited 0.005 s contact chattered in
-cornering: 16% of steps had no contact at all, and loads reached 2.6 × weight.
+**Tyres (updated in 007).** A flat 60 mm cylinder with the inherited 0.005 s
+contact chattered in cornering: 16% of steps had no contact at all, and loads reached 2.6 × weight.
 The video's force arrows showed it; no test did. Tyres are now round-crowned:
 an ellipsoid with 18 mm half-width and a 0.02 s contact time constant, roughly
 0.3–0.4 MN/m per wheel, which is assumed. A separate full-width envelope, which
 never touches the road, keeps spoke clearance checks conservative.
+
+Experiment 007 then found the 0.02 s contact still effectively rigid, with
+0.1 mm of sag and ~95 Hz load jitter in turns. The tyre contact is now a
+stated compliance: k 2300 s⁻² and b 48 s⁻¹ per unit mass, about 6 Hz bounce and
+1–1.5 mm sag, building over 10 mm (solimp 0.5–0.95). MuJoCo's no-slip friction
+pass (10 iterations) stops braked tyres creeping. This car passes its full suite
+again with it; see the 007 README.
 
 **Brakes.**
 - *Foot brake:* a band on a countershaft drum. It acts through the differential,

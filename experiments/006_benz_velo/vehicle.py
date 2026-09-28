@@ -76,7 +76,9 @@ def make_model(geometry, out, slope_rad=0.0, *, engine=None, spool=False, extra=
     bodies = geometry['bodies']
     root = ET.Element('mujoco', model='Benz Velo')
     ET.SubElement(root, 'compiler', angle='radian', inertiafromgeom='false')
-    option = ET.SubElement(root, 'option', timestep='.001', gravity='0 0 -9.81', integrator='implicitfast')
+    # No-slip friction pass: compliant tyre contacts otherwise let braked or cornering tyres creep.
+    option = ET.SubElement(root, 'option', timestep='.001', gravity='0 0 -9.81', integrator='implicitfast',
+                           noslip_iterations='10')
     ET.SubElement(option, 'flag', filterparent='disable')
     ET.SubElement(root, 'visual').append(ET.Element('global', offwidth='1920', offheight='1080'))
     defaults = ET.SubElement(root, 'default')
@@ -133,6 +135,7 @@ def make_model(geometry, out, slope_rad=0.0, *, engine=None, spool=False, extra=
                           size=f'{r}', contype='8', conaffinity='2', group='3', rgba='.2 .2 .2 .2')
             ET.SubElement(el, 'geom', name=f'{name}_rolling', type='ellipsoid',
                           size=numbers([r, tire['section_half_width_m'], r]), solref=numbers(tire['contact_solref']),
+                          solimp=numbers(tire.get('contact_solimp', [.9, .95, .001, .5, 2])),
                           contype='4', conaffinity='3', group='3', rgba='.1 .1 .1 .5')
         else:
             com, full = part_inertia(geometry['colliders'][name], mass)

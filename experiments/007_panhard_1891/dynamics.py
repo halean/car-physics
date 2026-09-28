@@ -185,6 +185,8 @@ def run_all(make, simulate, geometry, ratios):
                  max_steering_torque_nm=float(np.abs(rows[:, STEER]).max()))
         s['checks'] = common|dict(differential_ratio=rel(s['measured_outer_inner_ratio'], expected)
                                   < LIMITS['differential_ratio_rel'], kinematic_yaw=kinematic_ok(s),
+                                  # Regression guard added after the tyre-contact fix (was up to 77%).
+                                  steady_tyre_loads=max(s['tyre_load_variation_last_s'].values()) < .10,
                                   turns_correct_way=math.copysign(1, deg)*s['yaw_deg'] > 5)
         return s
     res['turn_left'] = turn('turn_left', 20)

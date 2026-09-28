@@ -115,26 +115,35 @@ This car's own files:
   as on the Velo.
 - *Ackermann:* up to 2.0° over ideal at full lock.
 
-## Known limitation: tyre-force jitter in powered turns
+## Tyre-force jitter in powered turns (resolved)
 
-In powered cornering the tyre loads oscillate at about 95 Hz. The motion is
-micrometre-scale, but in a second-gear 20° turn the total load has a 25%
-standard deviation and the inner front tyre's load up to 72%. Straight running
-shows none of this.
+**Symptom.** With the first tyre model, a 0.02 s contact time constant, tyre
+loads jittered at about 95 Hz in powered cornering: 25% standard deviation in
+total load, and up to 77% on the inner front tyre. The motion was
+micrometre-scale.
 
-Isolation runs ruled out the steering loop constraints, servo damping, timestep
-and friction-cone type. It is the stiff tyre–road contact. The contact is still
-nearly rigid at wheel scale: deflection is micrometres, where a real solid tyre
-deflects millimetres. Lateral stick-slip under cornering excites a pitch mode.
+**Cause.** Isolation runs ruled out the steering constraints, servo, timestep
+and friction cone. The contact was effectively rigid: it sagged only 0.1 mm.
 
-The averages used by every check are correct:
-- Loads sum to the car's weight.
-- Yaw, speeds and differential ratios match the kinematics.
+**Fix.** The shared adapter, `006_benz_velo/vehicle.py`, now uses a stated tyre
+compliance:
+- Direct stiffness and damping per unit mass, k 2300 s⁻², b 48 s⁻¹. That gives
+  about 6 Hz body bounce at damping ratio 0.5.
+- An impedance that builds over 10 mm of deflection (solimp 0.5–0.95).
+- About 1–1.5 mm of static sag.
 
-Instantaneous contact forces in turns are not trustworthy, so the video draws
-**50 ms averaged** force arrows (`visual.ForceAverager`). Making MuJoCo's
-contact compliance match a real tyre is separate work. It would require
-re-validating the Velo and this car.
+The softer contact also softened friction, so braked cars crept downhill at
+1.5 cm/s and steered descents yawed about 5% short. MuJoCo's no-slip friction
+pass, with 10 iterations, removes that creep.
+
+**Result.** Both the Velo and this car were re-validated in full, chassis and
+full stages. The powered-turn tyre loads now vary by at most 2% per wheel.
+
+**Regression guard.** `steady_tyre_loads` requires less than 10% variation per
+wheel over the last second of each powered turn. It was added after the fix,
+so it guards against recurrence rather than serving as a tuned pass mark.
+
+**Video.** Force arrows stay 50 ms averages.
 
 ## Not modeled
 

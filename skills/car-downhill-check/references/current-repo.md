@@ -122,10 +122,13 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
 Built on experiment 006's tooling. Replace `006_benz_velo` with
 `007_panhard_1891` and `benz_velo` with `panhard_1891` in the commands above.
 The runner imports 006's adapter and supplies its own `vehicle.json`, controls,
-scenarios and planted defects. Tyre forces jitter at about 95 Hz in powered
-turns, at micrometre scale. The averages used by the checks are correct, but
-instantaneous contact forces in turns are not. Use `visual.ForceAverager` for
-force visuals, and see the 007 README.
+scenarios and planted defects.
+
+The shared adapter models tyres as a stated compliance: k 2300 s⁻² and b 48 s⁻¹
+per unit mass (about 6 Hz, 1–1.5 mm sag), building over 10 mm (solimp
+0.5–0.95), with MuJoCo's no-slip friction pass. A rigid contact made tyre loads
+jitter at ~95 Hz in turns; a regression guard now checks powered-turn tyre
+loads.
 
 ## New cars and adapter limitations
 
