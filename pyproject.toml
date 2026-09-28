@@ -1,0 +1,6 @@
+[project]
+name = "procedural-cars"
+version = "0.1.0"
+description = "First-principles notes and procedural Blender car experiments"
+requires-python = ">=3.11"
+dependencies = []

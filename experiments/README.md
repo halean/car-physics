@@ -1,0 +1,14 @@
+# Experiments
+
+| Experiment | Approach | State |
+| --- | --- | --- |
+| [001](001_patent_motorwagen/README.md) | Parametric primitives and swept tubes; early three-wheeler | Implemented |
+| [002](002_downhill/README.md) | MuJoCo downhill rolling and contact test | Implemented |
+| [003](003_brakes/README.md) | Rear brake: stop, hold and release in MuJoCo | Implemented |
+| [004](004_steering/README.md) | Tiller steering: travel clearance, steered descent and braking in a turn | Implemented |
+| 005 (planned) | Lofted body cross sections; enclosed car envelope | Not implemented |
+| 006 (planned) | Geometry Nodes instancing for wheels and trim | Not implemented |
+| 007 (planned) | Simplified aero geometry and controlled parameter sweeps | Not implemented |
+
+Give each experiment an input configuration, generator, README, generated output,
+and validation report. Keep source inputs separate from rebuildable artifacts.

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Car Downhill Check"
+  short_description: "Validate car builds by rolling downhill first"
+  default_prompt: "Use $car-downhill-check to validate this car build before continuing detailed modeling."
+policy:
+  allow_implicit_invocation: true

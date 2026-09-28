@@ -1,0 +1,102 @@
+# Current repository workflow
+
+Run from the `3d-cars` repository root. `.venv` runs the simulation; Blender uses
+its own Python for generation and geometry checks. Install missing simulation
+dependencies with `.venv/bin/python -m pip install -r experiments/002_downhill/requirements.txt`.
+
+## Current Motorwagen build
+
+```bash
+.venv/bin/python scripts/build.py --render
+blender --background experiments/001_patent_motorwagen/output/patent_motorwagen.blend --python-exit-code 1 --python experiments/001_patent_motorwagen/check_frame.py
+.venv/bin/python experiments/002_downhill/run.py
+.venv/bin/python experiments/002_downhill/record.py
+```
+
+`check_frame.py` checks structural-member connectivity, wheel envelopes and
+rail/floor clearance; it also checks that detached-fork and low-fork-crown defects
+are rejected. It does not check every possible part pair. Inspect brake and body
+attachments separately when they change.
+
+`002_downhill/run.py` re-exports the saved Blender model and writes
+`experiments/002_downhill/output/report.json`, `trajectory.csv`, `geometry.json`,
+`downhill.xml` and visual OBJ meshes. It exits nonzero on failure and includes a
+wheel-obstruction negative control. Read the report, not just the exit status.
+`record.py` writes `downhill.mp4`; recording requires ffmpeg and EGL.
+Use `run.py --viewer` for a live desktop preview when recording is unavailable.
+Neither missing video dependencies nor a working GUI establishes a physics pass.
+
+## Brakes on the current build
+
+After the unbraked downhill gate:
+
+```bash
+.venv/bin/python experiments/003_brakes/run.py
+.venv/bin/python experiments/003_brakes/record.py
+```
+
+Read `experiments/003_brakes/output/report.json` and inspect
+`brake_comparison.mp4`. The test compares coasting, braking/holding, and release.
+It applies a 0.25-second ramp at 2 seconds, up to 75 N m per rear wheel; the
+release scenario releases at 5 seconds. Acceptance includes:
+
+- Chassis speed below 0.02 m/s after braking.
+- At least one second of holding after a 0.25-second settling interval, with
+  speed below 0.02 m/s and less than 0.01 m total drift.
+- Less than half the coast distance after six seconds.
+- Speed above 1 m/s after release; the unbraked control must fail to stop.
+- At half timestep, stopping distance changes by less than 0.03 m, and holding
+  drift remains below 0.01 m.
+
+The brake is equivalent joint dry friction. The decorative lever/linkage does
+not actuate simulated shoes or cable tension. Do not describe it as doing so.
+
+## Steering on the current build
+
+After the downhill and brake tests:
+
+```bash
+.venv/bin/python experiments/004_steering/run.py
+.venv/bin/python experiments/004_steering/record.py
+blender --background experiments/001_patent_motorwagen/output/patent_motorwagen.blend --python-exit-code 1 --python experiments/004_steering/render_views.py -- experiments/004_steering/output
+```
+
+`run.py` sweeps the steering through its full limit in 0.5-degree steps, requiring
+a conservative 5 mm gap between steering/front colliders and everything else, and
+a planted sweep blocker must be detected. It then runs 6-second left/right descents
+with a 15-degree tiller command and rear braking from 3 seconds. Each must turn the
+commanded way, match rear-axle kinematic yaw within max(1 degree, 5%), roll without
+sliding, avoid forbidden contacts and stop/hold. The left run is repeated at half
+timestep. Inspect `steering_comparison.mp4` and `output/views/` (steering orange),
+then read `validation.md`. There is no caster/trail or slip-angle model.
+
+## New cars and adapter limitations
+
+These commands currently target experiment 001. The exporter expects its named
+vehicle collection, wheel names, parameters and source report. The simulation
+assumes one rigid chassis, three axle hinges and a front fork/tiller body on a
+limited yaw hinge (held straight ahead in 002/003).
+The braking test assumes two rear brakes. Adapt these for the new car rather
+than running them unchanged and attributing their pass to a different model.
+
+Collision proxies use rod/curve construction metadata, box dimensions and
+conservative wheel envelopes; arbitrary mesh edits may change the visuals
+without updating the colliders. Verify or replace the adapter when these inputs
+no longer represent the model. For steering/suspension changes, test the added
+motion range separately; a straight-ahead descent cannot certify it.
+
+## Evidence for the final build
+
+Compute the fingerprint after saving and before validating; confirm it remains
+unchanged afterward:
+
+```bash
+sha256sum experiments/001_patent_motorwagen/output/patent_motorwagen.blend
+```
+
+Store it with the configuration, reports and a short `validation.md` in the
+build's output directory. Record source/output paths, commands and results,
+inspected views/video, numeric travel/rotation/stop metrics, assumptions and
+remaining untested behavior. The existing runners do not create that complete
+validation note automatically. Render missing orthographic or chassis-only views
+from the current saved scene; old diagnostic images are not fresh evidence.

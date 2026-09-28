@@ -1,0 +1,11 @@
+{
+  "wheelbase": 1.45,
+  "rear_track": 1.19,
+  "rear_radius": 0.5,
+  "front_radius": 0.36,
+  "tire_radius": 0.022,
+  "tube_radius": 0.018,
+  "seat_width": 0.96,
+  "spokes": 32,
+  "steering_limit_deg": 25
+}
