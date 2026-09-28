@@ -63,6 +63,16 @@ coasting, stopping/holding, and releasing the brakes on the same slope.
 .venv/bin/python experiments/004_steering/run.py --viewer
 ```
 
+## Engine drive
+
+[Experiment 005](experiments/005_engine_drive/README.md) connects the engine to the
+rear wheels through a belt, countershaft differential and chains, then tests a
+flat launch, hill starts, powered turns and braking against the engine.
+
+```bash
+.venv/bin/python experiments/005_engine_drive/run.py --viewer
+```
+
 ## Required build validation
 
 [Car Downhill Check](skills/car-downhill-check/SKILL.md) defines the build gate:

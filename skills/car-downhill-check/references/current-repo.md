@@ -13,9 +13,10 @@ blender --background experiments/001_patent_motorwagen/output/patent_motorwagen.
 .venv/bin/python experiments/002_downhill/record.py
 ```
 
-`check_frame.py` checks structural-member connectivity, wheel envelopes and
-rail/floor clearance; it also checks that detached-fork and low-fork-crown defects
-are rejected. It does not check every possible part pair. Inspect brake and body
+`check_frame.py` checks structural-member connectivity (including the engine bed
+and drive path), wheel envelopes, rail/floor clearance and belt/chain seating.
+It also checks that detached-fork, low-fork-crown and displaced belt, chain,
+hanger and reservoir defects are rejected. It does not check every possible part pair. Inspect brake and body
 attachments separately when they change.
 
 `002_downhill/run.py` re-exports the saved Blender model and writes
@@ -69,6 +70,25 @@ commanded way, match rear-axle kinematic yaw within max(1 degree, 5%), roll with
 sliding, avoid forbidden contacts and stop/hold. The left run is repeated at half
 timestep. Inspect `steering_comparison.mp4` and `output/views/` (steering orange),
 then read `validation.md`. There is no caster/trail or slip-angle model.
+
+## Engine drive on the current build
+
+After the downhill, brake and steering tests:
+
+```bash
+.venv/bin/python experiments/005_engine_drive/run.py
+.venv/bin/python experiments/005_engine_drive/record.py
+blender --background experiments/001_patent_motorwagen/output/patent_motorwagen.blend --python-exit-code 1 --python experiments/005_engine_drive/render_views.py -- experiments/005_engine_drive/output
+```
+
+The 002–004 models have no drive actuator (belt disengaged), so the downhill gate
+stays unpowered. `005/run.py` checks rotating drive parts as swept solids against
+every other collider, including same-body parts except listed mates, with a
+planted belt-path blocker. It runs a flat launch, 3° and 7° hill starts,
+left/right powered turns with a locked-differential control, braking against the
+engine and a half-timestep launch. Speed and distance are compared with a 1-D
+reference model. Limits are in `LIMITS` at the top of the runner. The drivetrain
+is massless; there is no rolling resistance or drag.
 
 ## New cars and adapter limitations
 

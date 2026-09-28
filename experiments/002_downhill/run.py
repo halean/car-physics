@@ -18,7 +18,8 @@ def numbers(values):
     return ' '.join(str(v) for v in values)
 
 
-def make_model(geometry,out,angle,blocked=False):
+def make_model(geometry,out,angle,blocked=False,engine_torque_nm=0.0,spool=False):
+    """engine_torque_nm bounds the drive actuator; the default 0 is belt disengaged."""
     root=ET.Element('mujoco',model='Motorwagen downhill')
     ET.SubElement(root,'compiler',angle='radian',inertiafromgeom='false')
     option=ET.SubElement(root,'option',timestep='.001',gravity='0 0 -9.81',integrator='implicitfast')
@@ -34,7 +35,7 @@ def make_model(geometry,out,angle,blocked=False):
     world=ET.SubElement(root,'worldbody')
     quat=numbers([math.cos(angle/2),0,math.sin(angle/2),0])
     ET.SubElement(world,'light',pos='0 -3 6',dir='0 0 -1',directional='true')
-    ET.SubElement(world,'geom',name='slope',type='plane',size='50 5 .1',quat=quat,
+    ET.SubElement(world,'geom',name='slope',type='plane',size='150 40 .1',quat=quat,
                   material='road',rgba='1 1 1 1',contype='1',conaffinity='126')
     body=ET.SubElement(world,'body',name='chassis',pos='0 0 .003',quat=quat)
     ET.SubElement(body,'freejoint',name='root')
@@ -44,9 +45,10 @@ def make_model(geometry,out,angle,blocked=False):
     def add_collider(parent,c):
         attributes={k:numbers(c[k]) for k in ('fromto','pos','quat','size') if k in c}
         # Only axle/hub and shaft/bearing mating interfaces are exempt.
-        # Chassis=2, wheels=4, axle=8, fork=16, bearing=32, shaft=64.
+        # Chassis=2, wheels=4, axle=8, fork=16, bearing=32, shaft=64, chain=128,
+        # wheel sprocket=256: each chain is exempt only from its own sprocket.
         masks={'chassis':(2,85),'steering':(16,39),'bearing':(32,21),
-               'shaft':(64,7),'axle':(8,1)}
+               'shaft':(64,7),'axle':(8,1),'chain':(128,117)}
         ct,ca=masks[c.get('role','axle' if c['axle'] else 'chassis')]
         ET.SubElement(parent,'geom',name=c['name'],type=c['type'],**attributes,
             contype=str(ct),conaffinity=str(ca),group='3',rgba='.2 .6 .3 .35')
@@ -88,9 +90,30 @@ def make_model(geometry,out,angle,blocked=False):
         for c in geometry.get('wheel_colliders',{}).get(name,[]):
             ET.SubElement(wheel,'geom',name=c['name'],type=c['type'],
                 fromto=numbers(c['fromto']),size=numbers(c['size']),
-                contype='4',conaffinity='115',group='3',rgba='.6 .4 .1 .5')
+                contype='256' if c.get('role')=='sprocket' else '4',conaffinity='115',
+                group='3',rgba='.6 .4 .1 .5')
         ET.SubElement(wheel,'geom',name='visual_'+name,type='mesh',mesh=name,
                       contype='0',conaffinity='0',group='2',rgba='.18 .18 .18 1')
+    if geometry.get('drive'):
+        # Open differential: the actuator acts on the mean rear-axle angle, so
+        # each wheel gets half the torque and their speeds are free to differ.
+        # Its velocity is the engine speed (overall ratio x mean wheel speed).
+        tendon=ET.SubElement(root,'tendon')
+        fixed=ET.SubElement(tendon,'fixed',name='differential')
+        for name in ('rear_left','rear_right'):
+            ET.SubElement(fixed,'joint',joint=name+'_axle',coef='.5')
+        if engine_torque_nm>0:
+            # Belt on the fixed pulley. Without it (the default) there is no drive path.
+            actuator=root.find('actuator')
+            if actuator is None:
+                actuator=ET.SubElement(root,'actuator')
+            ET.SubElement(actuator,'motor',name='drive',tendon='differential',
+                gear=str(geometry['drive']['overall_ratio']),ctrllimited='true',
+                ctrlrange=numbers([0,engine_torque_nm]))
+        if spool:
+            # Negative control: a locked differential forces equal wheel speeds.
+            equality=ET.SubElement(root,'equality')
+            ET.SubElement(equality,'joint',joint1='rear_left_axle',joint2='rear_right_axle',polycoef='0 1 0 0 0')
     path=out/('blocked.xml' if blocked else 'downhill.xml')
     ET.indent(root)
     ET.ElementTree(root).write(path,encoding='unicode')

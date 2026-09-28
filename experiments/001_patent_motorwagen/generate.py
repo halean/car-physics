@@ -96,7 +96,10 @@ def check_frame_connectivity(objects):
     """
     prefixes = ('Frame ', 'Front fork', 'Front axle', 'Rear axle', 'Steering column',
                 'Bench support', 'Bench rear support', 'Leaf spring', 'Spring mount',
-                'Axle mount', 'Engine mount', 'Steering bearing')
+                'Axle mount', 'Engine mount', 'Steering bearing', 'Engine bed',
+                'Flywheel shaft', 'Flywheel arm', 'Engine output shaft', 'Bevel gear housing',
+                'Belt drive shaft', 'Engine pulley', 'Countershaft', 'Differential housing',
+                'Brass reservoir')
     members = [obj for obj in objects if obj.name.startswith(prefixes)]
 
     def point_distance(p, a, b):
@@ -114,16 +117,40 @@ def check_frame_connectivity(objects):
                 distance = min(distance, (p-q).length)
         return distance
 
+    def box_distance(box, a, b):
+        # Sampled segment to oriented box; returns a lower bound on the gap.
+        inverse = box.matrix_world.inverted()
+        lo = [min(c[i] for c in box.bound_box) for i in range(3)]
+        hi = [max(c[i] for c in box.bound_box) for i in range(3)]
+        steps = max(1, math.ceil((b-a).length/.002))
+        best = math.inf
+        for i in range(steps+1):
+            local = inverse @ (a+(b-a)*(i/steps))
+            nearest = Vector([max(lo[j], min(hi[j], local[j])) for j in range(3)])
+            best = min(best, (local-nearest).length)
+        return best - (b-a).length/steps/2
+
     segments = {}
+    boxes = [obj for obj in members if 'centerline' not in obj]
     for obj in members:
+        if obj in boxes:
+            continue
         points = [obj.matrix_world @ Vector(p) for p in obj['centerline']]
         segments[obj.name] = list(zip(points, points[1:]))
     graph = {obj.name: set() for obj in members}
     for i, a in enumerate(members):
         for b in members[i+1:]:
-            limit = a['section_radius'] + b['section_radius'] + 1e-6
-            if any(segment_distance(*sa,*sb) <= limit
-                   for sa in segments[a.name] for sb in segments[b.name]):
+            if a in boxes and b in boxes:
+                continue
+            if a in boxes or b in boxes:
+                box, rod_ = (a, b) if a in boxes else (b, a)
+                touching = any(box_distance(box, *seg) <= rod_['section_radius'] + 1e-6
+                               for seg in segments[rod_.name])
+            else:
+                limit = a['section_radius'] + b['section_radius'] + 1e-6
+                touching = any(segment_distance(*sa,*sb) <= limit
+                               for sa in segments[a.name] for sb in segments[b.name])
+            if touching:
                 graph[a.name].add(b.name)
                 graph[b.name].add(a.name)
     reached = set()
@@ -149,7 +176,8 @@ def check_wheel_clearance(objects, wheels, tire_radius):
     """
     prefixes = ('Frame ', 'Front fork', 'Steering column', 'Bench support',
                 'Bench rear support', 'Leaf spring', 'Spring mount',
-                'Axle mount', 'Engine mount', 'Steering bearing')
+                'Axle mount', 'Engine mount', 'Steering bearing', 'Countershaft',
+                'Drive chain', 'Drive belt')
     minimum = math.inf
     half_width = max(tire_radius, .030)  # spokes alternate across hub flanges
     for name, x, y, radius in wheels:
@@ -161,13 +189,30 @@ def check_wheel_clearance(objects, wheels, tire_radius):
         for obj in objects:
             if obj.name.startswith(prefixes):
                 points = [obj.matrix_world @ Vector(p) for p in obj['centerline']]
+                r = obj['section_radius']
                 gap = math.inf
                 for a,b in zip(points, points[1:]):
                     steps = max(1, math.ceil((b-a).length/.002))
-                    bound = (b-a).length/steps/2
+                    if obj.type == 'CURVE':
+                        # Swept round section: a capsule, exact apart from sampling.
+                        bound = (b-a).length/steps/2
+                        for i in range(steps+1):
+                            gap = min(gap, distance(a+(b-a)*(i/steps)) - r - bound)
+                        continue
+                    # Mesh rods are flat-ended cylinders; a capsule would pad a
+                    # short disk (pulley, sprocket) axially by its full radius.
+                    # Sample axial rings at <=2 mm (center, half radius and rim).
+                    u = (b-a).normalized()
+                    e1 = u.orthogonal().normalized()
+                    e2 = u.cross(e1)
+                    count = max(16, math.ceil(math.tau*r/.002))
+                    rings = [(e1*math.cos(math.tau*k/count)+e2*math.sin(math.tau*k/count))
+                             for k in range(count)]
+                    bound = max((b-a).length/steps, math.tau*r/count)/2
                     for i in range(steps+1):
-                        gap = min(gap, distance(a+(b-a)*(i/steps))
-                                  - obj['section_radius'] - bound)
+                        c = a+(b-a)*(i/steps)
+                        gap = min(gap, distance(c), *(distance(c+v*f) for v in rings for f in (r, r/2)))
+                    gap -= bound
             elif obj.name.startswith('Floor plank'):
                 corners = [obj.matrix_world @ Vector(p) for p in obj.bound_box]
                 lo = [min(p[i] for p in corners) for i in range(3)]
@@ -182,6 +227,84 @@ def check_wheel_clearance(objects, wheels, tire_radius):
                 raise ValueError(f'Wheel clearance failure: {obj.name} / {name}: {gap:.4f} m')
             minimum = min(minimum, gap)
     return minimum
+
+
+def loop_points(a, ra, b, rb, y, step=math.radians(8)):
+    """Open (uncrossed) belt/chain centerline around two circles in an XZ plane."""
+    a, b = Vector((a[0], a[1])), Vector((b[0], b[1]))
+    d = (b-a).length
+    u = (b-a)/d
+    n = Vector((-u.y, u.x))
+    s = (ra-rb)/d
+    c = math.sqrt(1-s*s)
+    upper, lower = u*s+n*c, u*s-n*c
+
+    def arc(center, r, start, end, through):
+        t0, t1, tm = (math.atan2(v.y, v.x) for v in (start, end, through))
+        sweep = (t1-t0) % math.tau
+        if (tm-t0) % math.tau > sweep:  # 'through' lies on the other side
+            sweep -= math.tau
+        count = max(2, math.ceil(abs(sweep)/step))
+        return [center+Vector((math.cos(t0+sweep*i/count), math.sin(t0+sweep*i/count)))*r
+                for i in range(count+1)]
+
+    points = arc(a, ra, upper, lower, -u) + arc(b, rb, lower, upper, u)
+    points.append(points[0])
+    return [(p.x, y, p.y) for p in points]
+
+
+def check_drive_seating(objects):
+    """Belts/chains must lie on their pulleys' pitch circles and faces;
+    wheel sprockets must be coaxial with and overlap their hub sleeves."""
+    by_name = {obj.name: obj for obj in objects}
+
+    def axis(obj):
+        a, b = (obj.matrix_world @ Vector(p) for p in obj['centerline'])
+        return a, b
+
+    def polyline_gap(points, line):
+        # Largest distance from any point to the other polyline.
+        worst = 0.0
+        for p in points:
+            best = math.inf
+            for a, b in zip(line, line[1:]):
+                ab = b-a
+                t = max(0.0, min(1.0, (p-a).dot(ab)/max(ab.length_squared, 1e-12)))
+                best = min(best, (p-(a+ab*t)).length)
+            worst = max(worst, best)
+        return worst
+
+    checked = 0
+    for obj in objects:
+        if 'wraps' in obj:
+            points = [obj.matrix_world @ Vector(p) for p in obj['centerline']]
+            wheels = [by_name[name] for name in obj['wraps']]
+            axes = [axis(wheel) for wheel in wheels]
+            for (a, b), wheel in zip(axes, wheels):
+                if abs((b-a).normalized().y) < 1-1e-6:
+                    raise ValueError(f'Drive seating check supports Y-axis pulleys only: {wheel.name}')
+                lo, hi = sorted((a.y, b.y))
+                if not all(lo-1e-4 <= p.y <= hi+1e-4 for p in points):
+                    raise ValueError(f'Drive seating failure: {obj.name} off the face of {wheel.name}')
+            # Rebuild the ideal loop on the pulleys' actual axes and pitch circles.
+            (a, _), (c, _) = axes
+            y = (axes[0][0].y+axes[0][1].y)/2
+            ideal = [Vector(p) for p in loop_points((a.x, a.z), wheels[0]['pitch_radius'],
+                                                   (c.x, c.z), wheels[1]['pitch_radius'], y, math.radians(2))]
+            gap = max(polyline_gap(points, ideal), polyline_gap(ideal, points))
+            if gap > .002:
+                raise ValueError(f'Drive seating failure: {obj.name} is {gap:.4f} m off its pulley pitch path')
+            checked += len(wheels)
+        if 'mounted_on' in obj:
+            a, b = axis(obj)
+            c, d = axis(by_name[obj['mounted_on']])
+            u = (d-c).normalized()
+            off = max(((p-c)-u*(p-c).dot(u)).length for p in (a, b))
+            span = sorted(((a-c).dot(u), (b-c).dot(u)))
+            if off > 1e-4 or span[1] < 0 or span[0] > (d-c).length:
+                raise ValueError(f'Drive seating failure: {obj.name} not mounted on {obj["mounted_on"]}')
+            checked += 1
+    return checked
 
 
 def main():
@@ -302,14 +425,71 @@ def main():
     rod('Horizontal engine cylinder',(-.48,0,h+.035),(-.11,0,h+.035),.115,dark,vehicle)
     for i in range(8):
         rod(f'Cylinder cooling collar {i}',(-.43+i*.033,0,h+.035),(-.419+i*.033,0,h+.035),.126,steel,vehicle)
-    fly = (-.50,0,h+.19)
+    fly = (-.50,0,h+.20)
     torus('Horizontal flywheel',fly,.255,.025,dark,vehicle,wheel=False)
     for i in range(6):
         a=math.tau*i/6
         rod(f'Flywheel arm {i}',fly,(fly[0]+.255*math.cos(a),.255*math.sin(a),fly[2]),.013,steel,vehicle)
     rod('Flywheel shaft',(-.50,0,h-.10),(-.50,0,h+.23),.032,brass,vehicle)
-    rod('Brass reservoir',(-.44,sw*.31,h+.08),(-.44,sw*.31,h+.37),.075,brass,vehicle)
+    rod('Brass reservoir',(-.11,.23,h-.02),(-.11,.23,h+.265),.075,brass,vehicle)
     tube('Exhaust pipe',[(-.21,-.11,h+.03),(-.21,-sw*.34,h-.10),(-.62,-sw*.34,h-.10)],.021,dark,vehicle)
+
+    # Drive, after the 1886 layout: flywheel shaft -> bevel gears -> pulley ->
+    # uncrossed flat belt -> countershaft pulley beside the differential ->
+    # a roller chain each side to sprockets on the rear wheels.
+    # Custom properties: 'sweep' marks rotating parts (checked as swept solids),
+    # 'mates' lists intended contacts, 'pitch_radius' sets the drive ratio.
+    zg, xc, zc, belt_y = h-.24, -.15, h-.30, .225
+    chain_y = track/2-.07
+    belt_r, chain_r = .008, .006
+    def drive(obj, mates, sweep='solid', pitch=None):
+        obj['sweep'] = sweep
+        obj['mates'] = mates
+        if pitch:
+            obj['pitch_radius'] = pitch
+        return obj
+    drive(rod('Engine output shaft',(-.50,0,h-.09),(-.50,0,zg),.025,brass,vehicle),
+          ['Flywheel shaft','Engine bed','Bevel gear housing'])
+    rod('Bevel gear housing',(-.50,-.06,zg),(-.50,.06,zg),.055,dark,vehicle)
+    # Bevel gears join the shafts inside the housing; the shafts themselves stay apart.
+    drive(rod('Belt drive shaft',(-.50,.035,zg),(-.50,.25,zg),.02,steel,vehicle),
+          ['Bevel gear housing','Engine pulley'])
+    drive(rod('Engine pulley',(-.50,belt_y-.025,zg),(-.50,belt_y+.025,zg),.052,steel,vehicle),
+          ['Belt drive shaft','Drive belt'],pitch=.052+belt_r)
+    drive(rod('Countershaft',(xc,-(track/2-.06),zc),(xc,track/2-.06,zc),.022,steel,vehicle),
+          ['Countershaft hanger -1','Countershaft hanger 1','Countershaft pulley',
+           'Differential housing','Countershaft sprocket -1','Countershaft sprocket 1'])
+    drive(rod('Countershaft pulley',(xc,belt_y-.025,zc),(xc,belt_y+.025,zc),.13,steel,vehicle),
+          ['Countershaft','Differential housing','Drive belt'],pitch=.13+belt_r)
+    drive(rod('Differential housing',(xc,.08,zc),(xc,belt_y-.025,zc),.08,dark,vehicle),
+          ['Countershaft','Countershaft pulley'])
+    belt = tube('Drive belt',loop_points((-.50,zg),.052+belt_r,(xc,zc),.13+belt_r,belt_y),
+                belt_r,rubber,vehicle)
+    # A flat belt is as wide as the pulley face; clearance uses that width.
+    drive(belt,['Engine pulley','Countershaft pulley'],sweep='loop')
+    belt['envelope_radius'] = .025
+    belt['wraps'] = ['Engine pulley','Countershaft pulley']
+    for side in (-1,1):
+        y = side*chain_y
+        rod(f'Countershaft hanger {side}',(xc,side*sw*.38,h),(xc,side*sw*.38,zc),tr,green,vehicle)
+        drive(rod(f'Countershaft sprocket {side}',(xc,y-.006,zc),(xc,y+.006,zc),.045,steel,vehicle),
+              ['Countershaft',f'Drive chain {side}'],pitch=.045+chain_r)
+        wheel = 'rear_left' if side == 1 else 'rear_right'
+        sprocket = rod(f'{wheel}.drive_sprocket',(0,y-.006,rr),(0,y+.006,rr),.10,steel,vehicle)
+        sprocket['pitch_radius'] = .10+chain_r
+        sprocket['mounted_on'] = f'{wheel}.brake_sleeve'
+        chain = tube(f'Drive chain {side}',loop_points((xc,zc),.045+chain_r,(0,rr),.10+chain_r,y),
+                     chain_r,dark,vehicle)
+        drive(chain,[f'Countershaft sprocket {side}',f'{wheel}.drive_sprocket'],sweep='loop')
+        chain['wraps'] = [f'Countershaft sprocket {side}',f'{wheel}.drive_sprocket']
+    fw = bpy.data.objects['Horizontal flywheel']
+    # Spinning flywheel and arms sweep a solid disk about the shaft.
+    fw['sweep'] = 'disk'
+    fw['sweep_axis'] = [[fly[0],0,fly[2]-.025],[fly[0],0,fly[2]+.025]]
+    fw['sweep_radius'] = .255+.025
+    fw['mates'] = ['Flywheel shaft']+[f'Flywheel arm {i}' for i in range(6)]
+    drive(bpy.data.objects['Flywheel shaft'],['Engine bed','Horizontal flywheel','Engine output shaft',
+          'Horizontal engine cylinder']+[f'Flywheel arm {i}' for i in range(6)])
 
     # Experimental rear drum brakes: rotating drums belong to their wheels;
     # stationary backing plates and linkage attach to the chassis.
@@ -362,6 +542,7 @@ def main():
     bpy.context.view_layer.update()
     frame_members = check_frame_connectivity(vehicle.objects)
     wheel_gap = check_wheel_clearance(vehicle.objects, wheels, tire)
+    drive_seats = check_drive_seating(vehicle.objects)
     bounds = [obj.matrix_world @ Vector(corner) for obj in vehicle.objects if obj.type in {'MESH','CURVE'} for corner in obj.bound_box]
     low = [min(v[i] for v in bounds) for i in range(3)]
     high = [max(v[i] for v in bounds) for i in range(3)]
@@ -429,8 +610,10 @@ def main():
         'dimensions':[b-a for a,b in zip(low,high)],
         'checks':{'three_wheels':True,'ground_contact':True,'rear_symmetry':True,'finite_bounds':True,
                   'frame_connected':True,'frame_members_checked':frame_members,
-                  'frame_wheel_clearance':True,'minimum_wheel_clearance_m':wheel_gap},
-        'historical_accuracy':'approximate visual study; experimental rear brakes are not a historical reconstruction'}
+                  'frame_wheel_clearance':True,'minimum_wheel_clearance_m':wheel_gap,
+                  'drive_seating':True,'drive_seats_checked':drive_seats},
+        'historical_accuracy':'approximate visual study; experimental rear brakes are not a historical reconstruction; '
+            'belt/countershaft/differential/chain drive follows the 1886 layout with assumed dimensions'}
     (args.output/'report.json').write_text(json.dumps(report,indent=2)+'\n')
     if args.render:
         bpy.ops.render.render(write_still=True)

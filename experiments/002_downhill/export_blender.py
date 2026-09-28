@@ -34,20 +34,24 @@ for obj in objects:
     groups[group].append(obj)
     offset=offsets[group]
     if group in wheel_colliders:
-        if obj.name.endswith(('.brake_drum','.brake_sleeve')):
+        if obj.name.endswith(('.brake_drum','.brake_sleeve','.drive_sprocket')):
             points=[list(obj.matrix_world @ Vector(v)-offset) for v in obj['centerline']]
             wheel_colliders[group].append(dict(name=obj.name,type='cylinder',
-                fromto=points[0]+points[1],size=[obj['section_radius']]))
+                fromto=points[0]+points[1],size=[obj['section_radius']],
+                role='sprocket' if obj.name.endswith('.drive_sprocket') else 'wheel'))
         continue
     target=steering_colliders if group=='steering' else colliders
     role=('axle' if obj.name in ('Rear axle','Front axle') else
           'bearing' if obj.name=='Steering bearing' else
-          'shaft' if obj.name=='Steering column' else group)
+          'shaft' if obj.name=='Steering column' else
+          'chain' if obj.name.startswith('Drive chain') else group)
     if 'centerline' in obj:
         points=[list(obj.matrix_world @ Vector(v)-offset) for v in obj['centerline']]
+        # A flat belt is modeled by its face-width envelope, not its thin visual tube.
+        radius=obj.get('envelope_radius',obj['section_radius'])
         for i,(a,b) in enumerate(zip(points,points[1:])):
             target.append(dict(name=f'{obj.name}:{i}',type='cylinder' if obj.type=='MESH' else 'capsule',
-                fromto=a+b,size=[obj['section_radius']],axle=role=='axle',role=role))
+                fromto=a+b,size=[radius],axle=role=='axle',role=role))
     elif obj.name=='Horizontal flywheel':
         for i in range(48):
             points=[list(obj.matrix_world @ Vector((.255*math.cos(a),.255*math.sin(a),0))-offset)
@@ -57,6 +61,27 @@ for obj in objects:
     else:
         target.append(dict(name=obj.name,type='box',pos=list(obj.matrix_world.translation-offset),
             quat=list(obj.matrix_world.to_quaternion()),size=[v/2 for v in obj.dimensions],axle=False,role=role))
+# Rotating drive parts: swept solids for clearance checks, with intended contacts.
+drive=None
+parts={obj.name:obj for obj in objects}
+if 'Engine pulley' in parts:
+    sweeps=[]
+    for obj in objects:
+        if 'sweep' not in obj:
+            continue
+        if obj['sweep']=='disk':
+            shapes=[dict(type='cylinder',fromto=sum(map(list,obj['sweep_axis']),[]),size=[obj['sweep_radius']])]
+        else:
+            # A solid of revolution sweeps itself; a loop keeps its shape as it runs.
+            shapes=[c for c in colliders if c['name'].split(':')[0]==obj.name]
+        sweeps.append(dict(name=obj.name,sweep=obj['sweep'],mates=list(obj['mates']),shapes=shapes))
+    pitch=lambda name: parts[name]['pitch_radius']
+    belt=pitch('Countershaft pulley')/pitch('Engine pulley')
+    chain=pitch('rear_left.drive_sprocket')/pitch('Countershaft sprocket 1')
+    assert abs(pitch('rear_right.drive_sprocket')/pitch('Countershaft sprocket -1')-chain)<1e-9
+    drive=dict(bevel_ratio=1.0,belt_ratio=belt,chain_ratio=chain,overall_ratio=belt*chain,
+               pitch_radii={name:pitch(name) for name in parts if 'pitch_radius' in parts[name]},
+               sweeps=sweeps)
 deps=bpy.context.evaluated_depsgraph_get()
 for name,items in groups.items():
     lines=[]
@@ -76,5 +101,5 @@ for name,items in groups.items():
 (out/'geometry.json').write_text(json.dumps(dict(source=str(source),source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
     parameters=p,wheels=wheels,colliders=colliders,wheel_colliders=wheel_colliders,
     steering_pivot=pivot,steering_limit_deg=p.get('steering_limit_deg',0),
-    steering_colliders=steering_colliders,source_objects=len(objects)),indent=2)+'\n')
+    steering_colliders=steering_colliders,drive=drive,source_objects=len(objects)),indent=2)+'\n')
 print('PHYSICS_EXPORT_OK',len(colliders),'chassis primitives;',len(steering_colliders),'steering primitives')

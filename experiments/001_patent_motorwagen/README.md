@@ -57,3 +57,10 @@ in `output/side.png` and `output/top.png` for this revision.
 
 The current model includes experimental rear drums and a hand-brake linkage.
 See [experiment 003](../003_brakes/README.md) for the simulated brake behavior.
+
+It also has a belt, countershaft, differential and chain drive from the flywheel
+shaft to sprockets on the rear drums (see [experiment 005](../005_engine_drive/README.md)).
+The frame check covers the engine bed, reservoir and drive path. It also checks
+that the belt and chains sit on their pulleys' pitch paths and that wheel
+sprockets are mounted on their hub sleeves. Mesh cylinders are sampled as flat
+cylinders in the wheel-clearance test.

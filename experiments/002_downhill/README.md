@@ -50,7 +50,9 @@ diagonal inertia `(15, 45, 50)` kg m². Each wheel is 5 kg with ring-approximati
 inertia. These are plausible test inputs, not historical measurements. Sliding
 friction is 0.8 and axle damping is 0.01. The fork/tiller assembly is on a yaw hinge
 held straight ahead by the tiller position servo (see
-[experiment 004](../004_steering/README.md) for steered runs); wheel rotation is free. No drivetrain, aerodynamic load or tire deformation is modeled.
+[experiment 004](../004_steering/README.md) for steered runs); wheel rotation is free. The engine drive of [experiment 005](../005_engine_drive/README.md)
+is disengaged here: its actuator is left out of this model (belt on the loose pulley),
+so the test stays unpowered. No aerodynamic load or tire deformation is modeled.
 
 A disconnected decorative or structural part assigned to the chassis cannot fall
 off: rigid attachment is an input to this simulation. Parts on the same rigid

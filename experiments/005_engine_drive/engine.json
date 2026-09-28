@@ -1,0 +1,7 @@
+{
+  "rated_power_w": 500,
+  "governed_rpm": 400,
+  "no_load_rpm": 420,
+  "belt_shift_seconds": 0.5,
+  "source": "Benz Patent-Motorwagen Nr. 1: 0.68 PS (0.50 kW) at 400 rpm, single-speed belt to countershaft with differential, chains to each rear wheel (Wikipedia, consulted 2026-09-28). The governor droop to 420 rpm is an assumption."
+}

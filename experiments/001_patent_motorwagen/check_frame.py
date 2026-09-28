@@ -67,3 +67,28 @@ for rail in (obj for obj in vehicle.objects if obj.name.startswith('Frame rail')
                 gap = (point-nearest).length-rail['section_radius']-(b-a).length/steps/2
                 assert gap > .005, f'{rail.name} intersects {plank.name}'
 print('FLOOR_CLEARANCE_OK: both rails clear all floor planks')
+
+# Drivetrain: seating and support regressions, restored without saving.
+seats = generator.check_drive_seating(vehicle.objects)
+for name, move, expect, check in [
+        ('Drive belt', (0, .03, 0), 'Drive belt', generator.check_drive_seating),
+        ('Drive chain 1', (0, 0, .01), 'Drive chain 1', generator.check_drive_seating),
+        ('Countershaft hanger 1', (0, 0, 3), 'Countershaft hanger 1', generator.check_frame_connectivity),
+        ('Brass reservoir', (0, 0, .10), 'Brass reservoir', generator.check_frame_connectivity)]:
+    obj = bpy.data.objects[name]
+    original = obj.location.copy()
+    try:
+        obj.location += Vector(move)
+        bpy.context.view_layer.update()
+        try:
+            check(vehicle.objects)
+        except ValueError as error:
+            assert expect in str(error), error
+        else:
+            raise AssertionError(f'Displaced {name} was not detected')
+    finally:
+        obj.location = original
+        bpy.context.view_layer.update()
+generator.check_drive_seating(vehicle.objects)
+generator.check_frame_connectivity(vehicle.objects)
+print(f'DRIVE_CHECK_OK: {seats} belt/chain/sprocket seatings; displaced belt, chain, hanger and reservoir detected')

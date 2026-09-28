@@ -15,5 +15,9 @@ editable and are not presented as measured specifications.
 
 Consult the official page's photographs before refining silhouettes. Do not mix
 later Motorwagen variants into a purported precise reconstruction. The present
-model is a stylized study with simplified transmission, no working suspension,
-and no functional engine internals. [Source index](sources.md)
+model is a stylized study with no working suspension and no functional engine
+internals. Its drive follows the reported layout: flywheel shaft, bevel gears,
+an uncrossed belt to a countershaft with a differential, and a chain to each rear
+wheel. It uses the reported 954 cc engine rating of about 0.5 kW at 400 rpm.
+Pulley and sprocket sizes are assumptions chosen for about 16 km/h at 400 rpm. [S7]
+[Source index](sources.md)
