@@ -164,6 +164,38 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
 - *Bonnet:* it sits above the pillar arms with no valance below it, a
   cosmetic gap.
 
+## Bumpy road: what the independent front buys
+
+```bash
+.venv/bin/python experiments/011_lancia_lambda_1922/bumpy_road.py [--record]
+```
+
+The Model T's bump course (bars of 30–50 mm, some under one wheel only, then
+a 15 mm washboard), driven in first gear at about 8.4 m/s with the
+pure-pursuit driver. Three cars: the Lambda as built, the Lambda with its
+pillars and rear axle welded to the hull, and the Model T with its beam axles
+(in low gear at 6.4 m/s: a lighter, slower car, so its column is for
+comparison only). The checks were fixed before the first run and all pass
+(`output/full/physics/bumpy_road.json`, video `bumpy_road.mp4`).
+
+| | Lambda, as built | Lambda, suspension locked | Model T (beam axles) |
+| --- | --- | --- | --- |
+| RMS vertical acceleration at the driver's seat | 0.21 g | 1.25 g | 0.22 g |
+| Peak vertical acceleration at the seat | 0.84 g | 8.4 g | 1.21 g |
+| Time on the course with a wheel off the ground | 25% | 79% | 25% |
+| Peak body roll over the one-sided bars | 0.9° | 2.1° | 1.4° |
+| Peak travel used, front / rear | 77% / 83% | — | 50% / 86% |
+
+The one-sided bars are where the sliding pillars show. A beam axle must tilt
+the whole axle, and with it the body, when one wheel rises; the Lambda's body
+rolls 0.9° against the Model T's 1.4°, at a higher speed and with a longer
+wheelbase. The peak jolt at the seat is 30% lower. Locking the suspension
+turns the ride into 8 g peaks with the wheels off the ground most of the time.
+
+**Caveat:** the shared tyre contact is stiffer than a real 1920s beaded-edge
+tyre, so wheel lift is overstated for every car here. Seat acceleration is
+the raw vertical value at the seat point, not a comfort weighting.
+
 ## Not modeled
 
 - The damper inside the pillar, and the friction between the pillar and its
