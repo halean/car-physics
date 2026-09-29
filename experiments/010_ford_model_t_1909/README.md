@@ -135,6 +135,47 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
 - *Ackermann:* up to 1.9° over ideal at full lock.
 - *Foot brake in a turn:* works through the open differential; no wheel slid.
 
+## Bumpy road: what the springs do
+
+```bash
+.venv/bin/python experiments/010_ford_model_t_1909/bumpy_road.py [--record]
+```
+
+This uses the tested build, after `run.py --stage full`. The car drives in low
+gear (about 6.4 m/s) with the pure-pursuit driver over a course:
+- bars of 30–50 mm across the whole road, then under the left or the right
+  wheels only;
+- a pair of bars spaced near the wheelbase;
+- a 15 mm washboard at 1 m pitch.
+
+The control is the same car with both axles welded to the frame at ride height.
+The checks were fixed before the first run:
+- The sprung car must keep only its tyres on the road, stay upright, keep its
+  speed, cross the course and stay off the stops.
+- It must beat the control on seat acceleration and on wheels leaving the
+  ground.
+
+All checks pass (`output/full/physics/bumpy_road.json`, video
+`bumpy_road.mp4`):
+
+| | Sprung | Axles locked |
+| --- | --- | --- |
+| RMS vertical acceleration at the driver's seat | 0.22 g | 1.22 g |
+| Peak vertical acceleration at the seat | 1.2 g | 9.2 g |
+| Time on the course with a wheel off the ground | 25% | 71% |
+| Peak body tilt | 1.5° | 5.7° |
+| Suspension travel used (swing / roll) | front 50% / 72%, rear 86% / 57% | — |
+
+The one-sided bars roll the axles, and each axle's roll joint absorbs most of
+it. With the axles locked, the car hops clear of the road on every bar.
+
+**Caveat:** the shared tyre contact is stiffer than a real 30 × 3½ clincher,
+with 1–1.5 mm of static sag where a real tyre sags centimetres. Wheel lift is
+therefore overstated for both cars, and the sprung car's 25% would be lower on
+real tyres. Seat acceleration is taken from the seat point's vertical velocity,
+averaged over 20 ms to remove contact-solver noise. It is not weighted for
+human comfort (ISO 2631).
+
 ## Not modeled
 
 - Spring wind-up and interleaf friction. The joints locate the axles; the

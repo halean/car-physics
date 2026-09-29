@@ -25,7 +25,7 @@ def wheel_forces(model,data):
         if contact.dist>0:
             continue
         names=[model.geom(g).name for g in (contact.geom1,contact.geom2)]
-        if 'slope' not in names:
+        if not any(n == 'slope' or n.startswith('road_') for n in names):   # road and road features
             continue
         wheel=next((n for n in names if n.endswith('_rolling')),None)
         if not wheel:
