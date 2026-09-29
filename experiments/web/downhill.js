@@ -9,6 +9,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 const CAR = 'panhard_1891';
 const MU_DESIGN = 0.5;          // assumed block friction; with P below it gives the validated 180 N m
 const SCALE = 1 / 3000;         // arrow metres per newton
+const SPEED_LIMIT = 30;         // m/s: the model has no drag, so on a steep hill it would speed up for ever
 const $ = (id) => document.getElementById(id);
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const MINUS = '−';
@@ -54,21 +55,24 @@ Object.assign(sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near:
 scene.add(sun, sun.target);
 const hill = new THREE.Group();
 scene.add(hill);
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(700, 120), new THREE.MeshStandardMaterial({ roughness: 1 }));
-ground.position.set(300, 0, -0.003);
+const ROAD_M = 3000;             // long enough for a 25-degree run
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_M + 200, 120), new THREE.MeshStandardMaterial({ roughness: 1 }));
+ground.position.set(ROAD_M / 2, 0, -0.003);
 ground.receiveShadow = true;
-const road = new THREE.Mesh(new THREE.PlaneGeometry(700, 3.2), new THREE.MeshStandardMaterial({ roughness: 0.95 }));
-road.position.set(300, 0, -0.001);
+const road = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_M + 200, 3.2), new THREE.MeshStandardMaterial({ roughness: 0.95 }));
+road.position.set(ROAD_M / 2, 0, -0.001);
 road.receiveShadow = true;
 hill.add(ground, road);
 const postMat = new THREE.MeshStandardMaterial({ color: 0xe9e4d4, roughness: 0.8 });
-for (let x = 0; x <= 400; x += 5) {   // posts every 5 m, taller every 10 m
-  const h = x % 10 ? 0.35 : 0.6;
-  const post = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, h), postMat);
-  post.position.set(x, 1.9, h / 2);   // far side of the road, behind the car
-  post.castShadow = true;
-  hill.add(post);
+for (const [h, step, offset] of [[0.35, 10, 5], [0.6, 10, 0]]) {   // posts every 5 m, taller every 10 m
+  const n = Math.floor(ROAD_M / step) + 1;
+  const posts = new THREE.InstancedMesh(new THREE.BoxGeometry(0.06, 0.06, h), postMat, n);
+  const at = new THREE.Matrix4();
+  for (let i = 0; i < n; i++) posts.setMatrixAt(i, at.makeTranslation(offset + i * step, 1.9, h / 2));   // far side of the road
+  posts.castShadow = true;
+  hill.add(posts);
 }
+const herd = new Herd(hill, { seed: 11, from: 45, to: ROAD_M, gap: [40, 95], roadHalf: 1.6 });
 function paintScene() {
   scene.background = new THREE.Color(css('--sky'));
   scene.fog = new THREE.Fog(css('--sky'), 50, 180);
@@ -109,7 +113,7 @@ function setArrow(name, origin, v) {
 
 // ---------- simulation ----------
 let mujoco, config, files, sim, bodyGroups = {}, mass = 0, blockP = 0;
-let braking = false, brakeCmd = 0, slow = false, lastCar = null;
+let braking = false, brakeCmd = 0, slow = false, lastCar = null, cowNote = null, movedSinceStop = false, paused = false;
 const history = [];          // [t, speed, braking]
 const velHist = [];          // [t, vx] for the measured acceleration
 
@@ -123,11 +127,21 @@ function applySettings() {
   $('muOut').textContent = (+$('mu').value).toFixed(2);
 }
 function restart() {
-  sim.reset({ ...CarSim.defaults(config), gear: 0, throttle: 0, driver: false, steer: 0, pedal: 0, lever: 0 });
+  // The driver keeps the car on its line (as real drivers do; see 010's README on drift).
+  sim.reset({ ...CarSim.defaults(config), gear: 0, throttle: 0, driver: true, steer: 0, pedal: 0, lever: 0 });
+  herd.reset();
+  cowNote = null; movedSinceStop = false; paused = false; status('');
+  $('cowNote').hidden = true;
   braking = false; brakeCmd = 0;
   $('brake').setAttribute('aria-pressed', 'false');
   history.length = 0; velHist.length = 0;
   applySettings();
+}
+function showCowNote(text) {
+  if (cowNote === text) return;
+  cowNote = text;
+  $('cowNote').textContent = text;
+  $('cowNote').hidden = false;
 }
 function setBrake(on) { braking = on; $('brake').setAttribute('aria-pressed', String(on)); }
 
@@ -187,13 +201,18 @@ function frame(now) {
   const wall = Math.min(0.05, (now - (lastFrame || now)) / 1000) * (slow ? 0.25 : 1);
   lastFrame = now;
   const d = sim.data, dt = sim.model.opt.timestep;
-  for (let i = 0, n = Math.min(60, Math.round(wall / dt)); i < n; i++) {
+  for (let i = 0, n = paused ? 0 : Math.min(60, Math.round(wall / dt)); i < n; i++) {
     brakeCmd = Math.max(0, Math.min(1, brakeCmd + (braking ? 1 : -1) * dt / config.engine.brake_ramp_seconds));
     sim.set({ pedal: brakeCmd });
     sim.step(1);
   }
   sim.mj.mj_subtreeVel(sim.model, d);   // whole car's centre of mass: sum F = m a holds for it
   const vx = d.subtree_linvel[3 * sim.chassis];
+  if (!paused && Math.hypot(d.qvel[0], d.qvel[1]) > SPEED_LIMIT) {
+    paused = true;
+    status(`Stopped the clock at ${Math.round(SPEED_LIMIT * 3.6)} km/h. An 1891 car could never go this fast, and this model has `
+      + 'no air drag or rolling resistance, so on a slope it would speed up for ever. Press Start again (R).');
+  }
   velHist.push([d.time, vx]);
   while (velHist.length > 2 && d.time - velHist[0][0] > 0.2) velHist.shift();
   history.push([d.time, Math.hypot(d.qvel[0], d.qvel[1]), braking]);
@@ -216,6 +235,17 @@ function frame(now) {
   setArrow('normal', com, N);
   setArrow('friction', com, new THREE.Vector3(T.x, 0, 0));
   setArrow('net', com.clone().add(new THREE.Vector3(0, 0, 0.9)), new THREE.Vector3(mass * a, 0, 0));
+  // Cows: the nearest one still standing on the road ahead, and how the stop went.
+  const speed = Math.hypot(d.qvel[0], d.qvel[1]);
+  const front = poses.chassis[0] + config.wheelbase + config.front_radius;
+  const { nearest, hurried } = herd.update(wall, front, speed);
+  if (speed > 0.3) movedSinceStop = true;
+  if (hurried) showCowNote('Close call! The cow had to trot out of the way. Brake earlier, or harder.');
+  else if (movedSinceStop && speed < 0.03 && nearest && nearest.x - front < 40) {
+    showCowNote(`Stopped ${(nearest.x - front).toFixed(1)} m before the cow.`);
+    movedSinceStop = false;
+  }
+  $('cowAhead').textContent = nearest ? `Cow on the road ${Math.max(0, nearest.x - front).toFixed(0)} m ahead` : '';
   // Camera follows the car across the slope; the viewer can still orbit.
   const target = hill.localToWorld(new THREE.Vector3(poses.chassis[0] + 0.8, 0, 0.5));
   if (lastCar) { const delta = target.clone().sub(lastCar); camera.position.add(delta); orbit.target.add(delta); }
@@ -226,7 +256,6 @@ function frame(now) {
   renderer.render(scene, camera);
   if (now - lastPanel > 120) {
     lastPanel = now;
-    const speed = Math.hypot(d.qvel[0], d.qvel[1]);
     $('speed').textContent = speed.toFixed(2);
     $('dist').textContent = d.qpos[0].toFixed(1);
     $('time').textContent = d.time.toFixed(1);

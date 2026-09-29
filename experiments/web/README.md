@@ -10,6 +10,13 @@ like, how they drove, and the physics underneath. Pages:
   the slope θ and the rim-block friction coefficient μ (F = μP per block), then
   works through three predict-then-check challenges.
 - `garage.html`: every car with shared controls (below). `local.html` is an alias.
+- Both pages have occasional **cows** (`cows.js`), seeded so a restart brings the
+  same herd back. They are scenery, not physics: a cow on the road ambles to the
+  verge when a car comes near, and trots if the car is almost on it. On the
+  downhill page, "stop for the cow" is challenge 4 (a stopping distance).
+- On the downhill page a driver holds the car on its line. The run pauses at
+  30 m/s: with no drag in the model, a steep hill would otherwise build
+  unlimited speed (the driver loses the line only above about 97 m/s).
 
 `downhill_test.mjs` checks every number the lesson states, using the page's own
 setup:

@@ -145,8 +145,8 @@ def main():
 
 
 PAGES = {   # site file: (template, scripts inlined in order)
-    'garage.html': ('page.html', ('sim.js', 'input.js', 'app.js')),
-    'downhill.html': ('downhill.html', ('sim.js', 'downhill.js')),
+    'garage.html': ('page.html', ('sim.js', 'input.js', 'cows.js', 'app.js')),
+    'downhill.html': ('downhill.html', ('sim.js', 'cows.js', 'downhill.js')),
     'index.html': ('index.html', ()),
 }
 

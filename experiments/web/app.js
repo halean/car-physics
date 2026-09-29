@@ -50,20 +50,23 @@ sun.castShadow = true;
 sun.shadow.mapSize.set(2048, 2048);
 Object.assign(sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 1, far: 30 });
 scene.add(sun, sun.target);
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 200), new THREE.MeshStandardMaterial({ roughness: 1 }));
-ground.position.set(150, 0, -0.002);
+const ROAD_M = 3000;
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_M + 200, 200), new THREE.MeshStandardMaterial({ roughness: 1 }));
+ground.position.set(ROAD_M / 2, 0, -0.002);
 ground.receiveShadow = true;
-const road = new THREE.Mesh(new THREE.PlaneGeometry(600, 3.6), new THREE.MeshStandardMaterial({ roughness: 0.95 }));
-road.position.set(150, 0, -0.001);
+const road = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_M + 200, 3.6), new THREE.MeshStandardMaterial({ roughness: 0.95 }));
+road.position.set(ROAD_M / 2, 0, -0.001);
 road.receiveShadow = true;
 scene.add(ground, road);
 const postMat = new THREE.MeshStandardMaterial({ color: 0xe9e4d4, roughness: 0.8 });
-for (let x = 0; x <= 300; x += 10) {
-  const post = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.5), postMat);
-  post.position.set(x, -2.3, 0.25);
-  post.castShadow = true;
-  scene.add(post);
+{
+  const n = ROAD_M / 10 + 1, posts = new THREE.InstancedMesh(new THREE.BoxGeometry(0.06, 0.06, 0.5), postMat, n);
+  const at = new THREE.Matrix4();
+  for (let i = 0; i < n; i++) posts.setMatrixAt(i, at.makeTranslation(i * 10, 2.3, 0.25));   // far side of the road
+  posts.castShadow = true;
+  scene.add(posts);
 }
+const herd = new Herd(scene, { seed: 5, from: 70, to: ROAD_M, gap: [50, 120], roadHalf: 1.7 });   // after the bump course
 function paintScene() {
   scene.background = new THREE.Color(css('--sky'));
   scene.fog = new THREE.Fog(css('--sky'), 40, 160);
@@ -180,6 +183,7 @@ function newSim() {
   drawBars(roadName === 'bumps' ? manifest.bars : []);
   trace.length = 0;
   travel.length = 0;
+  herd.reset();
 }
 
 async function selectCar(id) {
@@ -286,7 +290,7 @@ $('throttle').addEventListener('input', () => { inputs.throttle = +$('throttle')
 $('lever').addEventListener('input', () => { inputs.lever = +$('lever').value / 100; onControl(); });
 document.querySelectorAll('input[name="road"]').forEach((el) => el.addEventListener('change', () => { roadName = el.value; if (sim) newSim(); }));
 $('restart').addEventListener('click', restart);
-function restart() { if (!sim) return; sim.reset(currentInput()); sim.set({ gear: gearWanted }); trace.length = 0; travel.length = 0; }
+function restart() { if (!sim) return; sim.reset(currentInput()); sim.set({ gear: gearWanted }); trace.length = 0; travel.length = 0; herd.reset(); }
 
 function handleEvents(events) {
   for (const e of events) {
@@ -350,6 +354,7 @@ function frame(now) {
     const g = bodyGroups[name];
     if (g) { g.position.set(p[0], p[1], p[2]); g.quaternion.set(p[4], p[5], p[6], p[3]); }
   }
+  herd.update(wall, poses.chassis[0] + car.wheelbase + car.front_radius, Math.hypot(sim.data.qvel[0], sim.data.qvel[1]));
   const target = new THREE.Vector3(poses.chassis[0] + car.wheelbase / 2, poses.chassis[1], 0.6);
   if (lastCar) { const delta = target.clone().sub(lastCar); camera.position.add(delta); orbit.target.add(delta); }
   lastCar = target;

@@ -16,11 +16,11 @@ const files = Object.fromEntries(config.files.map((f) => [f, new Uint8Array(read
 const report = JSON.parse(readFileSync(join(here, '../007_panhard_1891/output/full/physics/report.json')));
 const CAP = config.pedal.devices[0].capacity, P = CAP / (0.5 * config.rear_radius);
 
-function drive({ deg, mu = 0.5, brakeAt = null, seconds }) {
+function drive({ deg, mu = 0.5, brakeAt = null, brakeAtSpeed = null, seconds }) {
   const cfg = structuredClone(config);
   cfg.pedal.devices[0].capacity = mu * P * cfg.rear_radius;
   const sim = new CarSim(mj, cfg, files, 'flat');
-  sim.reset({ ...CarSim.defaults(cfg), gear: 0, throttle: 0, driver: false, steer: 0, pedal: 0, lever: 0 });
+  sim.reset({ ...CarSim.defaults(cfg), gear: 0, throttle: 0, driver: true, steer: 0, pedal: 0, lever: 0 });   // as the page
   const th = deg * Math.PI / 180, g = sim.model.opt.gravity;
   g[0] = 9.81 * Math.sin(th); g[1] = 0; g[2] = -9.81 * Math.cos(th);
   let mass = 0;
@@ -45,6 +45,7 @@ function drive({ deg, mu = 0.5, brakeAt = null, seconds }) {
   const along = mass * 9.81 * Math.sin(th);
   let prev = null;   // { V, F } after the previous step
   while (d.time < seconds - 1e-9) {
+    if (brakeAtSpeed !== null && brakeAt === null && d.qvel[0] >= brakeAtSpeed) brakeAt = d.time;
     if (brakeAt !== null) sim.set({ pedal: Math.max(0, Math.min(1, (d.time - brakeAt) / cfg.engine.brake_ramp_seconds)) });
     sim.step(1);
     if (brakeAt !== null && xa === null && d.time >= brakeAt - 1e-9) xa = d.qpos[0];
@@ -55,7 +56,7 @@ function drive({ deg, mu = 0.5, brakeAt = null, seconds }) {
     }
     prev = now;
   }
-  out.x = d.qpos[0]; out.v = d.qvel[0]; out.xa = xa;
+  out.x = d.qpos[0]; out.v = d.qvel[0]; out.xa = xa; out.y = d.qpos[1];
   sim.dispose();
   return out;
 }
@@ -84,6 +85,11 @@ for (const [mu, holds] of [[0.65, false], [0.75, true]]) {
   const moving = Math.abs(r.v) > 0.02;
   check(`challenge 3: 10 deg, mu = ${mu}`, `${r.v.toFixed(3)} m/s at 8 s`, holds ? !moving : moving, holds ? 'holds' : 'creeps');
 }
+const s3 = drive({ deg: 5, brakeAtSpeed: 3.0, seconds: 40 }), s5 = drive({ deg: 5, brakeAtSpeed: 5.0, seconds: 60 });
+check('challenge 4: stop from 3 m/s at 5 deg', +(s3.x - s3.xa).toFixed(2), s3.x - s3.xa > 15 && s3.x - s3.xa < 16, 'about 15.5 m (page text)');
+check('challenge 4: from 5 m/s vs 3 m/s', +((s5.x - s5.xa) / (s3.x - s3.xa)).toFixed(2), (s5.x - s5.xa) / (s3.x - s3.xa) > 2.5 && (s5.x - s5.xa) / (s3.x - s3.xa) < 3.0, 'nearly three times (page text)');
+const far = drive({ deg: 25, seconds: 30 / (9.81 * Math.sin(25 * Math.PI / 180) * 0.9) + 0.5 });   // just past 30 m/s, the page's limit
+check('driver keeps it on the road (25 deg, up to 30 m/s)', `${far.v.toFixed(1)} m/s, ${(far.y * 1000).toFixed(0)} mm off centre`, far.v > 30 && Math.abs(far.y) < 0.1, 'within 0.1 m');
 check('block force P', +P.toFixed(1), Math.abs(P - 720) < 0.5, '720 N (page text)');
 console.table(results);
 const ok = results.every((r) => r.pass);

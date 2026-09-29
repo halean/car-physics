@@ -46,6 +46,8 @@
   .speed { font: 600 36px/1 var(--mono); font-variant-numeric: tabular-nums; }
   .speed small, .hud small { font: 600 13px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-left: 4px; }
   .hud-line { font: 400 14px var(--mono); font-variant-numeric: tabular-nums; }
+  .hud .cow { font: 600 15px var(--display); letter-spacing: .04em; color: var(--ink); }
+  .cow-note { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); max-width: calc(100% - 32px); padding: 8px 14px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); font-size: 15px; }
   .skid { position: absolute; right: 12px; top: 10px; padding: 4px 10px; border-radius: 4px; background: var(--warn); color: var(--paper); font: 600 14px var(--display); letter-spacing: .08em; text-transform: uppercase; }
   .status { position: absolute; inset: auto 12px 12px 12px; padding: 10px 12px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); font-size: 14px; }
   .status.error { border-color: var(--warn); }
@@ -71,8 +73,7 @@
   button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
   #brake { background: var(--paper); border: 2px solid var(--friction); color: var(--friction); min-width: 150px; }
   #brake[aria-pressed="true"] { background: var(--friction); color: var(--paper); }
-  .tries { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-  @media (max-width: 900px) { .tries { grid-template-columns: minmax(0, 1fr); } }
+  .tries { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
   .try { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
   .try h3 { margin: 0; font: 700 20px/1.15 var(--display); }
   .try p { margin: 0; }
@@ -98,7 +99,9 @@
           <div class="speed"><span id="speed">0.00</span><small>m/s</small></div>
           <div class="hud-line"><span id="dist">0.0</span><small>m down the slope</small></div>
           <div class="hud-line"><span id="time">0.0</span><small>s</small></div>
+          <div class="hud-line cow" id="cowAhead"></div>
         </div>
+        <div id="cowNote" class="cow-note" role="status" hidden></div>
         <div id="skid" class="skid" hidden>Rear wheels locked: skidding</div>
         <div id="status" class="status">Loading…</div>
       </div>
@@ -171,11 +174,18 @@
         <details><summary>Show the answer</summary>
           <p><span class="math">2μP = mg sin 10°</span>, so <span class="math">μ = 1022 / 1440 ≈ 0.71</span>. At 0.65 it creeps; at 0.75 it holds. Why not use μ = 10? Past a point the blocks lock the wheels, and the tyres slide on the road. Then the limit is the tyres' grip, about μ<sub>road</sub> × N on the rear wheels (μ<sub>road</sub> = 0.8 here), not the brake.</p></details>
       </article>
+      <article class="try">
+        <h3>4. Stop for the cow</h3>
+        <p class="set">θ = 5°, μ = 0.5</p>
+        <p>Cows wander onto the road now and then. Let the car reach 3 m/s, then brake. How far will it roll before it stops? Use <span class="math">a = (2μP − mg sin θ) / m</span> and <span class="math">v² = 2as</span>, then watch the distance to the cow.</p>
+        <details><summary>Show the answer</summary>
+          <p><span class="math">a = (720 − 513) / 600 = 0.35 m/s²</span>, so <span class="math">s = 3² / (2 × 0.35) ≈ 13 m</span>. The simulated car needs about 15.5 m. The brake takes a quarter of a second to bite, and the spinning wheels carry energy that the brake must also absorb (the same effect as in challenge 1). At 5 m/s the stop is nearly three times as long. Speed counts twice in v².</p></details>
+      </article>
     </div>
   </section>
 
   <footer>
-    <p>The car is the repository's validated Panhard et Levassor model. With θ = 5° and μ = 0.5 this page reproduces its checked downhill run (6.233 m in 4 s) and its brake stop (4.53 m). Tilting gravity on a flat road is the same physics as tilting the road. The block force P and μ = 0.5 are assumptions: together they give the model's 180 N·m of rim-brake torque per wheel. Physics: MuJoCo 3.14, in your browser.</p>
+    <p>The car is the repository's validated Panhard et Levassor model. With θ = 5° and μ = 0.5 this page reproduces its checked downhill run (6.233 m in 4 s) and its brake stop (4.53 m). Tilting gravity on a flat road is the same physics as tilting the road. The block force P and μ = 0.5 are assumptions: together they give the model's 180 N·m of rim-brake torque per wheel. A driver holds the car on its line, as real drivers do. The cows are scenery: they are not part of the physics, and they always get out of the way. Physics: MuJoCo 3.14, in your browser.</p>
     <p>Check it yourself: <code>experiments/007_panhard_1891</code> and <code>experiments/web/downhill.js</code> in the project repository.</p>
   </footer>
 </div>
@@ -188,5 +198,6 @@
 </script>
 <script type="module">
 /*sim.js*/
+/*cows.js*/
 /*downhill.js*/
 </script>
