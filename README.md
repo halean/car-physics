@@ -138,3 +138,13 @@ a new chassis must roll downhill under its own gravity-driven motion before
 detailed modeling. [AGENTS.md](AGENTS.md) requires the skill for future car builds
 and geometry/mechanics changes. It also covers spatial checks, negative controls,
 braking tests, and recording evidence for the exact model tested.
+
+## Licence
+
+- **Code:** MIT, see [LICENSE](LICENSE).
+- **Written material** (docs, lesson texts): CC BY 4.0, see
+  [LICENSE-docs.md](LICENSE-docs.md). Teachers are welcome to reuse and adapt
+  it with credit.
+- **Third-party components** (MuJoCo, three.js, fonts):
+  [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+

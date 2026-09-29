@@ -137,6 +137,11 @@ def main():
         for f in ('mujoco.js', 'mujoco.wasm'):
             urllib.request.urlretrieve(f'https://cdn.jsdelivr.net/npm/@mujoco/mujoco@{version}/{f}', SITE/f)
     stamp.write_text(json.dumps(dict(mujoco=version))+'\n')
+    # Licences travel with the site: ours, the notices, and the Apache licence MuJoCo requires.
+    for name in ('LICENSE', 'LICENSE-docs.md', 'THIRD_PARTY_NOTICES.md'):
+        shutil.copy(REPO/name, SITE/name)
+    if not (SITE/'LICENSE-mujoco-apache-2.0.txt').exists():
+        urllib.request.urlretrieve('https://www.apache.org/licenses/LICENSE-2.0.txt', SITE/'LICENSE-mujoco-apache-2.0.txt')
     (SITE/'manifest.json').write_text(json.dumps(manifest, indent=1)+'\n')
     write_page()
     total = sum(p.stat().st_size for p in SITE.rglob('*') if p.is_file())
