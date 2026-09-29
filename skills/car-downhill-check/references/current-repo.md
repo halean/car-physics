@@ -222,4 +222,9 @@ to each knuckle. `excluded_pairs` in the report lists body pairs whose contact
 MuJoCo must ignore (the half-shaft and the knuckle its outer joint sits in).
 Box parts' colliders have no `:n` suffix, so planted defects that match geoms
 by name must use rod parts.
+Bodywork: `body.py` builds the cabin shell, bonnet and wings with
+`006_benz_velo/bodywork.py` (see skills/procedural-bodywork). Their colliders
+are `type: mesh` hulls (`patches` on the Blender object). The full build check
+then covers about 800,000 pairs and takes about 3 minutes; `run.py --stage full`
+takes about 11 minutes.
 

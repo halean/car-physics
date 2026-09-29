@@ -4,7 +4,8 @@ blender --background <blend> --python export_blender.py -- <output dir>
 
 Each object's 'body' property selects its physics body; colliders and meshes
 are written in that body's frame (rest pose, all bodies axis-aligned).
-Rods -> cylinders, swept curves and rings -> capsules, other meshes -> boxes.
+Rods -> cylinders, swept curves and rings -> capsules, procedural panels -> convex hulls of
+their patches, other meshes -> boxes.
 """
 import hashlib
 import json
@@ -31,6 +32,12 @@ for obj in objects:
     common = dict(object=obj.name, role=obj.get('role', 'general'), mates=list(obj.get('mates', [])),
                   sweep=obj.get('sweep'))
     offset = origin[body]
+    if 'patches' in obj:              # procedural panels: one convex hull per patch (bodywork.py)
+        M = obj.matrix_world
+        for i, flat in enumerate(obj['patches']):
+            pts = [list(M @ Vector(flat[k:k+3])-offset) for k in range(0, len(flat), 3)]
+            colliders[body].append(dict(name=f'{obj.name}:{i}', type='mesh', vertices=pts, **common))
+        continue
     if 'centerline' in obj:
         points = [list(obj.matrix_world @ Vector(p)-offset) for p in obj['centerline']]
         kind = 'capsule' if obj.type == 'CURVE' or obj.get('capsule') else 'cylinder'

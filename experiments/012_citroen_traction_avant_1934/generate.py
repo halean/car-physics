@@ -28,6 +28,14 @@ spec.loader.exec_module(vg)
 mw, part = vg.mw, vg.part
 material, box, rod, tube, torus = mw.material, mw.box, mw.rod, mw.tube, mw.torus
 
+spec = importlib.util.spec_from_file_location('bodywork', HERE.parent/'006_benz_velo/bodywork.py')
+bw = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(bw)
+spec = importlib.util.spec_from_file_location('traction_body', HERE/'body.py')
+body = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(body)
+body_y = bw.Profile(*body.WING['y'])
+
 COLLECTION = 'VEHICLE | 1934 Citroën Traction Avant'
 
 
@@ -76,8 +84,8 @@ def front_end(V, p, m, kp):
     balls = {}
     for s, side in ((1, 'left'), (-1, 'right')):
         y, yl = s*kp, s*yi
-        part(slab(f'Front longeron {s}', 1.975, 3.56, s*.385, s*.415, .58, .78, m['frame'], V) if s > 0 else
-             slab(f'Front longeron {s}', 1.975, 3.56, -.415, -.385, .58, .78, m['frame'], V), joins=['Front bulkhead'])
+        part(slab(f'Front longeron {s}', 1.975, 3.56, s*.385, s*.415, .58, .78, m['paint'], V) if s > 0 else
+             slab(f'Front longeron {s}', 1.975, 3.56, -.415, -.385, .58, .78, m['paint'], V), joins=['Front bulkhead'])
         for tx, where in ((wb-xt, 'rear'), (wb+xt, 'front')):
             y0, y1 = sorted((s*(yi-.015), s*p['tower_outer_y']))
             part(slab(f'Suspension tower {where} {s}', tx-.01, tx+.01, y0, y1, .16, .60, m['frame'], V),
@@ -182,22 +190,9 @@ def build_full(V, p, m, kp, yi):
     # Radiator on a cross member between the longerons, bonnet, saloon body.
     part(slab('Front cross member', 3.46, 3.54, -.415, .415, .60, .70, m['frame'], V), joins=['Front longeron -1', 'Front longeron 1'])
     part(slab('Radiator', 3.46, 3.54, -.30, .30, .47, .99, m['nickel'], V, .01), joins=['Front cross member'])
-    part(slab('Bonnet lid', 1.98, 3.53, -.37, .37, .99, 1.01, m['paint'], V), joins=['Scuttle', 'Radiator'])
-    for s in (-1, 1):
-        y0, y1 = sorted((s*.354, s*.366))
-        part(slab(f'Bonnet side {s}', 1.98, 3.53, y0, y1, .62, 1.0, m['paint'], V),
-             joins=['Bonnet lid', 'Front cross member', 'Front bulkhead', 'Scuttle'])
-    part(slab('Scuttle', 1.85, 1.98, -.72, .72, .95, 1.03, m['paint'], V), joins=['Front bulkhead'])
-    for s in (-1, 1):
-        y0, y1 = sorted((s*.714, s*.726))
-        part(slab(f'Body side {s}', .40, 1.99, y0, y1, .41, .98, m['paint'], V), joins=[f'Frame rail {s}', 'Scuttle'])
-        part(slab(f'Rear quarter {s}', -.915, .41, y0, y1, .76, .98, m['paint'], V), joins=[f'Body side {s}', 'Rear panel'])
-        for x, name in ((1.86, 'A'), (1.02, 'B'), (.20, 'C')):
-            part(rod(f'Pillar {name} {s}', (x, s*.715, .97), (x-(.10 if name == 'A' else 0), s*.64, 1.49), .025,
-                     m['paint'], V), joins=[f'Body side {s}' if name != 'C' else f'Rear quarter {s}', 'Roof']+(['Scuttle'] if name == 'A' else []))
-    part(slab('Roof', .05, 1.80, -.66, .66, 1.49, 1.51, m['paint'], V), joins=[])
-    part(slab('Rear panel', -.935, -.915, -.726, .726, .45, .98, m['paint'], V), joins=['Boot floor'])
-    part(slab('Boot lid', -.93, -.34, -.60, .60, .98, 1.00, m['paint'], V), joins=['Rear panel'])
+    part(slab('Scuttle', 1.85, 1.98, -.72, .72, .95, 1.03, m['paint'], V), joins=['Front bulkhead'], mates=['Body shell'])
+    # Procedural bodywork (bodywork.py, designed in body.py): cabin and boot, bonnet, wings.
+    bodywork = body.build(bw, m, V, part)
     for label, xb, z0, floor in (('Front', 1.40, .29, 'Floor'), ('Rear', .15, .535, 'Rear floor')):
         for x in (xb-.14, xb+.14):
             for s in (-1, 1):
@@ -207,31 +202,27 @@ def build_full(V, p, m, kp, yi):
         part(slab(f'{label} seat cushion', xb-.19, xb+.19, -.45, .45, .66, .74, m['leather'], V, .03), joins=[f'{label} seat base'])
         part(slab(f'{label} seat back', xb-.26, xb-.185, -.45, .45, .66, 1.06, m['leather'], V, .025),
              joins=[f'{label} seat base', f'{label} seat cushion'])
-    # Wings: front on stays from the longerons, rear on stays from the wheel arches.
-    for s in (-1, 1):
-        base = f'Front wing {s}'
-        gr = p['wing_radius']
+    # Wing stays: front from the longerons, rear from the wheel arches, each to the wing's crown.
+    w = body.WING
+    for s_ in (-1, 1):
         for a, end in ((140, 'rear'), (40, 'front')):
-            ax, az = wb+gr*math.cos(math.radians(a)), fr+gr*math.sin(math.radians(a))
-            part(rod(f'{base} stay {end}', (ax, s*.41, az), (ax, s*(ft/2-.08), az), .012, m['frame'], V),
-                 joins=[f'Front longeron {s}'])
-        mudguard(base, (wb, fr), gr, s*ft/2, .10, 40, 140, m, V, joins_first=[f'{base} stay front'],
-                 joins_last=[f'{base} stay rear'])
-        base = f'Rear wing {s}'
-        gr = p['rear_wing_radius']
+            R, (cx, cz) = w['front_radius'], w['front_centre']
+            ax, az = cx+R*math.cos(math.radians(a)), cz+R*math.sin(math.radians(a))
+            part(rod(f'Front wing stay {end} {s_}', (ax, s_*.41, az), (ax, s_*float(body_y(ax)), az), .012, m['frame'], V),
+                 joins=[f'Front longeron {s_}', f'Wing {s_}'])
         for a, end in ((150, 'rear'), (30, 'front')):
-            ax, az = gr*math.cos(math.radians(a)), rr+gr*math.sin(math.radians(a))
-            part(rod(f'{base} stay {end}', (ax, s*.52, az), (ax, s*(rt/2-.06), az), .012, m['frame'], V),
-                 joins=[f'Rear arch {s}'])
-        mudguard(base, (0.0, rr), gr, s*(rt/2-.005), .06, 30, 150, m, V, joins_first=[f'{base} stay front'],
-                 joins_last=[f'{base} stay rear'])
-    for label, x, sign in (('Front', 3.72, 1), ('Rear', -1.02, -1)):
-        part(rod(f'{label} bumper', (x, -.72, .45), (x, .72, .45), .03, m['nickel'], V))
-        for s in (-1, 1):
-            start = (3.555, s*.40, .62) if label == 'Front' else (-.935, s*.40, .55)
-            part(rod(f'{label} bumper iron {s}', start, (x, s*.40, .45), .015, m['frame'], V),
-                 joins=[f'{label} bumper', f'Front longeron {s}' if label == 'Front' else 'Rear panel'])
-    return dict(final_drive='gearbox ahead of the front axle, open differential, half-shafts with double-Cardan outer joints')
+            R, (cx, cz) = w['rear_radius'], w['rear_centre']
+            ax, az = cx+R*math.cos(math.radians(a)), cz+R*math.sin(math.radians(a))
+            part(rod(f'Rear wing stay {end} {s_}', (ax, s_*.52, az), (ax, s_*float(body_y(ax)), az), .012, m['frame'], V),
+                 joins=[f'Rear arch {s_}', f'Wing {s_}'])
+    for label, x, z in (('Front', 3.72, .45), ('Rear', -1.14, .40)):
+        part(rod(f'{label} bumper', (x, -.72, z), (x, .72, z), .03, m['nickel'], V))
+        for s_ in (-1, 1):
+            start = (3.555, s_*.40, .62) if label == 'Front' else (-.90, s_*.40, .47)
+            part(rod(f'{label} bumper iron {s_}', start, (x, s_*.40, z), .015, m['frame'], V),
+                 joins=[f'{label} bumper', f'Front longeron {s_}' if label == 'Front' else 'Boot floor'])
+    return dict(final_drive='gearbox ahead of the front axle, open differential, half-shafts with double-Cardan outer joints',
+                bodywork=bodywork)
 
 
 def main():
@@ -267,8 +258,8 @@ def main():
     # riser to the raised rear floor, the rear wheel arches and the boot floor.
     for s in (-1, 1):
         y0, y1 = sorted((s*.705, s*.735))
-        part(slab(f'Frame rail {s}', .40, 2.00, y0, y1, .24, .42, m['frame'], V))
-    part(slab('Front bulkhead', 1.96, 1.98, -.71, .71, .20, .95, m['frame'], V), joins=['Frame rail -1', 'Frame rail 1'])
+        part(slab(f'Frame rail {s}', .40, 2.00, y0, y1, .24, .42, m['paint'], V))   # unitary body: painted sills
+    part(slab('Front bulkhead', 1.96, 1.98, -.71, .71, .20, .95, m['paint'], V), joins=['Frame rail -1', 'Frame rail 1'])
     # The floor starts behind the trailing arms' pivots (the rigid arms dip with the axle's roll).
     part(slab('Floor', .615, 1.965, -.705, .705, .27, .29, m['frame'], V), joins=['Frame rail -1', 'Frame rail 1', 'Front bulkhead'])
     part(slab('Seat riser', .63, .65, -.50, .50, .28, .53, m['frame'], V), joins=['Floor', 'Rear floor'])
@@ -277,7 +268,7 @@ def main():
         y0, y1 = sorted((s*.514, s*.526))
         part(slab(f'Rear arch {s}', -.40, .42, y0, y1, .46, .79, m['frame'], V), joins=['Rear floor', 'Boot floor'])
     part(slab('Boot floor', -.92, -.34, -.52, .52, .46, .48, m['frame'], V))
-    part(rod('Rear torsion tube', (.55, -.72, rr), (.55, .72, rr), .0375, m['steel'], V), joins=['Frame rail -1', 'Frame rail 1'])
+    part(rod('Rear torsion tube', (.55, -.715, rr), (.55, .715, rr), .0375, m['steel'], V), joins=['Frame rail -1', 'Frame rail 1'])
 
     front = front_end(V, p, m, kp)
     # Column from the box, raked back past the engine to the wheel (left-hand drive).

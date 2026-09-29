@@ -5,6 +5,10 @@ For every new car build or change to car geometry/mechanics, read and follow
 This is a required repository workflow, including when automatic skill selection
 does not load it. Documentation-only changes do not require a simulation rerun.
 
+For curved bodywork (wings, bonnet, roof, any coachwork beyond box panels), read and
+follow [skills/procedural-bodywork/SKILL.md](skills/procedural-bodywork/SKILL.md):
+design it from parametric curves as closed shells with convex collision patches.
+
 A new car must first pass an unpowered MuJoCo downhill rolling test with brakes
 released, using its own generated geometry, before detailed bodywork or trim.
 After changes, obtain a fresh passing downhill test and relevant spatial checks

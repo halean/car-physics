@@ -77,6 +77,15 @@ new car, alongside the [car-downhill-check skill](../skills/car-downhill-check/S
   that for a dead band. Without castor there is no self-centring, so the
   "driver holds the line" controller, like a real driver, is the fix. The
   experiments are tabled in the 010 README.
+- **A convex hull contains the built mesh, not the design surface** (012,
+  bodywork). A test that probed the ideal cylinder found half its points
+  outside the patch hulls: the arc bulges past each chord. The part is the
+  mesh; test the mesh, and bound its distance from the design by the
+  tolerance.
+- **Compare the track with the body width before styling wings** (012). The
+  Traction's rear track is narrower than its body, so a wing arching over the
+  tyre runs through the body side. The rear wing is a flare outboard of the
+  body, with an opening cut in the side.
 - **A negative control must fail for the right reason** (012). The locked-
   differential control expected a wrong wheel-speed ratio. With front-wheel
   drive, the locked axle made the car unsteerable instead, so the ratio check

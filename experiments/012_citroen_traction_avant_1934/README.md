@@ -102,18 +102,18 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
   the A-pillars ran into the scuttle, the pedals were drawn twice, and the
   steering column passed 2.2 mm from an engine bearer (5 mm needed).
 
-## Result (MuJoCo 3.14.0, full build `80e1f8f3…`)
+## Result (MuJoCo 3.14.0, full build `3e5f1158…`, procedural body)
 
-**Chassis stage** (`b1e8b72d…`)
+**Chassis stage** (`a2e64d3d…`)
 - 5,920 pairs at 173 poses; all 103 joins touching; nothing disconnected.
 - Gate: 6.40 m.
 - All three planted defects caught.
 
 **Full build checks**
-- 25,791 pairs at 173 poses; all 255 joins touching; nothing disconnected.
+- 806,903 pairs at 173 poses (the body's 1,316 hull colliders included); all 193 joins touching; nothing disconnected.
 - All three planted defects caught.
 - Closest pairs: front brake anchor to knuckle housing 2.0 mm (static);
-  body side to bulkhead 4.0 mm.
+  front bumper iron to cross member 4.2 mm.
 
 **Downhill gate**
 - 6.40 m travelled, 0.05 mm sideways.
@@ -166,6 +166,48 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
 - *Engine against the hand brake in first gear:* 926 N m of drive beats
   440 N m of brake.
 
+## Procedural bodywork
+
+The saloon body is built from parametric curves by the shared
+[bodywork.py](../006_benz_velo/bodywork.py), following
+[skills/procedural-bodywork](../../skills/procedural-bodywork/SKILL.md). The
+design tables are in [body.py](body.py). The shapes are styled on the car's
+general form; none is sourced.
+
+- **Cabin and boot:** one loft of superellipse sections (`n_up` 4, `n_dn` 4.5,
+  tumblehome 0.18) under a shape-preserving roof line.
+  - The tail closes as a quarter-ellipse dome.
+  - The side windows, the rear window and the rear wheel openings are cut as
+    (station, key) rectangles between the sill, belt and cant lines.
+  - The front ring at the bulkhead is the windscreen opening, above the
+    scuttle.
+- **Bonnet:** a loft from the bulkhead to the radiator.
+- **Wings:** per side, one sweep on rotation-minimising frames that arches over
+  the front wheel, drops by a tangent-continuous Bézier to the running board,
+  and rises to a flare over the rear wheel. The rear track (1.30 m) is
+  narrower than the body (1.47 m), so the rear wing is a flare *outboard* of
+  the body side, as on the car.
+
+| Shell | Grid | Faces | Collision patches | Watertight and outward |
+| --- | --- | --- | --- | --- |
+| Body shell | 57 × 53 | 5,392 | 628 | yes |
+| Bonnet | 4 × 35 | 278 | 44 | yes |
+| Each wing | 176 × 41 | 14,430 | 322 | yes |
+
+Tolerance and panel thickness are both 2 mm. Each patch is collided as its
+convex hull, which contains the built panel and exceeds it by at most 2 mm,
+so clearances err on the safe side. The first build had six failures, each
+a packaging fact:
+- the lower sections were too round to reach the sills;
+- the rear wings ran through the body side (hence the flare);
+- the running board overlapped the body's lower edge;
+- the rear torsion tube touched the wing;
+- the bonnet was 2.8 mm from the steering column;
+- the bonnet met the scuttle undeclared.
+
+The build checks now cover 806,903 pairs, all passing. The body replaced the
+box panels without changing any scenario result.
+
 ## Not modeled
 
 - Shock absorbers beyond viscous joint damping; friction in the torsion bars.
@@ -176,4 +218,5 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
 - The engine, clutch and gearbox internals, and reverse.
 - Pneumatic tyre behaviour beyond the shared compliant contact, rolling
   resistance and drag.
-- Doors, glass, lamps, the body's own stiffness, and occupants.
+- Doors and door lines, glass, lamps, the grille's chevrons, the body's own stiffness, and occupants.
+- The rear wheel openings are plain rectangles in the body side, behind the flares.

@@ -44,7 +44,11 @@ def part_inertia(colliders, mass):
     lumped on one ball joint pushes the steering under acceleration."""
     points, weights = [], []
     for c in colliders:
-        if 'fromto' in c:
+        if c['type'] == 'mesh':          # a panel patch: its vertices, weighted by their spread
+            v = np.array(c['vertices'])
+            points.append(v.mean(axis=0))
+            weights.append(max(np.prod(np.ptp(v, axis=0)+1e-3), 1e-9))
+        elif 'fromto' in c:
             a, b = np.array(c['fromto'][:3]), np.array(c['fromto'][3:])
             volume = math.pi*c['size'][0]**2*max(np.linalg.norm(b-a), 1e-6)
             for t in np.linspace(0, 1, 7):
@@ -94,6 +98,10 @@ def make_model(geometry, out, slope_rad=0.0, *, engine=None, spool=False, extra=
     for name in bodies:
         if (Path(out)/f'{name}.obj').stat().st_size > 1:
             ET.SubElement(asset, 'mesh', name=name, file=str(Path(out)/f'{name}.obj'))
+    for items in geometry['colliders'].values():   # panel patches: MuJoCo collides their convex hulls
+        for c in items:
+            if c['type'] == 'mesh':
+                ET.SubElement(asset, 'mesh', name=f'hull:{c["name"]}', vertex=numbers(np.array(c['vertices']).reshape(-1)))
     ET.SubElement(asset, 'texture', name='road_grid', type='2d', builtin='checker',
                   rgb1='.25 .3 .34', rgb2='.45 .5 .54', width='256', height='256')
     ET.SubElement(asset, 'material', name='road', texture='road_grid', texrepeat='1 1', texuniform='true')
@@ -162,11 +170,13 @@ def make_model(geometry, out, slope_rad=0.0, *, engine=None, spool=False, extra=
         else:
             com, full = part_inertia(geometry['colliders'][name], mass)
             ET.SubElement(el, 'inertial', pos=numbers(com), mass=f'{mass}', fullinertia=numbers(full))
-        if f'{name}.obj' in [Path(m.get('file')).name for m in asset.findall('mesh')]:
+        if f'{name}.obj' in [Path(m.get('file')).name for m in asset.findall('mesh') if m.get('file')]:
             ET.SubElement(el, 'geom', name=f'visual_{name}', type='mesh', mesh=name, contype='0',
                           conaffinity='0', group='2', rgba='.25 .22 .2 1')
         for c in geometry['colliders'][name]:
             attrs = {k: numbers(c[k]) for k in ('fromto', 'pos', 'quat', 'size') if k in c}
+            if c['type'] == 'mesh':        # vertices are in the body frame; MuJoCo places the hull there
+                attrs = dict(mesh=f'hull:{c["name"]}')
             ET.SubElement(el, 'geom', name=c['name'], type=c['type'], contype='2', conaffinity='15',
                           group='3', rgba='.2 .6 .3 .35', **attrs)
         for child in [n for n, b in bodies.items() if b['parent'] == name]:
@@ -282,6 +292,13 @@ def build_checks(model, geometry, step_deg=.5):
         for a, b, key, joined, moving in pairs:
             if (angle != 0 or pose) and not ({body[a], body[b]} & steering):
                 continue   # rigid relation: rest pose covers it
+            if not joined:
+                # Conservative broad phase: if the bounding spheres are further apart than the
+                # required gap, the geoms are too (never hides a clash; skips the exact query).
+                need = MOVING_GAP if moving else STATIC_GAP
+                centres = np.linalg.norm(data.geom_xpos[a]-data.geom_xpos[b])
+                if centres-model.geom_rbound[a]-model.geom_rbound[b] > max(need, .05):
+                    continue
             gap = mujoco.mj_geomDistance(model, data, a, b, .05, None)
             if joined:
                 if key in rest_joins and (angle != 0 or pose):

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Procedural Bodywork"
+  short_description: "Curved coachwork from parametric curves, as checked shells"
+  default_prompt: "Use $procedural-bodywork to design this car's bodywork from parametric curves and validate it with the build checks."
+policy:
+  allow_implicit_invocation: true
