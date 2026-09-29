@@ -1,0 +1,29 @@
+<title>Brass Era Garage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500&display=swap">
+<style>
+  :root { --paper: #f1f2ec; --panel: #e5e8df; --ink: #1b211e; --muted: #5d6760; --line: #c5cbbf; --green: #1f4a3a;
+    --display: "Barlow Condensed", "Arial Narrow", sans-serif; --body: "Barlow", "Segoe UI", system-ui, sans-serif; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark; --paper: #121614; --panel: #1a201d; --ink: #e5e9e1; --muted: #99a39c; --line: #313a35; --green: #6aae8c; } }
+  :root[data-theme="dark"] { color-scheme: dark; --paper: #121614; --panel: #1a201d; --ink: #e5e9e1; --muted: #99a39c; --line: #313a35; --green: #6aae8c; }
+  body { background: var(--paper); color: var(--ink); font: 17px/1.55 var(--body); }
+  main { max-width: 760px; margin: 0 auto; padding-inline: 16px; padding-block: 40px; display: grid; gap: 20px; }
+  h1 { margin: 0; font: 700 44px/1.05 var(--display); }
+  p { margin: 0; max-width: 62ch; }
+  .muted { color: var(--muted); }
+  ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  a.card { display: grid; gap: 4px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); text-decoration: none; }
+  a.card:hover, a.card:focus-visible { border-color: var(--green); outline: none; }
+  a.card b { font: 700 24px/1.1 var(--display); }
+  a.card span { color: var(--muted); }
+</style>
+<main>
+  <h1>Brass Era Garage</h1>
+  <p>The first cars, 1891 to 1909, rebuilt as physics simulations you can drive. Each one runs in your browser on the same engine the models were tested with.</p>
+  <ol>
+    <li><a class="card" href="downhill.html"><b>1 · Rolling downhill</b><span>An 1891 Panhard on a slope: weight, normal force, friction and its brake, drawn as arrows. Check ΣF = ma for yourself.</span></a></li>
+    <li><a class="card" href="garage.html"><b>The garage</b><span>Drive all five cars, from the Panhard to the Model T, with the same controls.</span></a></li>
+  </ol>
+  <p class="muted">For students aged 14 to 18. More lessons, starting with springs and a bumpy ride, are on the way.</p>
+</main>

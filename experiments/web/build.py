@@ -1,6 +1,6 @@
 """Build the multi-car web simulator in experiments/web/output/site (git-ignored).
 
-.venv/bin/python experiments/web/build.py [--page-only] [--serve [PORT]]   (default port 8321; open /local.html)
+.venv/bin/python experiments/web/build.py [--page-only] [--serve [PORT]]   (default port 8321; open /)
 
 For every car in cars.py:
 - model_flat.xml / model_bumps.xml: the car's validated full model exactly as its last run.py wrote
@@ -113,6 +113,7 @@ def build_car(car, bar_lines):
         steering=dict(kind=car['steering']['kind'], box_ratio=car['steering']['box_ratio'],
                       limit_deg=geometry['steering']['column_limit_deg']),
         wheelbase=geometry['parameters']['wheelbase'], bodies=list(geometry['bodies']),
+        rear_radius=geometry['parameters']['rear_radius'], front_radius=geometry['parameters']['front_radius'],
         seat=[com[0], 0.0, com[2]+.3], suspension=suspension,
         shocks=dict(joints=car['shocks']['joints'], design_nm=params['shock_absorbers']['friction_nm'])
         if car.get('shocks') else None,
@@ -143,15 +144,24 @@ def main():
                           wasm_sha256=hashlib.sha256((SITE/'mujoco.wasm').read_bytes()).hexdigest()[:12])))
 
 
+PAGES = {   # site file: (template, scripts inlined in order)
+    'garage.html': ('page.html', ('sim.js', 'input.js', 'app.js')),
+    'downhill.html': ('downhill.html', ('sim.js', 'downhill.js')),
+    'index.html': ('index.html', ()),
+}
+
+
 def write_page():
-    """index.html (page content, for publishing) and local.html (with a doctype, for a local server)."""
-    page = (WEB/'page.html').read_text()
-    for name in ('sim.js', 'input.js', 'app.js'):
-        page = page.replace(f'/*{name}*/', (WEB/name).read_text().replace('export ', ''))
-    (SITE/'index.html').write_text(page)
-    (SITE/'local.html').write_text('<!doctype html>\n<html lang="en"><head><meta charset="utf-8">'
-                                   '<meta name="viewport" content="width=device-width, initial-scale=1">'
-                                   '</head><body>\n'+page+'\n</body></html>\n')
+    """Each page as a full document; local.html stays as an alias of the garage for old links."""
+    for target, (template, scripts) in PAGES.items():
+        page = (WEB/template).read_text()
+        for name in scripts:
+            page = page.replace(f'/*{name}*/', (WEB/name).read_text().replace('export ', ''))
+        doc = ('<!doctype html>\n<html lang="en"><head><meta charset="utf-8">'
+               '<meta name="viewport" content="width=device-width, initial-scale=1">'
+               '</head><body>\n'+page+'\n</body></html>\n')
+        (SITE/target).write_text(doc)
+    shutil.copy(SITE/'garage.html', SITE/'local.html')
 
 
 def serve(port):
@@ -166,7 +176,7 @@ def serve(port):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=str(SITE), **kwargs)
     with http.server.ThreadingHTTPServer(('127.0.0.1', port), Handler) as server:
-        print(f'Carriage Works simulator: http://localhost:{port}/local.html  (Ctrl+C to stop)', flush=True)
+        print(f'Brass Era Garage: http://localhost:{port}/  (Ctrl+C to stop)', flush=True)
         server.serve_forever()
 
 

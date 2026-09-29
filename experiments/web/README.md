@@ -1,8 +1,31 @@
 # Brass Era Garage: the cars in the browser
 
+A small site for students aged 14–18: how early cars were developed, what they looked
+like, how they drove, and the physics underneath. Pages:
+
+- `index.html`: the start page.
+- `downhill.html` (**1 · Rolling downhill**): the validated 1891 Panhard on a slope.
+  It shows the weight, its components, the normal force, the road friction and the
+  net force as arrows from the simulation, and checks ΣF = ma live. The student sets
+  the slope θ and the rim-block friction coefficient μ (F = μP per block), then
+  works through three predict-then-check challenges.
+- `garage.html`: every car with shared controls (below). `local.html` is an alias.
+
+`downhill_test.mjs` checks every number the lesson states, using the page's own
+setup:
+- the car's validated 5° runs (6.233 m rolled in 4 s; a 4.53 m brake stop);
+- ΣF = ma to 0.00 N at every sample;
+- each challenge's answer.
+
+The slope tilts gravity on the flat road, which is the same physics as tilting
+the road. One lesson learned: MuJoCo's `mj_subtreeVel` uses the velocities of
+the last forward pass, so pair each step's contact forces with the velocity
+change over that same step.
+
 ```bash
-.venv/bin/python experiments/web/build.py --serve      # then open localhost:8321/local.html
+.venv/bin/python experiments/web/build.py --serve      # then open localhost:8321/
 ~/.nvm/versions/node/v24.21.0/bin/node experiments/web/parity_test.mjs
+~/.nvm/versions/node/v24.21.0/bin/node experiments/web/downhill_test.mjs
 ```
 
 This is a browser simulator for every validated car:
