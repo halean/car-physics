@@ -108,6 +108,17 @@ gear and a single pedal that declutches and brakes.
 .venv/bin/python experiments/008_renault_1898/run.py --stage full
 ```
 
+## Fifth car: Mercedes 35 HP 1901
+
+[Experiment 009](experiments/009_mercedes_35hp_1901/README.md) is the first
+sprung car: leaf springs on both axles, a raked steering wheel through a
+steering box, a four-speed gate change and chain drive. Build checks run at
+bump, rebound and roll poses as well as across the steering range.
+
+```bash
+.venv/bin/python experiments/009_mercedes_35hp_1901/run.py --stage full
+```
+
 ## Required build validation
 
 [Car Downhill Check](skills/car-downhill-check/SKILL.md) defines the build gate:

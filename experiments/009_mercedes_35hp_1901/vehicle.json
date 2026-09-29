@@ -1,0 +1,70 @@
+{
+  "total_mass_kg": 1200,
+  "mass_source": "1200 kg (Wikipedia, citing Eckermann). No occupants.",
+  "masses_kg": {
+    "rear_wheel": 35.0,
+    "front_wheel": 25.0,
+    "knuckle": 5.0,
+    "tie_rod": 3.0,
+    "drag_link": 2.5,
+    "column": 2.0,
+    "front_axle": 45.0,
+    "rear_axle": 70.0,
+    "steering_wheel": 6.0
+  },
+  "chassis_com": [
+    1.25,
+    0.0,
+    0.8
+  ],
+  "chassis_inertia": [
+    180,
+    700,
+    750
+  ],
+  "tire_friction": 0.8,
+  "steering_servo": {
+    "kp": 1000,
+    "kv": 30,
+    "force_limit_nm": 80,
+    "note": "Acts at the pitman (steering-box output); with the 6:1 box, 80 N m there is 13 N m at the steering wheel."
+  },
+  "suspension": {
+    "front_axle_heave": {
+      "stiffness": 60000,
+      "damping": 3400
+    },
+    "front_axle_roll": {
+      "stiffness": 9600,
+      "damping": 600
+    },
+    "rear_axle_swing": {
+      "stiffness": 37700,
+      "damping": 2460
+    },
+    "rear_axle_roll": {
+      "stiffness": 12800,
+      "damping": 800
+    },
+    "note": "Semi-elliptic leaf springs as linear springs on the axle joints: front 60 kN/m heave, rear 80 kN/m heave (as a moment about the radius-rod pivot), roll from 0.76 m spring spacing, light damping (interleaf friction). Spring preload (springref) is calibrated at run time so the loaded car sits at the design ride height.",
+    "damping_note": "Damping doubled to about 0.3 of critical (leaf-spring interleaf friction): at 0.15 a 40 mm road bump at 15 km/h put the axles 2-4% onto their bump stops.",
+    "rear_note": "Rear rate raised 30% (104 kN/m heave equivalent) after the 40 mm bump touched the rear bump stops at 101.5% of the 45 mm travel; static deflection stays within the plausible band."
+  },
+  "tire": {
+    "contact_shape": "ellipsoid",
+    "section_half_width_m": 0.05,
+    "contact_solref": [
+      -2300,
+      -48
+    ],
+    "note": "Pneumatic tyres, 90 mm front / 120 mm rear (Wikipedia): shared compliant contact (k 2300 s^-2, b 48 s^-1 per unit mass), round crown 50 mm half-width.",
+    "contact_solimp": [
+      0.5,
+      0.95,
+      0.01,
+      0.5,
+      2
+    ]
+  },
+  "assumptions": "Mass split, centre of mass (front engine), inertia, spring rates and damping are estimates."
+}

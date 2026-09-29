@@ -78,6 +78,9 @@ This car's own files:
 
 ## Result (MuJoCo 3.14.0, full build `c49ca0e8…`)
 
+First validation. For current figures after the 2026-09-29 shared-contact
+changes (elliptic cone, no tyre margin), see `output/full/validation.md`.
+
 **Chassis stage** (`40d8cbb6…`)
 - Build checks: 1,104 pairs, all 47 joins touching.
 - Gate: 6.24 m.
@@ -134,7 +137,9 @@ compliance:
 
 The softer contact also softened friction, so braked cars crept downhill at
 1.5 cm/s and steered descents yawed about 5% short. MuJoCo's no-slip friction
-pass, with 10 iterations, removes that creep.
+pass, with 10 iterations, removed that creep. Experiment 009 later found that
+the no-slip pass could zero a lightly loaded tyre's normal force, and replaced it
+with an elliptic friction cone (impratio 50), which also stops the creep.
 
 **Result.** Both the Velo and this car were re-validated in full, chassis and
 full stages. The powered-turn tyre loads now vary by at most 2% per wheel.

@@ -22,6 +22,7 @@ road-car performance. Automotive modeling implications are our own applications.
 
 - **S14** Association Renault Histoire, [La voiturette Type A](https://sites.google.com/view/associationrenaulthistoire/un-peu-d-histoire/les-modeles-phares-de-renault-par-michel-jullien/breve-histoire-de-la-voiturette) (consulted 2026-09-29): front De Dion-Bouton single, 270 cc, 1.75 hp; three speeds plus reverse with direct drive in third; cardan shaft, rear axle and differential; handlebar steering; one pedal for brake and declutch; 1900 × 1150 × 1400 mm; 250 kg; 50 km/h.
 - **S15** Wikipedia, [Renault Voiturette](https://en.wikipedia.org/wiki/Renault_Voiturette) (consulted 2026-09-29): 273 cc 1.75 CV De Dion-Bouton engine, three gears, 200 kg, 32 km/h, Continental tyres.
+- **S16** Wikipedia, [Mercedes 35 hp](https://en.wikipedia.org/wiki/Mercedes_35_hp) (consulted 2026-09-29; secondary, citing Eckermann): 5.9 L four, 35 PS at 950 rpm (300–1000 rpm), four speeds plus reverse with gate change, chain drive, hand brake on rear drums and a water-cooled foot brake on the countershaft, pressed-steel U-section ladder frame, rigid axles on semi-elliptic springs, honeycomb radiator, 2,345 mm wheelbase, 1200 kg, 70–75 km/h. Its 2,766 mm length conflicts with the wheelbase and wheel sizes and is not used. Track, ratios and spring rates remain unsourced.
 
 Next research: source measured drawings for the exact historical variant; collect
 an open automotive aerodynamic benchmark before introducing CFD comparisons.

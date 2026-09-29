@@ -1,0 +1,18 @@
+{
+  "rated_power_w": 25700,
+  "governed_rpm": 950,
+  "no_load_rpm": 1000,
+  "clutch_seconds": 0.5,
+  "gearbox_ratios": {
+    "first": 3.6,
+    "second": 2.2,
+    "third": 1.45,
+    "fourth": 1.0
+  },
+  "bevel_ratio": 1.145,
+  "rear_drum_capacity_nm_each": 500,
+  "foot_brake_capacity_nm_at_wheels": 1400,
+  "brake_ramp_seconds": 0.25,
+  "source": "5.9 L four, 35 PS (25.7 kW) at 950 rpm, 300-1000 rpm range; four speeds plus reverse, gate change; chain final drive; hand brake on 30 cm rear drums; water-cooled foot brake on the chain drive's countershaft; 70-75 km/h (Wikipedia, citing Eckermann). Gearbox ratios and the bevel ratio (with the 2.13 chain, fourth gives about 75 km/h), brake capacities and the governor droop are assumptions. Reverse is not simulated.",
+  "brake_note": "Hand brake first set to 800 N m per wheel: braking pitched the sprung body forward and locked the rear wheels (29% slide in the steered descents). Set to 500 N m, below lock; still twice the 5-degree holding torque and above fourth-gear drive."
+}

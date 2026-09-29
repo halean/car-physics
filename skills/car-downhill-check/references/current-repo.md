@@ -126,7 +126,8 @@ scenarios and planted defects.
 
 The shared adapter models tyres as a stated compliance: k 2300 s⁻² and b 48 s⁻¹
 per unit mass (about 6 Hz, 1–1.5 mm sag), building over 10 mm (solimp
-0.5–0.95), with MuJoCo's no-slip friction pass. A rigid contact made tyre loads
+0.5–0.95), no contact margin, and an elliptic friction cone with impratio 50
+(the no-slip pass it replaced could zero a lightly loaded tyre's normal force). A rigid contact made tyre loads
 jitter at ~95 Hz in turns; a regression guard now checks powered-turn tyre
 loads.
 
@@ -168,3 +169,15 @@ inspected views/video, numeric travel/rotation/stop metrics, assumptions and
 remaining untested behavior. The existing runners do not create that complete
 validation note automatically. Render missing orthographic or chassis-only views
 from the current saved scene; old diagnostic images are not fresh evidence.
+
+## Mercedes 35 HP (experiment 009)
+
+As for 007: replace `007_panhard_1891` with `009_mercedes_35hp_1901` and
+`panhard_1891` with `mercedes_35hp`. This is the first sprung car. The
+geometry declares `suspension` (joints, travel and `check_poses`), and the build
+checks run at every pose combined with the steering sweep. Leaf springs are
+`rest_joins`, which are checked at rest only. The runner calibrates spring
+preloads to ride height, then gates on 20–150 mm static deflection, suspension
+travel, and bump and roll steer. `record.py` reads the calibrated preloads from
+`report.json`, so run it after `run.py --stage full`.
+

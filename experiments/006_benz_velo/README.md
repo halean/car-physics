@@ -99,8 +99,10 @@ Experiment 007 then found the 0.02 s contact still effectively rigid, with
 0.1 mm of sag and ~95 Hz load jitter in turns. The tyre contact is now a
 stated compliance: k 2300 s⁻² and b 48 s⁻¹ per unit mass, about 6 Hz bounce and
 1–1.5 mm sag, building over 10 mm (solimp 0.5–0.95). MuJoCo's no-slip friction
-pass (10 iterations) stops braked tyres creeping. This car passes its full suite
-again with it; see the 007 README.
+pass (10 iterations) first stopped braked tyres creeping; experiment 009 replaced
+it with an elliptic friction cone (impratio 50), because the no-slip pass could
+zero a lightly loaded tyre's normal force. This car passes its full suite again
+with it; see the 007 and 009 READMEs.
 
 **Brakes.**
 - *Foot brake:* a band on a countershaft drum. It acts through the differential,
@@ -121,6 +123,9 @@ stopping time. The 0.02 m/s threshold is unchanged.
 Wikipedia's 4.4 N m is inconsistent with its own rating and is not used.
 
 ## Result (MuJoCo 3.14.0, full build `6ecd8208…`)
+
+First validation. For current figures after the 2026-09-29 shared-contact
+changes (elliptic cone, no tyre margin), see `output/full/validation.md`.
 
 **Build checks**
 - 97,472 collider pairs at 121 steering angles.

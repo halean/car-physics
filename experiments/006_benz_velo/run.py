@@ -35,8 +35,9 @@ def contacts(model, data):
         if c.dist > 0:
             continue
         a, b = (model.geom(g).name for g in (c.geom1, c.geom2))
-        if 'slope' in (a, b):
-            other = b if a == 'slope' else a
+        road = next((n for n in (a, b) if n == 'slope' or n.startswith('road_')), None)
+        if road:
+            other = b if a == road else a
             if other.endswith('_rolling'):
                 ground.add(other.removesuffix('_rolling'))
                 continue
@@ -45,8 +46,14 @@ def contacts(model, data):
 
 
 def loop_violation(model, data):
-    rows = data.efc_type[:data.nefc] == mujoco.mjtConstraint.mjCNSTR_EQUALITY
-    return float(np.abs(data.efc_pos[:data.nefc][rows]).max()) if rows.any() else 0.0
+    """Largest linkage-loop closure error (m): connect constraints only (joint couplings
+    such as a steering box are in radians and are not loop closures)."""
+    n = data.nefc
+    rows = data.efc_type[:n] == mujoco.mjtConstraint.mjCNSTR_EQUALITY
+    if rows.any():
+        ids = data.efc_id[:n]
+        rows &= np.array([model.eq_type[i] == mujoco.mjtEq.mjEQ_CONNECT if r else False for i, r in zip(ids, rows)])
+    return float(np.abs(data.efc_pos[:n][rows]).max()) if rows.any() else 0.0
 
 
 def simulate(model, geometry, seconds, slope_rad, control=None, viewer=False):

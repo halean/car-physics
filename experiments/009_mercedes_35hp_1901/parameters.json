@@ -1,0 +1,43 @@
+{
+  "wheelbase": 2.345,
+  "front_track": 1.4,
+  "rear_track": 1.4,
+  "front_radius": 0.455,
+  "rear_radius": 0.51,
+  "tire_radius": 0.06,
+  "tube_radius": 0.02,
+  "frame_width": 0.66,
+  "rail_height": 0.7,
+  "kingpin_inset": 0.13,
+  "steering_arm": 0.14,
+  "column_x": 2.2,
+  "column_y": -0.26,
+  "column_limit_deg": 25,
+  "linkage_heights": [
+    0.26,
+    0.455,
+    0.38,
+    0.395
+  ],
+  "steering_box_ratio": 6.0,
+  "front_travel_m": 0.06,
+  "rear_travel_m": 0.045,
+  "roll_travel_deg": 4.0,
+  "countershaft": [
+    0.6,
+    0.56
+  ],
+  "front_spokes": 12,
+  "rear_spokes": 12,
+  "drag_arm": 0.22,
+  "frame_note": "Frame 0.66 m wide: the suspension-envelope checks showed the steered front wheel reaching 0.76 m rails at full lock with bump or roll (cars of the period narrowed the frame for lock).",
+  "drag_arm_vector": [
+    -0.2,
+    0.0
+  ],
+  "steering_note": "Steering box beside the engine (x 2.20) with the column raked back through the dash; pitman and drag arms point back, joined by a transverse drag link at the front axle's roll-axis height (0.455 m). First layout (Velo-style diagonal link 0.10 m below the roll axis) gave up to 7.7 deg roll steer and the car spun at 16 m/s with the column held straight; locking the axle's roll removed it.",
+  "pitman_arm_vector": [
+    -0.2,
+    0.0
+  ]
+}

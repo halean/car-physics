@@ -1,0 +1,7 @@
+{
+  "engine_radiator": [[3.3, -1.6, 1.6], "PERSP", null, [2.0, 0, 0.75], "body"],
+  "front_suspension": [[2.9, -1.5, 0.35], "PERSP", null, [2.3, -0.2, 0.5], "body"],
+  "chain_drive": [[0.9, -1.7, 0.5], "PERSP", null, [0.3, -0.45, 0.55], "body"],
+  "rear_quarter": [[-2.4, 2.6, 1.8], "PERSP", null, [1.1, 0, 0.7], null],
+  "side_full": [[1.2, -7, 0.7], "ORTHO", 3.8, [1.2, 0, 0.7], null]
+}

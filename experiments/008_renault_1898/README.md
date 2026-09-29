@@ -73,6 +73,9 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
 
 ## Result (MuJoCo 3.14.0, full build `2c3a1273…`)
 
+First validation. For current figures after the 2026-09-29 shared-contact
+changes (elliptic cone, no tyre margin), see `output/full/validation.md`.
+
 **Chassis stage** (`b21842b4…`)
 - 1,251 pairs checked, all 51 joins touching.
 - Gate: 6.37 m.

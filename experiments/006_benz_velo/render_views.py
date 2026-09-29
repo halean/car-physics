@@ -11,7 +11,7 @@ import bpy
 from mathutils import Matrix, Vector
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from linkage import kinematics, world_point
+from linkage import body_transforms, kinematics, suspended_pose, world_point
 
 argv = sys.argv[sys.argv.index('--')+1:]
 geometry = json.loads(Path(argv[0]).read_text())
@@ -46,6 +46,12 @@ wb = geometry['parameters']['wheelbase']
 
 
 def pose(phi):
+    if geometry.get('suspension'):   # sprung car: general forward kinematics
+        T = body_transforms(geometry, suspended_pose(geometry, phi, {}))
+        for o in objects:
+            o.matrix_world = Matrix([list(row) for row in T[o['body']]]) @ rest[o.name]
+        bpy.context.view_layer.update()
+        return
     angles = kinematics(geometry, phi) if phi else {}
     for o in objects:
         b = o['body']
@@ -76,7 +82,7 @@ if len(argv) > 2:   # optional JSON of extra close-ups: {name: [camera, 'PERSP'|
     views.update({k: tuple(v) for k, v in json.loads(Path(argv[2]).read_text()).items()})
 rest_only = {'side', 'rear_brake', 'drive_under'} | (set(views) - {'top', 'front', 'perspective', 'front_linkage',
                                                                     'linkage_top'})
-limit = bodies['column']['joint']['range_deg'][1]
+limit = geometry['steering'].get('column_limit_deg') or bodies['column']['joint']['range_deg'][1]
 for angle in (-limit, 0, limit):
     pose(math.radians(angle))
     for name, (loc, kind, scale, target, hide) in views.items():

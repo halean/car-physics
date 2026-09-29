@@ -10,9 +10,10 @@
 | [006](006_benz_velo/README.md) | Benz Velo (1894): second car, gate-first; double-pivot steering linkage, two-speed drive, two brakes | Implemented |
 | [007](007_panhard_1891/README.md) | Panhard et Levassor (1891): front engine, clutch, three-speed gearbox, chains, rim-block brakes; built on 006 tooling | Implemented |
 | [008](008_renault_1898/README.md) | Renault Type A (1898): shaft drive with universal joints to a live axle, direct-drive third, combined clutch/brake pedal | Implemented |
-| 009 (planned) | Lofted body cross sections; enclosed car envelope | Not implemented |
-| 010 (planned) | Geometry Nodes instancing for wheels and trim | Not implemented |
-| 011 (planned) | Simplified aero geometry and controlled parameter sweeps | Not implemented |
+| [009](009_mercedes_35hp_1901/README.md) | Mercedes 35 HP (1901): leaf-spring suspension on both axles, steering wheel through a box, four speeds, chains; checks at bump, rebound and roll | Implemented |
+| 010 (planned) | Lofted body cross sections; enclosed car envelope | Not implemented |
+| 011 (planned) | Geometry Nodes instancing for wheels and trim | Not implemented |
+| 012 (planned) | Simplified aero geometry and controlled parameter sweeps | Not implemented |
 
 Give each experiment an input configuration, generator, README, generated output,
 and validation report. Keep source inputs separate from rebuildable artifacts.
