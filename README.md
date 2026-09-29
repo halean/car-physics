@@ -1,5 +1,7 @@
 # Procedural cars
 
+**Try it in your browser: [halean.github.io/car-physics](https://halean.github.io/car-physics/).** Lesson 1, *Rolling downhill*, puts an 1891 Panhard on a slope with its forces drawn, and the garage lets you drive every car. For students aged 14 to 18. The physics runs locally on MuJoCo.
+
 A workshop for building car geometry from parameters and mechanical constraints.
 
 - `.venv/`: local Python environment (created, intentionally untracked).
