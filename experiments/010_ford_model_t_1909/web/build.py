@@ -91,7 +91,10 @@ def serve(port):
     import http.server
 
     class Handler(http.server.SimpleHTTPRequestHandler):
-        extensions_map = {**http.server.SimpleHTTPRequestHandler.extensions_map, '.wasm': 'application/wasm'}
+        # Text as UTF-8 explicitly (the page uses − · … and the default guess can be Windows-1252).
+        extensions_map = {**http.server.SimpleHTTPRequestHandler.extensions_map, '.wasm': 'application/wasm',
+                          '.html': 'text/html; charset=utf-8', '.json': 'application/json; charset=utf-8',
+                          '.xml': 'text/xml; charset=utf-8'}
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=str(OUT), **kwargs)

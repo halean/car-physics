@@ -134,7 +134,7 @@ function drawChart() {
     ctx.strokeStyle = v ? css('--warn') : css('--line');
     ctx.setLineDash(v ? [4, 4] : []);
     ctx.beginPath(); ctx.moveTo(pad.l, y(v)); ctx.lineTo(w - pad.r, y(v)); ctx.stroke();
-    ctx.fillText(v ? `${v > 0 ? '+' : '−'}100%` : '0', pad.l - 5, y(v));
+    ctx.fillText(v ? `${v > 0 ? '+' : '\u2212'}100%` : '0', pad.l - 5, y(v));
   }
   ctx.setLineDash([]);
   ctx.textAlign = 'left';
@@ -221,7 +221,8 @@ function showReadout(r) {
     const a = r.axles[axle];
     const pct = Math.round(a.used * 100);
     $(`${axle}Travel`).textContent = `${pct}%`;
-    $(`${axle}Offset`).textContent = `${a.offsetMm >= 0 ? '+' : '−'}${fmt(Math.abs(a.offsetMm))} mm`;
+    const mm = fmt(Math.abs(a.offsetMm));            // sign from the rounded value: no "−0.0"
+    $(`${axle}Offset`).textContent = `${+mm === 0 ? '' : a.offsetMm > 0 ? '+' : '\u2212'}${mm} mm`;
     $(`${axle}Bar`).style.width = `${Math.min(100, pct)}%`;
     $(`${axle}Gauge`).classList.toggle('on-stops', a.used >= 1);
     $(`${axle}Peak`).textContent = `peak ${Math.round(a.peak * 100)}%`;
