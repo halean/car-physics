@@ -16,5 +16,7 @@
 | 012 (planned) | Geometry Nodes instancing for wheels and trim | Not implemented |
 | 013 (planned) | Simplified aero geometry and controlled parameter sweeps | Not implemented |
 
+[web](web/README.md): Brass Era Garage, every validated car in the browser with shared controls.
+
 Give each experiment an input configuration, generator, README, generated output,
 and validation report. Keep source inputs separate from rebuildable artifacts.

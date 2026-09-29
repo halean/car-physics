@@ -1,0 +1,295 @@
+<meta charset="utf-8">
+<title>Brass Era Garage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --paper: #f1f2ec; --panel: #e5e8df; --ink: #1b211e; --muted: #5d6760; --line: #c5cbbf;
+    --green: #1f4a3a; --brass: #b8892b; --warn: #b23a26; --good: #2f7a52;
+    --throttle: #2f7a52; --brake: #b23a26; --lever: #b8892b;
+    --sky: #dfe3da; --field: #a8b592; --road: #c9b58a;
+    --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+    --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #121614; --panel: #1a201d; --ink: #e5e9e1; --muted: #99a39c; --line: #313a35;
+      --green: #6aae8c; --brass: #d7a84b; --warn: #e0654e; --good: #62b889;
+      --throttle: #62b889; --brake: #e0654e; --lever: #d7a84b;
+      --sky: #1d2320; --field: #2c3829; --road: #5a4f3a;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #121614; --panel: #1a201d; --ink: #e5e9e1; --muted: #99a39c; --line: #313a35;
+    --green: #6aae8c; --brass: #d7a84b; --warn: #e0654e; --good: #62b889;
+    --throttle: #62b889; --brake: #e0654e; --lever: #d7a84b;
+    --sky: #1d2320; --field: #2c3829; --road: #5a4f3a;
+  }
+  [hidden] { display: none !important; }   /* grid/flex rules below must not un-hide */
+  body { background: var(--paper); color: var(--ink); font: 15px/1.5 var(--body); }
+  .app { max-width: 1440px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 32px; display: grid; gap: 12px; }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+  h1 { margin: 0; font: 700 30px/1.1 var(--display); letter-spacing: .01em; text-wrap: balance; }
+  .sub { margin: 0; color: var(--muted); }
+  h2 { margin: 0; font: 600 13px/1.2 var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+  .cars { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cars button { display: grid; gap: 0; text-align: left; padding: 6px 12px; }
+  .cars button small { font: 400 12px var(--mono); color: var(--muted); letter-spacing: 0; text-transform: none; }
+  .cars button[aria-pressed="true"] { background: var(--green); color: var(--paper); border-color: var(--green); }
+  .cars button[aria-pressed="true"] small { color: inherit; opacity: .8; }
+  .stage { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 14px; align-items: start; }
+  @media (max-width: 960px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+  .view-col { display: grid; gap: 12px; min-width: 0; }
+  .viewport { position: relative; height: clamp(300px, 54vh, 620px); border-radius: 6px; overflow: hidden; background: var(--sky); border: 1px solid var(--line); }
+  .viewport canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .hud { position: absolute; left: 14px; top: 12px; display: grid; gap: 2px; pointer-events: none; }
+  .speed { font: 600 40px/1 var(--mono); font-variant-numeric: tabular-nums; }
+  .speed small, .hud-line small { font: 600 13px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-left: 4px; }
+  .hud-line { font: 400 14px var(--mono); font-variant-numeric: tabular-nums; }
+  .rate { position: absolute; right: 12px; top: 10px; font: 400 12px var(--mono); color: var(--muted); }
+  .status { position: absolute; inset: auto 12px 12px 12px; padding: 10px 12px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); font-size: 14px; z-index: 2; }
+  .status.error { border-color: var(--warn); }
+  .toast { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); padding: 6px 12px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); font-size: 13px; pointer-events: none; }
+  .pedal { position: absolute; bottom: 14px; width: 64px; height: 118px; border-radius: 10px 10px 6px 6px; border: 2px solid var(--line); background: color-mix(in srgb, var(--panel) 85%, transparent); display: grid; place-items: end center; padding-bottom: 8px; font: 600 12px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); touch-action: none; user-select: none; cursor: pointer; overflow: hidden; }
+  .pedal::before { content: ""; position: absolute; inset: 10px 12px 30px; border-radius: 4px; background: repeating-linear-gradient(180deg, var(--line) 0 3px, transparent 3px 9px); }
+  .pedal .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; opacity: .35; }
+  .pedal.pressed { border-color: var(--ink); }
+  #padBrake { left: 14px; } #padBrake .fill { background: var(--brake); }
+  #padThrottle { right: 14px; } #padThrottle .fill { background: var(--throttle); }
+  @media (hover: hover) and (pointer: fine) { .pedal { width: 52px; height: 92px; opacity: .85; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .cockpit { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px; align-items: stretch; }
+  @media (max-width: 640px) { .cockpit { grid-template-columns: auto minmax(0, 1fr); } .steer-box { grid-column: 1 / -1; } }
+  .bars { display: flex; gap: 10px; align-items: flex-end; }
+  .bar { display: grid; gap: 4px; justify-items: center; font: 600 11px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); width: 44px; text-align: center; }
+  .bar .track { position: relative; width: 20px; height: 110px; border-radius: 4px; background: color-mix(in srgb, var(--line) 70%, transparent); overflow: hidden; }
+  .bar .track i { position: absolute; left: 0; right: 0; bottom: 0; height: 0; border-radius: 4px; }
+  .bar output { font: 600 12px var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+  #barThrottle i { background: var(--throttle); } #barPedal i { background: var(--brake); } #barLever i { background: var(--lever); }
+  .bar.off { opacity: .35; }
+  .trace { display: grid; gap: 6px; min-width: 0; }
+  #trace, #chart { width: 100%; display: block; }
+  #trace { height: 132px; }
+  #chart { height: 140px; }
+  .legend { display: flex; gap: 12px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+  .legend span::before { content: ""; display: inline-block; width: 14px; height: 3px; margin-right: 6px; vertical-align: middle; background: currentColor; }
+  .lg-t { color: var(--throttle); } .lg-b { color: var(--brake); } .lg-l { color: var(--lever); } .lg-f { color: var(--brass); } .lg-r { color: var(--green); }
+  .steer-box { display: grid; justify-items: center; align-content: center; gap: 4px; min-width: 110px; }
+  #wheelSvg { width: 96px; height: 96px; }
+  #wheelSvg .rim { fill: none; stroke: var(--ink); stroke-width: 6; }
+  #wheelSvg .spoke { stroke: var(--ink); stroke-width: 5; stroke-linecap: round; }
+  #wheelSvg .mark { fill: var(--brass); }
+  .steer-box output { font: 400 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .instruments { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 12px; }
+  @media (max-width: 760px) { .instruments { grid-template-columns: minmax(0, 1fr); } }
+  .gauge { display: grid; gap: 4px; }
+  .gauge-row { display: flex; justify-content: space-between; gap: 8px; font: 400 13px var(--mono); font-variant-numeric: tabular-nums; }
+  .gauge-row b { font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; }
+  .gtrack { position: relative; height: 10px; border-radius: 5px; background: color-mix(in srgb, var(--line) 70%, transparent); overflow: hidden; }
+  .gtrack i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--brass); border-radius: 5px; }
+  #rearGauge .gtrack i { background: var(--green); }
+  .gauge.on-stops .gtrack i { background: var(--warn); }
+  .gauge .stops { display: none; color: var(--warn); font: 600 12px var(--display); letter-spacing: .08em; }
+  .gauge.on-stops .stops { display: inline; }
+  .muted { color: var(--muted); }
+  .plan { display: grid; grid-template-columns: 22px 30px 22px; grid-template-rows: 22px 34px 22px; justify-content: start; align-items: center; justify-items: center; }
+  .pip { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); }
+  .pip.down { background: var(--good); border-color: var(--good); }
+  .plan .axle { grid-column: 2; width: 4px; height: 100%; background: var(--line); grid-row: 1 / 4; }
+  #front_left { grid-area: 1 / 1; } #front_right { grid-area: 1 / 3; } #rear_left { grid-area: 3 / 1; } #rear_right { grid-area: 3 / 3; }
+  .ride { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .big { font: 600 24px/1 var(--mono); font-variant-numeric: tabular-nums; }
+  .controls { display: grid; gap: 12px; }
+  fieldset { margin: 0; border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px 14px; display: grid; gap: 12px; background: var(--panel); min-width: 0; }
+  legend { padding: 0 6px; font: 600 13px var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+  .car-card h3 { margin: 0; font: 700 22px/1.1 var(--display); }
+  .car-card p { margin: 0; font-size: 14px; }
+  .field { display: grid; gap: 4px; }
+  .field-head { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+  .field-head output { font: 400 13px var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hint { font-size: 12.5px; color: var(--muted); margin: 0; }
+  input[type="range"] { width: 100%; accent-color: var(--green); margin: 0; }
+  input[type="range"]:disabled { opacity: .45; }
+  .gears { display: flex; flex-wrap: wrap; gap: 6px; }
+  .gears button[aria-pressed="true"] { background: var(--green); color: var(--paper); border-color: var(--green); }
+  .check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+  .check input { margin-top: 3px; accent-color: var(--green); }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  button { font: 600 13px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; cursor: pointer; }
+  button:hover { border-color: var(--green); }
+  button:focus-visible, input:focus-visible, .pedal:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+  .segmented { display: grid; grid-template-columns: repeat(2, 1fr); border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+  .segmented input { position: absolute; opacity: 0; pointer-events: none; }
+  .segmented label { text-align: center; padding: 7px 4px; font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; background: var(--paper); }
+  .segmented label + input + label { border-left: 1px solid var(--line); }
+  .segmented input:checked + label { background: var(--green); color: var(--paper); }
+  .segmented input:focus-visible + label { outline: 2px solid var(--brass); outline-offset: -3px; }
+  #restart { background: var(--green); color: var(--paper); border-color: var(--green); }
+  details { border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; font-size: 14px; }
+  summary { cursor: pointer; font: 600 13px var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+  details p, details ul { max-width: 65ch; }
+  .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 8px 0 0; }
+  .keys dt { font: 600 12.5px var(--mono); } .keys dd { margin: 0; }
+  code { font: 12.5px var(--mono); overflow-wrap: anywhere; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <header class="top">
+    <h1>Brass Era Garage</h1>
+    <p class="sub">Five early cars and one aftermarket upgrade, simulated in MuJoCo <span id="mjv">3.14.0</span>. Same controls; each car's own mechanisms.</p>
+  </header>
+  <nav class="cars" id="cars" aria-label="Car"></nav>
+  <main class="stage">
+    <section class="view-col" aria-label="Simulation">
+      <div id="viewport" class="viewport">
+        <div class="hud">
+          <div class="speed"><span id="speed">0.0</span><small>km/h</small></div>
+          <div class="hud-line"><span id="gearHud">—</span> · <span id="rpm">0</span><small>rpm</small></div>
+          <div class="hud-line"><span id="distance">0.0</span><small>m</small></div>
+        </div>
+        <div id="rate" class="rate"></div>
+        <div id="toast" class="toast" hidden></div>
+        <div id="padBrake" class="pedal" role="button" tabindex="0" aria-label="Brake pedal: press and hold; higher is harder"><span class="fill"></span>Brake</div>
+        <div id="padThrottle" class="pedal" role="button" tabindex="0" aria-label="Throttle: press and hold for more than the hand throttle"><span class="fill"></span>Gas</div>
+        <div id="status" class="status">Loading…</div>
+      </div>
+
+      <div class="panel cockpit">
+        <div class="bars" aria-label="Driver inputs">
+          <div class="bar" id="barThrottle"><output id="outThrottle">0%</output><div class="track"><i></i></div>Throttle</div>
+          <div class="bar" id="barPedal"><output id="outPedal">0%</output><div class="track"><i></i></div><span id="pedalName">Pedal</span></div>
+          <div class="bar" id="barLever"><output id="outLever">0%</output><div class="track"><i></i></div><span id="leverName">Lever</span></div>
+        </div>
+        <div class="trace">
+          <div class="panel-head"><h2>Inputs, last 8 s</h2>
+            <div class="legend"><span class="lg-t">Throttle</span><span class="lg-b" id="lgPedal">Brake</span><span class="lg-l" id="lgLever">Lever</span></div></div>
+          <canvas id="trace" aria-label="Throttle, brake pedal and brake lever over the last 8 seconds"></canvas>
+        </div>
+        <div class="steer-box">
+          <svg id="wheelSvg" viewBox="-50 -50 100 100" aria-hidden="true"><g id="wheelRot"><circle class="rim" r="40"/><line class="spoke" x1="-40" y1="0" x2="40" y2="0"/><line class="spoke" x1="0" y1="0" x2="0" y2="40"/><circle class="mark" cx="0" cy="-40" r="6"/></g></svg>
+          <output id="steerOut">0°</output>
+          <span class="hint" id="steerKind">Steering</span>
+        </div>
+      </div>
+
+      <div class="instruments">
+        <div class="panel" id="suspPanel">
+          <div class="panel-head"><h2>Axle travel against the stops</h2>
+            <div class="legend"><span class="lg-f">Front</span><span class="lg-r">Rear</span></div></div>
+          <canvas id="chart" aria-label="Front and rear axle travel over the last 8 seconds"></canvas>
+          <div id="frontGauge" class="gauge">
+            <div class="gauge-row"><b>Front</b><span><span class="stops">ON STOPS</span> <span id="frontTravel">0%</span> · <span id="frontOffset">0.0 mm</span></span></div>
+            <div class="gtrack"><i id="frontBar"></i></div>
+          </div>
+          <div id="rearGauge" class="gauge">
+            <div class="gauge-row"><b>Rear</b><span><span class="stops">ON STOPS</span> <span id="rearTravel">0%</span> · <span id="rearOffset">0.0 mm</span></span></div>
+            <div class="gtrack"><i id="rearBar"></i></div>
+          </div>
+          <p class="hint" id="noSusp" hidden>This car has no suspension in the model: its axles are fixed to the frame.</p>
+        </div>
+        <div class="panel">
+          <h2>Ride</h2>
+          <div class="ride">
+            <div class="plan" aria-hidden="true"><span id="front_left" class="pip"></span><span class="axle"></span><span id="front_right" class="pip"></span><span id="rear_left" class="pip"></span><span id="rear_right" class="pip"></span></div>
+            <div id="wheelsText" class="muted">4 of 4 on the road</div>
+          </div>
+          <div><div class="big"><span id="seatRms">0.00</span> <span class="muted" style="font-size:14px">g</span></div>
+            <p class="hint">Vertical acceleration of the body at seat height, RMS over the last 2 s.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <aside id="controls" class="controls" aria-label="Controls">
+      <div class="panel car-card">
+        <h3 id="carName">—</h3>
+        <p class="muted" id="carMeta"></p>
+        <p id="carControls"></p>
+      </div>
+      <fieldset>
+        <legend>Drive</legend>
+        <div class="gears" id="gears" role="group" aria-label="Gear"></div>
+        <div class="field"><div class="field-head"><label for="throttle">Hand throttle</label><output id="throttleOut"></output></div>
+          <input type="range" id="throttle" min="0" max="100" step="1" value="100"></div>
+        <div class="field"><div class="field-head"><label for="lever" id="leverLabel">Brake lever</label><output id="leverOut"></output></div>
+          <input type="range" id="lever" min="0" max="100" step="1" value="0">
+          <p class="hint" id="leverHint"></p></div>
+        <p class="hint" id="pedalHint"></p>
+        <label class="check"><input type="checkbox" id="driver" checked><span>Driver holds the straight line</span></label>
+        <div class="field"><div class="field-head"><label for="steer">Steering</label><output id="steerSlider"></output></div>
+          <input type="range" id="steer" min="-100" max="100" step="1" value="0"></div>
+      </fieldset>
+
+      <fieldset id="springs" hidden>
+        <legend>Springs</legend>
+        <div class="presets" role="group" aria-label="Spring presets">
+          <button type="button" data-preset="design">Design</button>
+          <button type="button" data-preset="soft">Soft</button>
+          <button type="button" data-preset="sag">Soft, sagging</button>
+          <button type="button" data-preset="stiff">Very stiff</button>
+          <button type="button" data-preset="bouncy">Little damping</button>
+        </div>
+        <div class="field"><div class="field-head"><label for="frontRate">Front spring rate</label><output id="frontRateOut"></output></div>
+          <input type="range" id="frontRate" min="5" max="150" step="1"></div>
+        <div class="field"><div class="field-head"><label for="rearRate">Rear spring rate</label><output id="rearRateOut"></output></div>
+          <input type="range" id="rearRate" min="5" max="150" step="1"></div>
+        <div class="field"><div class="field-head"><label for="frontDamping">Front damping</label><output id="frontDampingOut"></output></div>
+          <input type="range" id="frontDamping" min="0" max="8" step="0.01"></div>
+        <div class="field"><div class="field-head"><label for="rearDamping">Rear damping</label><output id="rearDampingOut"></output></div>
+          <input type="range" id="rearDamping" min="0" max="8" step="0.01"></div>
+        <label class="check"><input type="checkbox" id="keepRide" checked><span>Keep ride height<br><span class="hint">Re-arch the leaves so the car sits at design height. Off: a softer spring keeps its shape and the car sags.</span></span></label>
+        <p class="hint" id="springHint"></p>
+      </fieldset>
+
+      <fieldset id="shockSet" hidden>
+        <legend>Friction shocks</legend>
+        <div class="field"><div class="field-head"><label for="shock">Knee friction (star nut)</label><output id="shockOut"></output></div>
+          <input type="range" id="shock" min="0" max="150" step="1"></div>
+        <p class="hint">Each Hartford-type unit clamps its scissor knee between friction discs. 0 leaves the springs free; design is 40 N·m.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Road</legend>
+        <div class="segmented" role="radiogroup" aria-label="Road">
+          <input type="radio" name="road" id="roadBumps" value="bumps" checked><label for="roadBumps">Bump course</label>
+          <input type="radio" name="road" id="roadFlat" value="flat"><label for="roadFlat">Flat road</label>
+        </div>
+        <button type="button" id="restart">Restart from the line</button>
+        <p class="hint">Bars 30 to 50 mm from 10 m, some under one side only, then a 15 mm washboard. Drag to orbit; scroll to zoom.</p>
+      </fieldset>
+
+      <details>
+        <summary>Keyboard, gamepad and pedals</summary>
+        <dl class="keys" id="keys"></dl>
+        <p class="hint">Gamepad: right trigger throttle, left trigger brake pedal, left stick steers, bumpers change gear, A toggles the brake lever, Y the driver, Start restarts. The on-screen pedals work with a mouse or a finger: press higher on a pedal to press it harder.</p>
+      </details>
+      <details>
+        <summary>About this simulation</summary>
+        <p>Every car runs on MuJoCo's official WebAssembly build, the same engine version as the repository's Python validation. Each car's model is its validated file: bodies, joints, springs, tyres, engine and brakes. For each car, the build drives its own Python controls over a launch and a brake application. <code>parity_test.mjs</code> checks that this page's controls reproduce the result.</p>
+        <ul>
+          <li>The hand throttle scales engine torque below the governor. The cars had governors, hand throttles or both; the throttle is this page's common control.</li>
+          <li>Settings you change here are for exploring. Only the design values passed the repository's checks.</li>
+          <li>The tyres are stiffer than real tyres of the period, so wheels lift more on bumps.</li>
+        </ul>
+        <p>Run it locally from the repository: <code>.venv/bin/python experiments/web/build.py --serve</code>, then open <code>localhost:8321/local.html</code>.</p>
+      </details>
+    </aside>
+  </main>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+/*sim.js*/
+/*input.js*/
+/*app.js*/
+</script>

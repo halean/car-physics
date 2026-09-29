@@ -16,3 +16,6 @@ and the measurements used by the MuJoCo brake experiment.
 [Lessons learned](lessons_learned.md) collects what building cars 001–010
 taught about vehicle engineering, MuJoCo/Blender modelling pitfalls and the
 validation process. Read it before designing a new car.
+
+[Driving controls](driving_controls.md) covers how simulators display and take throttle and
+brake input, and how the period cars' own controls map onto the shared web controls.
