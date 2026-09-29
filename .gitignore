@@ -3,3 +3,5 @@ __pycache__/
 *.py[cod]
 experiments/*/output/
 *.blend1
+# PhET-related work stays local
+phet_sims/
