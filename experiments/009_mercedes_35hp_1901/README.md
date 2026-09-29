@@ -101,7 +101,7 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
   `part_inertia`. It was missing a division by mass, so every small body's
   centre-of-mass offset was multiplied by its mass in kilograms. This car's rear
   axle, whose mass sits along the radius rods, had its centre of mass placed
-  about 14 m forward. The bug was present since 006. After the fix, the static
+  about 3.8 m forward. The bug was present since 006. After the fix, the static
   rear deflection fell from 74 to 42 mm and loop closure improved from 23 to
   2 µm. All five cars were revalidated and re-recorded.
 - **Loop metric.** `max_loop_violation_m` had mixed the steering box's

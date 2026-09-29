@@ -12,6 +12,11 @@ claiming it is fixed or complete. Saving draft artifacts is allowed throughout.
 
 ## Establish the assembly
 
+- Read [car_tech/lessons_learned.md](../../car_tech/lessons_learned.md) first:
+  it lists the failures earlier cars hit (brakes through a differential, roll
+  and bump steer, tyre contact settings, inertia placement) and how each was
+  caught.
+
 - Identify the actual model, parameters, units, wheel layout, axle axes and
   moving/fixed parts. Never validate a previous car in place of the requested one.
 - Declare mass, inertia, center of mass, tire/road friction and joint assumptions.

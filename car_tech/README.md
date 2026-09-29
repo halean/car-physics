@@ -12,3 +12,7 @@ strength, stability, manufacturability, or roadworthiness.
 
 [Braking](braking.md) covers rotating/fixed brake parts, stopping forces, holding,
 and the measurements used by the MuJoCo brake experiment.
+
+[Lessons learned](lessons_learned.md) collects what building cars 001–010
+taught about vehicle engineering, MuJoCo/Blender modelling pitfalls and the
+validation process. Read it before designing a new car.
