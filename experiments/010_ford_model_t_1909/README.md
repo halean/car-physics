@@ -219,7 +219,7 @@ results above apply to the design values.
 ## In the browser: Model T Spring Lab
 
 ```bash
-.venv/bin/python experiments/010_ford_model_t_1909/web/build.py --serve   # then open localhost:8000/local.html
+.venv/bin/python experiments/010_ford_model_t_1909/web/build.py --serve   # then open localhost:8321/local.html
 ~/.nvm/versions/node/v24.21.0/bin/node experiments/010_ford_model_t_1909/web/parity_test.mjs
 ```
 

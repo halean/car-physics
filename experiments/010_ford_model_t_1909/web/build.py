@@ -2,7 +2,7 @@
 
 .venv/bin/python experiments/010_ford_model_t_1909/web/build.py [--serve [PORT]]
 
---serve then serves output/web on localhost (default port 8000); open /local.html.
+--serve then serves output/web on localhost (default port 8321); open /local.html.
 
 Run after run.py --stage full. Writes:
 - model_t_bumps.xml, model_t_flat.xml: the physics model Python validates (make_model with the
@@ -104,4 +104,4 @@ if __name__ == '__main__':
     main()
     if '--serve' in sys.argv:
         rest = sys.argv[sys.argv.index('--serve')+1:]
-        serve(int(rest[0]) if rest else 8000)
+        serve(int(rest[0]) if rest else 8321)
