@@ -60,6 +60,7 @@ geometry = dict(source=str(source), source_sha256=hashlib.sha256(source.read_byt
                 steering=report['steering'], joins=report['joins'], drive=report.get('drive'),
                 rest_joins=report.get('rest_joins', []), suspension=report.get('suspension'),
                 couplings=report.get('couplings', []),
+                excluded_pairs=report.get('excluded_pairs', []),
                 colliders=colliders, collider_objects=sorted({c['object'] for v in colliders.values() for c in v}),
                 source_objects=len(objects))
 (out/'geometry.json').write_text(json.dumps(geometry, indent=2)+'\n')

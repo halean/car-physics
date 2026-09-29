@@ -27,7 +27,8 @@ report = json.loads(Path(bpy.data.filepath).with_name('report.json').read_text()
 scene = bpy.context.scene
 objects = [o for o in bpy.data.collections[report['collection']].objects if o.type in {'MESH', 'CURVE'}]
 rest = {o.name: o.matrix_world.copy() for o in objects}
-steer = {'knuckle_left', 'knuckle_right', 'tie_rod', 'column', 'drag_link'}
+steer = {'knuckle_left', 'knuckle_right', 'tie_rod', 'column', 'drag_link', 'track_rod_left', 'track_rod_right'}
+suspension = ('pillar', 'lower_arm', 'upper_arm', 'upright')
 body_parts = ('Seat', 'Bench', 'Body', 'Bonnet', 'Engine box', 'Dash', 'Footboard', 'Fuel tank', 'Mudguard', 'Floor',
               'Front mudguard', 'Rear mudguard', 'Front wing', 'Rear wing', 'Running board', 'Tonneau', 'Front seat',
               'Rear seat', 'Scuttle', 'Radiator', 'Handwheel') + hide
@@ -35,7 +36,8 @@ for o in objects:
     b = o['body']
     o.color = ((.8, .1, .1, 1) if 'brake' in o.name.lower() else
                (1, .45, .05, 1) if b in steer else
-               (.1, .5, .9, 1) if b.startswith('pillar') or b.endswith('_axle') or o.name.startswith(('Front spring', 'Rear spring')) else
+               (.1, .5, .9, 1) if b.startswith(suspension) or b.endswith('_axle') or o.name.startswith(('Front spring', 'Rear spring')) else
+               (.55, .25, .75, 1) if b.startswith('halfshaft') else
                (.35, .35, .35, 1) if b.startswith(('front', 'rear')) else (.2, .45, .3, 1))
     o.hide_render = o.name.startswith(body_parts)
 scene.render.engine = 'BLENDER_WORKBENCH'
@@ -56,7 +58,10 @@ sus = geometry.get('suspension') or {}
 limit = math.radians(geometry['steering']['column_limit_deg'])
 p = report['parameters']
 travel = p.get('front_travel_m', .06)
-if sus.get('independent_front'):
+if sus.get('independent_front') and sus.get('wishbones'):
+    bump = lambda a: dict(front_left=travel*a, front_right=-travel*a)
+    caption2 = 'ONE WHEEL UP, THE OTHER DOWN: each wheel rises on its own wishbones; each track rod follows its own wheel'
+elif sus.get('independent_front'):
     bump = lambda a: dict(front_left=travel*a, front_right=-travel*a)
     caption2 = 'ONE WHEEL UP, THE OTHER DOWN: each pillar moves alone; the tie rod tilts, the drag link stays put'
 elif 'front_swing_joint' in sus:
@@ -126,7 +131,7 @@ caps = [(0, SEG[0], 'STEERING LOCK TO LOCK at ride height'), (SEG[0], SEG[0]+SEG
 vf = ['[0:v][1:v]hstack=inputs=2[v]']
 draw = ','.join(f"drawtext=text='{esc(c)}':x=16:y=14:fontcolor=white:fontsize=22:box=1:boxcolor=black@.45:boxborderw=8:enable='between(t,{a},{b})'"
                 for a, b, c in caps if c)
-draw += f",drawtext=text='{esc(report['collection'].split('| ')[-1]+'. Orange: steering. Blue: suspension. Body hidden. Posed by the linkage solver of the build checks.')}':x=16:y=h-34:fontcolor=white:fontsize=17:box=1:boxcolor=black@.45:boxborderw=6"
+draw += f",drawtext=text='{esc(report['collection'].split('| ')[-1]+'. Orange: steering. Blue: suspension. Purple: drive shafts. Body hidden. Posed by the linkage solver of the build checks.')}':x=16:y=h-34:fontcolor=white:fontsize=17:box=1:boxcolor=black@.45:boxborderw=6"
 subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-framerate', str(FPS), '-i', str(tmp/'quarter_%04d.png'),
                 '-framerate', str(FPS), '-i', str(tmp/'front_%04d.png'), '-filter_complex', f'{vf[0]};[v]{draw}[o]',
                 '-map', '[o]', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', str(out)], check=True)

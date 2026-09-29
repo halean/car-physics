@@ -95,16 +95,44 @@ def suspended_pose(geometry, phi, pose):
     pose keys: front_heave | front_swing, front_roll, rear_swing | rear_heave, rear_roll; or, with
     independent_front, front_left and front_right (each pillar's travel, up positive)."""
     s, sus = geometry['steering'], geometry['suspension']
-    C, P0 = np.array(s['column_3d']), np.array(s['pitman_ball_3d'])
-    D0, KL = np.array(s['drag_ball_3d']), np.array(s['kingpin_left_3d'])
-    P = C+_rz(phi)@(P0-C)
-    drag = np.linalg.norm(D0-P0)
     angle = lambda v: math.atan2(v[1], v[0])
     q = {'column_joint': phi}
+    if s.get('type') != 'centre_drop_arm':    # pitman and drag link (double pivot)
+        C, P0 = np.array(s['column_3d']), np.array(s['pitman_ball_3d'])
+        D0, KL = np.array(s['drag_ball_3d']), np.array(s['kingpin_left_3d'])
+        P = C+_rz(phi)@(P0-C)
+        drag = np.linalg.norm(D0-P0)
+    if sus.get('independent_front') and s.get('type') == 'centre_drop_arm':
+        # Drop arm on a lengthwise sector shaft swings sideways; a track rod from its ball to each
+        # knuckle (split track rods, so each wheel's travel acts on its own rod only).
+        hl, hr = pose.get('front_left', 0.0), pose.get('front_right', 0.0)
+        ups = {'left': _front_travel(sus, 'left', hl), 'right': _front_travel(sus, 'right', hr)}
+        axis = np.array(s['sector_axis'], dtype=float)
+        Csec, B0 = np.array(s['sector_point']), np.array(s['drop_ball_3d'])
+        B = Csec+_axis_angle(axis, phi)@(B0-Csec)
+        qc = np.array([math.cos(phi/2), *(math.sin(phi/2)*axis/np.linalg.norm(axis))])
+        qc_inv = qc*np.array([1, -1, -1, -1])
+        for side in ('left', 'right'):
+            KP, A0 = np.array(s['kingpins_3d'][side]), np.array(s['arm_balls_3d'][side])
+            up, _ = ups[side]
+            A = lambda t: KP+up+_rz(t)@(A0-KP)
+            L = np.linalg.norm(A0-B0)
+            t = _solve_bracketed(lambda t: np.linalg.norm(A(t)-B)-L, phi)
+            q[f'knuckle_{side}_joint'] = t
+            q[f'track_rod_{side}_joint'] = _quat_mul(qc_inv, _quat_between(A0-B0, A(t)-B))
+        q.update(_wishbone_joints(sus, ups))
+        left, right = q['knuckle_left_joint'], q['knuckle_right_joint']
+        for key in ('rear_swing', 'rear_heave', 'rear_roll'):
+            if f'{key}_joint' in sus:
+                q[sus[f'{key}_joint']] = pose.get(key, 0.0)
+        for c in geometry.get('couplings', []):
+            if c['joint2'] == 'column_joint':
+                q[c['joint1']] = c['ratio']*phi
+        return q
     if sus.get('independent_front'):
         # Sliding pillars: each wheel carrier rises on its own vertical pillar and steers about it.
         hl, hr = pose.get('front_left', 0.0), pose.get('front_right', 0.0)
-        up_l, up_r = np.array([0, 0, hl]), np.array([0, 0, hr])
+        up_l, up_r = _front_travel(sus, 'left', hl)[0], _front_travel(sus, 'right', hr)[0]
         D = lambda t: KL+up_l+_rz(t)@(D0-KL)
         left = _solve_bracketed(lambda t: np.linalg.norm(D(t)-P)-drag, phi)
         KL3, KR3 = np.array(s['kingpins_3d']['left']), np.array(s['kingpins_3d']['right'])
@@ -161,6 +189,31 @@ def suspended_pose(geometry, phi, pose):
     if sus.get('shafts'):
         q.update(_shafts(geometry, q))
     return q
+
+
+def _front_travel(sus, side, h):
+    """Displacement of an independent front upright for wheel travel h (up positive), and the arm
+    angle. Sliding pillar: straight up. Equal parallel wishbones of length L (a parallelogram): the
+    upright keeps its orientation and moves on an arc, inboard by L(1-cos a) as it rises."""
+    arms = sus.get('wishbones')
+    if not arms:
+        return np.array([0.0, 0.0, h]), None
+    L, s = arms['length'], (1 if side == 'left' else -1)
+    a = math.asin(max(-1.0, min(1.0, h/L)))
+    return np.array([0.0, s*L*(math.cos(a)-1), L*math.sin(a)]), a
+
+
+def _wishbone_joints(sus, ups):
+    """Joint values for parallel wishbones: lower and upper arms and drive shaft turn by a, the
+    upright by -a relative to the lower arm (arm axes are set so that positive a raises the wheel)."""
+    arms = sus.get('wishbones')
+    if not arms:
+        return {sus['front_left_joint']: ups['left'][0][2], sus['front_right_joint']: ups['right'][0][2]}
+    out = {}
+    for side, (_, a) in ups.items():
+        for joint, ratio in arms['joints'][side].items():
+            out[joint] = ratio*a
+    return out
 
 
 def _shafts(geometry, q):

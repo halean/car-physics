@@ -1,7 +1,7 @@
-# Lessons learned: building and validating cars 001–011
+# Lessons learned: building and validating cars 001–012
 
-What building the Motorwagen, Velo, Panhard, Renault, Mercedes 35 HP, Model T and
-Lancia Lambda taught us, gathered in one place. Each lesson names the experiment where it was
+What building the Motorwagen, Velo, Panhard, Renault, Mercedes 35 HP, Model T,
+Lancia Lambda and Traction Avant taught us, gathered in one place. Each lesson names the experiment where it was
 learned; that experiment's README has the numbers. Read this before starting a
 new car, alongside the [car-downhill-check skill](../skills/car-downhill-check/SKILL.md).
 
@@ -77,6 +77,23 @@ new car, alongside the [car-downhill-check skill](../skills/car-downhill-check/S
   that for a dead band. Without castor there is no self-centring, so the
   "driver holds the line" controller, like a real driver, is the fix. The
   experiments are tabled in the 010 README.
+- **A negative control must fail for the right reason** (012). The locked-
+  differential control expected a wrong wheel-speed ratio. With front-wheel
+  drive, the locked axle made the car unsteerable instead, so the ratio check
+  had nothing to measure. Record which check catches a control, not just
+  that one did.
+- **Grade-limit checks are ill-conditioned near the limit** (012). At 93% of
+  the predicted limit, a 0.5% loaded-tyre-radius effect became a 6.6%
+  distance error. Gate hill starts at about 70–75% of the predicted limit,
+  and keep the steep run as a finding.
+- **A driver model can destabilise a sound car** (012). A pursuit driver
+  looking 0.8 s ahead set up a growing weave in the coasting Traction at
+  27 m/s (stable while the front wheels pull). Adding servo damping made it
+  worse; a longer preview fixed it. Report the short-preview weave, and do
+  not tune the car.
+- **Planted defects must actually move something** (012). A test matched
+  collider names with a `:` suffix that box parts do not have. It moved
+  nothing and failed silently, and only its own negative result exposed it.
 - **Match the drag link to the wheel's travel** (011). With a sliding pillar
   the wheel moves straight up. A lengthwise drag link whose end swings
   sideways then steers the wheel at first order (2.5° at 60 mm); a transverse

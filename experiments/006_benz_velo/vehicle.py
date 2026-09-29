@@ -69,6 +69,8 @@ def excluded_pairs(geometry):
     pairs = {tuple(sorted((name, b['parent']))) for name, b in geometry['bodies'].items() if b['parent']}
     pairs |= {tuple(sorted((l['body1'], l['body2']))) for l in geometry['loops']}
     pairs |= {tuple(sorted((c['body1'], c['body2']))) for c in geometry.get('couplings', [])}
+    # Declared: e.g. a drive shaft and the knuckle its outer joint sits in (both posed by joints).
+    pairs |= {tuple(sorted(p)) for p in geometry.get('excluded_pairs', [])}
     return sorted(pairs)
 
 

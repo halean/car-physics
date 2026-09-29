@@ -1,0 +1,46 @@
+{
+  "total_mass_kg": 1000,
+  "mass_source": "Assumed: 1000 kg empty, no occupants. The sources used give no weight for the 7A.",
+  "masses_kg": {
+    "rear_wheel": 16.0,
+    "front_wheel": 18.0,
+    "lower_arm_left": 6.0,
+    "lower_arm_right": 6.0,
+    "upper_arm_left": 4.0,
+    "upper_arm_right": 4.0,
+    "upright_left": 5.0,
+    "upright_right": 5.0,
+    "knuckle": 8.0,
+    "track_rod_left": 1.2,
+    "track_rod_right": 1.5,
+    "column": 2.0,
+    "rear_axle": 55.0,
+    "steering_wheel": 3.0,
+    "halfshaft_left": 5.0,
+    "halfshaft_right": 5.0
+  },
+  "chassis_com": [1.8, 0.0, 0.55],
+  "chassis_inertia": [170, 820, 900],
+  "tire_friction": 0.8,
+  "steering_servo": {
+    "kp": 1000,
+    "kv": 30,
+    "force_limit_nm": 80,
+    "note": "Acts at the sector shaft; with the 12:1 box, 80 N m there is 6.7 N m at the steering wheel."
+  },
+  "suspension": {
+    "lower_arm_left_swing": {"stiffness": 4480, "damping": 264},
+    "lower_arm_right_swing": {"stiffness": 4480, "damping": 264},
+    "rear_axle_swing": {"stiffness": 11500, "damping": 626},
+    "rear_axle_roll": {"stiffness": 16000, "damping": 300},
+    "note": "Front: 28 kN/m at the wheel through the 0.40 m arm (4480 N m/rad of torsion-bar twist), with damping at about 0.3 of critical (1.65 kN s/m at the wheel). Rear: 38 kN/m at the axle through the 0.55 m trailing arms (11.5 kN m/rad), damping 2.07 kN s/m at the axle; roll 16 kN m/rad. Preloads are calibrated at run time to the design ride height. The front-heavy car (engine and gearbox over the front wheels) sits about 60% on the front tyres."
+  },
+  "tire": {
+    "contact_shape": "ellipsoid",
+    "section_half_width_m": 0.065,
+    "contact_solref": [-2300, -48],
+    "contact_solimp": [0.5, 0.95, 0.01, 0.5, 2],
+    "note": "Low-pressure straight-side tyres: the shared compliant contact, round crown 65 mm half-width."
+  },
+  "assumptions": "Mass, mass split, centre of mass, inertia, spring rates and damping are estimates."
+}

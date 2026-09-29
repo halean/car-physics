@@ -145,6 +145,18 @@ four-wheel braking in a turn and the weight transfer under braking.
 .venv/bin/python experiments/011_lancia_lambda_1922/run.py --stage full
 ```
 
+## Eighth car: Citroën Traction Avant 1934
+
+[Experiment 012](experiments/012_citroen_traction_avant_1934/README.md) is the
+first car whose driven wheels are also its steered wheels: front-wheel drive
+through double-Cardan joints on the kingpins, wishbones sprung by torsion
+bars, and a flat-floored welded body. A new gate shows the front-drive
+effect on a hill: climbing takes load off the driving wheels.
+
+```bash
+.venv/bin/python experiments/012_citroen_traction_avant_1934/run.py --stage full
+```
+
 ## Required build validation
 
 [Car Downhill Check](skills/car-downhill-check/SKILL.md) defines the build gate:

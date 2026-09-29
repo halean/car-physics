@@ -1,0 +1,17 @@
+{
+  "rated_power_w": 23500,
+  "governed_rpm": 3200,
+  "no_load_rpm": 3400,
+  "clutch_seconds": 0.5,
+  "gearbox_ratios": {
+    "first": 3.0,
+    "second": 1.7,
+    "third": 1.0
+  },
+  "final_drive_ratio": 4.4,
+  "front_drum_capacity_nm_each": 300,
+  "rear_drum_capacity_nm_each": 220,
+  "brake_ramp_seconds": 0.25,
+  "source": "7A: 1303 cc four-cylinder, 32 PS (23.5 kW); three-speed gearbox with the lever through the dashboard; about 95 km/h (Wikipedia; Stellantis media; motor1). Assumed: rated at 3200 rpm with a droop to 3400 rpm no-load, ratios 3.0/1.7/1.0 with a 4.4 final drive (top gear 93 km/h at rated speed, 99 km/h no-load), the drum capacities.",
+  "brake_note": "Hydraulic brakes on all four drums (sourced): the pedal works all four, 300 N m at each front drum and 220 N m at each rear, 1040 N m in all, about 0.31 g on level ground. The hand lever works the rear drums only (assumed)."
+}

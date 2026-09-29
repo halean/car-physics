@@ -208,3 +208,18 @@ constraint. The pedal brakes all four wheels (`braked` on every wheel; the
 controller sets front and rear joint friction); the scenarios add four-wheel
 braking in a turn and a weight-transfer measurement from the contact forces.
 
+## Citroën Traction Avant (experiment 012)
+
+As for 011: replace the experiment with `012_citroen_traction_avant_1934` and
+the scene with `traction_avant`. Front-wheel drive: `driven` is set on the
+front wheels, whose parents are the knuckles. Wishbones: `suspension.wishbones`
+gives the arm length and, per side, the joints that turn with the arm angle
+(lower arm +1, upper arm +1, upright −1, half-shaft +1). The springs are on the
+`lower_arm_<side>_swing` hinges, and the check poses use `front_left` and
+`front_right` travel. Steering `type: centre_drop_arm`: a drop arm on a
+lengthwise sector shaft, with `track_rod_<side>` ball-jointed bodies closed
+to each knuckle. `excluded_pairs` in the report lists body pairs whose contact
+MuJoCo must ignore (the half-shaft and the knuckle its outer joint sits in).
+Box parts' colliders have no `:n` suffix, so planted defects that match geoms
+by name must use rod parts.
+
