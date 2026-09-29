@@ -1,6 +1,6 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>
-<title>Rolling Downhill</title>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>
+<title>Lăn xuống dốc</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
@@ -105,113 +105,114 @@
 </style>
 
 <div class="app">
-  <nav class="site" aria-label="Site"><span class="brand">Brass Era Garage</span><a href="downhill.html" aria-current="page">1 · Rolling downhill</a><a href="garage.html">The garage</a><a href="downhill_vn.html" hreflang="vi" lang="vi">Tiếng Việt</a></nav>
+  <nav class="site" aria-label="Trang"><span class="brand">Brass Era Garage</span><a href="downhill_vn.html" aria-current="page">1 · Lăn xuống dốc</a><a href="garage.html" hreflang="en">Gara xe (tiếng Anh)</a><a href="downhill.html" hreflang="en" lang="en">English</a></nav>
   <header>
-    <h1>Rolling downhill</h1>
-    <p>An 1891 Panhard et Levassor, 600 kg, engine out of gear, rolls down a slope. What pushes it along, what holds it back, and how strong does its brake need to be? The arrows are the real forces from the simulation.</p>
+    <h1>Lăn xuống dốc</h1>
+    <p>Một chiếc Panhard et Levassor năm 1891, khối lượng 600 kg, động cơ không gài số, lăn xuống một con dốc. Lực nào làm xe chạy nhanh dần, lực nào cản lại, và phanh phải mạnh đến đâu? Các mũi tên là những lực thật, tính ra từ mô phỏng.</p>
   </header>
   <main class="stage">
-    <section class="col" aria-label="Simulation">
+    <section class="col" aria-label="Mô phỏng">
       <div id="viewport" class="viewport">
         <div class="hud">
-          <div class="speed"><span id="speed">0.00</span><small>m/s</small></div>
-          <div class="hud-line"><span id="dist">0.0</span><small>m down the slope</small></div>
-          <div class="hud-line"><span id="time">0.0</span><small>s</small></div>
+          <div class="speed"><span id="speed">0,00</span><small>m/s</small></div>
+          <div class="hud-line"><span id="dist">0,0</span><small>m xuống dốc</small></div>
+          <div class="hud-line"><span id="time">0,0</span><small>s</small></div>
           <div class="hud-line cow" id="cowAhead"></div>
         </div>
         <div id="cowNote" class="cow-note" role="status" hidden></div>
         <div id="flash" class="flash" aria-hidden="true"></div>
         <div id="bang" class="bang" aria-hidden="true"></div>
-        <div id="skid" class="skid" hidden>Rear wheels locked: skidding</div>
-        <div id="status" class="status">Loading…</div>
+        <div id="skid" class="skid" hidden>Bánh sau bị bó cứng: xe đang trượt</div>
+        <div id="status" class="status">Đang tải…</div>
       </div>
       <div class="panel" id="reactPanel" hidden aria-live="polite">
-        <h2>Surprise cow: your stop</h2>
+        <h2>Coi chừng bò: em dừng xe thế nào?</h2>
         <div id="reactResult"></div>
       </div>
       <div class="panel">
-        <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><h2>Speed against time</h2><span class="hint">The slope of this line is the acceleration.</span></div>
-        <canvas id="vt" aria-label="Speed of the car against time"></canvas>
+        <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><h2>Đồ thị vận tốc – thời gian</h2><span class="hint">Độ dốc của đồ thị chính là gia tốc.</span></div>
+        <canvas id="vt" aria-label="Vận tốc của xe theo thời gian"></canvas>
       </div>
     </section>
 
-    <aside class="col" aria-label="Controls and forces">
+    <aside class="col" aria-label="Điều khiển và các lực">
       <div class="panel controls" id="controls">
-        <h2>Set up the hill</h2>
-        <div class="field"><div class="field-head"><label for="slope">Slope angle θ</label><output id="slopeOut"></output></div>
+        <h2>Thiết lập con dốc</h2>
+        <div class="field"><div class="field-head"><label for="slope">Góc nghiêng α</label><output id="slopeOut"></output></div>
           <input type="range" id="slope" min="0" max="25" step="0.5" value="5"></div>
-        <div class="field"><div class="field-head"><label for="mu">Brake friction coefficient μ</label><output id="muOut"></output></div>
+        <div class="field"><div class="field-head"><label for="mu">Hệ số ma sát μ của má phanh</label><output id="muOut"></output></div>
           <input type="range" id="mu" min="0" max="1" step="0.05" value="0.5">
-          <p class="hint">A leather-faced block presses on each rear tyre with P = <span id="pOut">720</span> N. Friction at the block: F = μP per wheel.</p></div>
+          <p class="hint">Mỗi bánh sau có một má phanh bọc da ép vào lốp với lực ép Q = <span id="pOut">720</span> N. Lực ma sát tại má phanh: F<sub>ms</sub> = μQ cho mỗi bánh.</p></div>
         <div class="buttons">
-          <button type="button" id="brake" aria-pressed="false">Brake (B)</button>
-          <button type="button" id="restart">Start again (R)</button>
-          <button type="button" id="slow" aria-pressed="false">Slow motion</button>
-          <button type="button" id="react">Surprise cow</button>
+          <button type="button" id="brake" aria-pressed="false">Phanh (B)</button>
+          <button type="button" id="restart">Chạy lại (R)</button>
+          <button type="button" id="slow" aria-pressed="false">Chạy chậm</button>
+          <button type="button" id="react">Coi chừng bò!</button>
         </div>
       </div>
       <div class="panel">
-        <h2>Forces on the car now</h2>
+        <h2>Các lực tác dụng lên xe</h2>
         <div class="fbd">
-          <div class="force"><i style="background:var(--weight)"></i><span>Weight <span class="math">mg</span></span><output id="fW"></output></div>
-          <div class="force"><i style="background:var(--weight);opacity:.45"></i><span class="sub">along the slope, <span class="math">mg sin θ</span></span><output id="fWx"></output></div>
-          <div class="force"><i style="background:var(--weight);opacity:.45"></i><span class="sub">into the slope, <span class="math">mg cos θ</span></span><output id="fWz"></output></div>
-          <div class="force"><i style="background:var(--normal)"></i><span>Normal force <span class="math">N</span></span><output id="fN"></output></div>
-          <div class="force"><i style="background:var(--friction)"></i><span>Road friction on the tyres <span class="math">F</span></span><output id="fF"></output></div>
-          <div class="force"><i style="background:var(--net)"></i><span>Net force <span class="math">ΣF</span></span><output id="fNet"></output></div>
+          <div class="force"><i style="background:var(--weight)"></i><span>Trọng lực <span class="math">P = mg</span></span><output id="fW"></output></div>
+          <div class="force"><i style="background:var(--weight);opacity:.45"></i><span class="sub">thành phần song song với mặt dốc, <span class="math">P sin α</span></span><output id="fWx"></output></div>
+          <div class="force"><i style="background:var(--weight);opacity:.45"></i><span class="sub">thành phần vuông góc với mặt dốc, <span class="math">P cos α</span></span><output id="fWz"></output></div>
+          <div class="force"><i style="background:var(--normal)"></i><span>Phản lực của mặt đường <span class="math">N</span></span><output id="fN"></output></div>
+          <div class="force"><i style="background:var(--friction)"></i><span>Lực ma sát của mặt đường lên lốp <span class="math">F<sub>ms</sub></span></span><output id="fF"></output></div>
+          <div class="force"><i style="background:var(--net)"></i><span>Hợp lực <span class="math">F</span></span><output id="fNet"></output></div>
         </div>
-        <p class="hint">Arrows: 1 m per 3000 N, drawn at the centre of mass. Forces along the slope count positive downhill.</p>
+        <p class="hint">Mũi tên: 1 m ứng với 3000 N, vẽ tại trọng tâm của xe. Chọn chiều dương là chiều chuyển động xuống dốc.</p>
       </div>
       <div class="panel">
-        <h2>Check: ΣF = m a</h2>
+        <h2>Kiểm chứng định luật 2 Newton: F = ma</h2>
         <div class="check">
-          <div class="eq"><span>mg sin θ − F</span><output id="cSum"></output>
-            <span>m a (measured)</span><output id="cMa"></output>
-            <span>a (measured)</span><output id="cA"></output></div>
+          <div class="eq"><span>P sin α − F<sub>ms</sub></span><output id="cSum"></output>
+            <span>m·a (đo được)</span><output id="cMa"></output>
+            <span>a (đo được)</span><output id="cA"></output></div>
           <div id="cOk" class="ok"></div>
         </div>
-        <p class="hint">m = 600 kg. The acceleration comes from the simulated motion; the forces come from the simulated contacts. The two sides are worked out separately.</p>
+        <p class="hint">m = 600 kg. Gia tốc lấy từ chuyển động mô phỏng, các lực lấy từ các tiếp xúc mô phỏng. Hai vế được tính độc lập với nhau.</p>
       </div>
     </aside>
   </main>
 
-  <section aria-label="Try this">
-    <h2 style="margin-bottom:10px">Predict, then check</h2>
+  <section aria-label="Thử làm">
+    <h2 style="margin-bottom:10px">Dự đoán, rồi kiểm chứng</h2>
     <div class="tries">
       <article class="try">
-        <h3>1. Free rolling</h3>
-        <p class="set">θ = 5°, brake off</p>
-        <p>Without friction, a = g sin θ. Work it out before you watch. Then compare with the measured a. Why is the car a little slower?</p>
-        <details><summary>Show the answer</summary>
-          <p><span class="math">g sin 5° = 9.81 × 0.0872 = 0.855 m/s²</span>. The car measures about 0.78 m/s². The difference is the road friction F of about 45 N. It is not the brake: the road has to push back on each tyre to spin its wheel up. Heavy wheels take some of the energy, so the car speeds up more slowly.</p></details>
+        <h3>1. Xe tự lăn</h3>
+        <p class="set">α = 5°, không phanh</p>
+        <p>Nếu không có ma sát, a = g sin α. Hãy tính trước khi quan sát, rồi so sánh với gia tốc đo được. Vì sao xe tăng tốc chậm hơn một chút?</p>
+        <details><summary>Xem đáp án</summary>
+          <p><span class="math">g sin 5° = 9,81 × 0,0872 = 0,855 m/s²</span>. Xe đo được khoảng 0,78 m/s². Chênh lệch này do lực ma sát của mặt đường F<sub>ms</sub> khoảng 45 N. Đó không phải là phanh: mặt đường phải đẩy ngược lên mỗi lốp để làm bánh xe quay nhanh dần. Bánh xe nặng nhận một phần năng lượng, nên xe tăng tốc chậm hơn.</p></details>
       </article>
       <article class="try">
-        <h3>2. Can the brake hold it?</h3>
-        <p class="set">μ = 0.5, P = 720 N per block, two blocks</p>
-        <p>The brakes can resist at most 2μP. On what slope does that equal mg sin θ? Predict the angle, then try just below and just above it. Press Brake and see if the car stops.</p>
-        <details><summary>Show the answer</summary>
-          <p><span class="math">2μP = 720 N = mg sin θ</span>, so <span class="math">sin θ = 720 / 5886 = 0.122</span> and <span class="math">θ ≈ 7.0°</span>. At 6.5° the car stops and holds. At 7.5° it keeps creeping faster, however long you hold the brake. This model's brake is weak compared with its weight: the same 180 N·m per wheel it was validated with.</p></details>
+        <h3>2. Phanh có giữ được xe không?</h3>
+        <p class="set">μ = 0,5; Q = 720 N mỗi má phanh; hai má phanh</p>
+        <p>Lực phanh lớn nhất là 2μQ. Với góc nghiêng nào thì 2μQ bằng P sin α? Hãy dự đoán góc đó, rồi thử với góc nhỏ hơn và lớn hơn một chút. Nhấn Phanh và xem xe có dừng không.</p>
+        <details><summary>Xem đáp án</summary>
+          <p><span class="math">2μQ = 720 N = mg sin α</span>, nên <span class="math">sin α = 720 / 5886 = 0,122</span> và <span class="math">α ≈ 7,0°</span>. Ở 6,5° xe dừng và đứng yên. Ở 7,5° xe vẫn trôi và nhanh dần, dù em giữ phanh bao lâu. Phanh của mô hình này yếu so với trọng lượng của xe: đúng bằng moment lực phanh 180 N·m ở mỗi bánh như khi được kiểm định.</p></details>
       </article>
       <article class="try">
-        <h3>3. Find the μ</h3>
-        <p class="set">θ = 10°, brake on</p>
-        <p>What brake friction coefficient μ is just enough to hold the car on this hill? Work it out, then try a little below and a little above your answer.</p>
-        <details><summary>Show the answer</summary>
-          <p><span class="math">2μP = mg sin 10°</span>, so <span class="math">μ = 1022 / 1440 ≈ 0.71</span>. At 0.65 it creeps; at 0.75 it holds. Why not use μ = 10? Past a point the blocks lock the wheels, and the tyres slide on the road. Then the limit is the tyres' grip, about μ<sub>road</sub> × N on the rear wheels (μ<sub>road</sub> = 0.8 here), not the brake.</p></details>
+        <h3>3. Tìm μ</h3>
+        <p class="set">α = 10°, đang phanh</p>
+        <p>Hệ số ma sát μ nhỏ nhất bằng bao nhiêu thì phanh vừa đủ giữ xe trên dốc này? Hãy tính, rồi thử với giá trị nhỏ hơn và lớn hơn một chút.</p>
+        <details><summary>Xem đáp án</summary>
+          <p><span class="math">2μQ = mg sin 10°</span>, nên <span class="math">μ = 1022 / 1440 ≈ 0,71</span>. Với 0,65 xe vẫn trôi; với 0,75 xe đứng yên. Vì sao không dùng μ = 10? Quá một mức nào đó, má phanh làm bó cứng bánh xe và lốp trượt trên mặt đường. Khi đó giới hạn là độ bám của lốp, khoảng μ<sub>đường</sub> × N ở các bánh sau (ở đây μ<sub>đường</sub> = 0,8), chứ không còn là phanh.</p></details>
       </article>
       <article class="try">
-        <h3>4. Stop for the cow</h3>
-        <p class="set">θ = 5°, μ = 0.5</p>
-        <p>Cows wander onto the road now and then. Let the car reach 3 m/s, then brake. How far will it roll before it stops? Use <span class="math">a = (2μP − mg sin θ) / m</span> and <span class="math">v² = 2as</span>, then watch the distance to the cow. Then press <b>Surprise cow</b>: a cow steps out when you least expect it, and the page measures your own reaction time.</p>
-        <details><summary>Show the answer</summary>
-          <p><span class="math">a = (720 − 513) / 600 = 0.35 m/s²</span>, so <span class="math">s = 3² / (2 × 0.35) ≈ 13 m</span>. The simulated car needs about 15.5 m. The brake takes a quarter of a second to bite, and the spinning wheels carry energy that the brake must also absorb (the same effect as in challenge 1). At 5 m/s the stop is nearly three times as long. Speed counts twice in v². On a real road, add the thinking distance: the car keeps going at full speed during your reaction time, so thinking distance is v × t.</p></details>
+        <h3>4. Dừng xe trước con bò</h3>
+        <p class="set">α = 5°, μ = 0,5</p>
+        <p>Thỉnh thoảng có bò đi lên đường. Để xe đạt 3 m/s rồi phanh. Xe sẽ lăn thêm bao xa mới dừng? Khi phanh, xe chuyển động thẳng chậm dần đều: dùng <span class="math">a = (2μQ − mg sin α) / m</span> và <span class="math">v² = 2as</span>, rồi theo dõi khoảng cách tới con bò. Sau đó nhấn <b>Coi chừng bò!</b>: một con bò bước ra khi em không ngờ tới, và trang web đo thời gian phản ứng của chính em.</p>
+        <details><summary>Xem đáp án</summary>
+          <p><span class="math">a = (720 − 513) / 600 = 0,35 m/s²</span>, nên <span class="math">s = 3² / (2 × 0,35) ≈ 13 m</span>. Xe mô phỏng cần khoảng 15,5 m. Má phanh cần một phần tư giây để ép chặt, và các bánh xe đang quay mang động năng mà phanh cũng phải tiêu hao (giống hiện tượng ở câu 1). Ở 5 m/s quãng đường phanh dài gần gấp ba: tốc độ có mặt hai lần trong v². Trên đường thật, còn phải cộng thêm quãng đường phản ứng: trong thời gian phản ứng t, xe vẫn chạy với tốc độ cũ, nên quãng đường phản ứng là v × t.</p></details>
       </article>
     </div>
   </section>
 
   <footer>
-    <p>The car is the repository's validated Panhard et Levassor model. With θ = 5° and μ = 0.5 this page reproduces its checked downhill run (6.233 m in 4 s) and its brake stop (4.53 m). Tilting gravity on a flat road is the same physics as tilting the road. The block force P and μ = 0.5 are assumptions: together they give the model's 180 N·m of rim-brake torque per wheel. A driver holds the car on its line, as real drivers do. The cows are scenery: they are not part of the physics, and they always get out of the way. Physics: MuJoCo 3.14, in your browser.</p>
-    <p>Check it yourself: <code>experiments/007_panhard_1891</code> and <code>experiments/web/downhill.js</code> in the project repository.</p>
+    <p>Chiếc xe là mô hình Panhard et Levassor đã được kiểm định trong kho mã nguồn. Với α = 5° và μ = 0,5, trang này cho lại đúng kết quả lăn dốc đã kiểm tra (6,233 m trong 4 s) và quãng đường phanh (4,53 m). Làm nghiêng gia tốc trọng trường trên mặt đường phẳng cũng chính là làm nghiêng mặt đường. Lực ép Q và μ = 0,5 là các giả định: cùng nhau chúng cho moment lực phanh 180 N·m ở mỗi bánh như trong mô hình. Một người lái giữ cho xe đi thẳng, như người lái thật vẫn làm. Những con bò chỉ là cảnh vật: chúng không thuộc mô hình vật lí và luôn tránh ra. Vật lí: MuJoCo 3.14, chạy ngay trong trình duyệt của em.</p>
+    <p>Thuật ngữ theo Chương trình giáo dục phổ thông 2018 môn Vật lí, lớp 10: Động lực học (định luật 2 Newton, trọng lực, lực ma sát, tổng hợp và phân tích lực), Động năng, Động lượng và va chạm.</p>
+    <p>Tự kiểm chứng: <code>experiments/007_panhard_1891</code> và <code>experiments/web/downhill.js</code> trong kho mã nguồn.</p>
   </footer>
 </div>
 
@@ -634,48 +635,50 @@ class Herd {
   }
 }
 
-// Rolling downhill: English text and number format. Inlined before downhill.js by build.py.
-const num = (v, d) => v.toFixed(d);                                   // 0.78
-const grouped = (v) => Math.round(v).toLocaleString('en-GB');          // 5,886
+// Lăn xuống dốc: chữ tiếng Việt và cách viết số (dấu phẩy thập phân, dấu chấm phân nhóm).
+// Thuật ngữ theo Chương trình giáo dục phổ thông 2018 môn Vật lí (lớp 10) và sách giáo khoa:
+// trọng lực P = mg, phản lực N, lực ma sát, định luật 2 Newton, góc nghiêng α, động năng, động lượng.
+const num = (v, d) => v.toFixed(d).replace('.', ',');                 // 0,78
+const grouped = (v) => Math.round(v).toLocaleString('vi-VN');          // 5.886
 const TEXT = {
-  uphill: (n) => `${n} uphill`,
-  downhill: (n) => `${n} downhill`,
-  agree: (n) => `They agree (within ${n} N).`,
-  settling: 'Settling… (the car is changing speed quickly)',
-  slow: 'Slow motion', normal: 'Normal speed',
-  loading: (p) => `Loading the MuJoCo physics engine… ${p}%`,
-  loadFail: (name, code) => `Could not load ${name} (HTTP ${code}).`,
-  starting: 'Starting MuJoCo…',
-  failed: (m) => `Could not start the simulation: ${m}`,
-  noWasm: 'This browser has no WebAssembly support.',
-  speedLimit: (kmh) => `Stopped the clock at ${kmh} km/h. An 1891 car could never go this fast, and this model has `
-    + 'no air drag or rolling resistance, so on a slope it would speed up for ever. Press Start again (R).',
-  cowAhead: (m) => `Cow on the road ${m} m ahead`,
-  closeCall: 'Close call! The cow had to trot out of the way. Brake earlier, or harder.',
-  stoppedBefore: (m) => `Stopped ${m} m before the cow.`,
-  getReady: 'Get ready. Somewhere ahead a cow will step into the road. Press B (or Brake) the moment you see it.',
-  cow: 'Cow!',
-  bang: 'THUD!',
-  reaction: 'Your reaction time',
-  thinking: 'Thinking distance (the car at full speed while you react)',
-  braking: 'Braking distance',
-  prediction: 'Physics prediction, v² / 2a',
+  uphill: (n) => `${n}, hướng lên dốc`,
+  downhill: (n) => `${n}, hướng xuống dốc`,
+  agree: (n) => `Hai vế bằng nhau (sai khác dưới ${n} N).`,
+  settling: 'Đang ổn định… (tốc độ xe đang thay đổi nhanh)',
+  slow: 'Chạy chậm', normal: 'Tốc độ thường',
+  loading: (p) => `Đang tải bộ mô phỏng vật lí MuJoCo… ${p}%`,
+  loadFail: (name, code) => `Không tải được tệp ${name} (HTTP ${code}).`,
+  starting: 'Đang khởi động MuJoCo…',
+  failed: (m) => `Không khởi động được mô phỏng: ${m}`,
+  noWasm: 'Trình duyệt này không hỗ trợ WebAssembly.',
+  speedLimit: (kmh) => `Đã dừng đồng hồ ở ${kmh} km/h. Một chiếc xe năm 1891 không thể chạy nhanh như vậy. Mô hình này `
+    + 'bỏ qua lực cản của không khí và lực ma sát lăn, nên trên dốc xe sẽ nhanh dần mãi. Nhấn Chạy lại (R).',
+  cowAhead: (m) => `Có bò trên đường, cách ${m} m phía trước`,
+  closeCall: 'Suýt nữa! Con bò phải chạy vội ra khỏi đường. Hãy phanh sớm hơn hoặc mạnh hơn.',
+  stoppedBefore: (m) => `Xe dừng cách con bò ${m} m.`,
+  getReady: 'Chuẩn bị! Phía trước sẽ có một con bò bất ngờ bước ra đường. Nhấn B (hoặc nút Phanh) ngay khi nhìn thấy nó.',
+  cow: 'Bò!',
+  bang: 'RẦM!',
+  reaction: 'Thời gian phản ứng của em',
+  thinking: 'Quãng đường phản ứng (xe vẫn chạy với tốc độ cũ trong lúc em phản ứng)',
+  braking: 'Quãng đường phanh',
+  prediction: 'Dự đoán theo công thức v² = 2as',
   predictionValue: (s, v, a) => `${s} m (v = ${v} m/s, a = ${a} m/s²)`,
-  stopping: 'Stopping distance',
-  whyLonger: 'The real stop is longer than v² / 2a: the brake takes a quarter of a second to bite, and the spinning wheels carry energy the brake must also absorb.',
-  tooClose: 'Too close: the cow had to trot out of the way. Brake sooner, or add more brake friction μ.',
-  youStopped: (m) => `You stopped ${m} m before the cow.`,
-  cannotStop: 'The brake cannot stop the car on this slope: 2μP is less than mg sin θ. Make the hill gentler or the brake stronger.',
-  impactSpeed: 'Impact speed',
+  stopping: 'Tổng quãng đường dừng xe',
+  whyLonger: 'Quãng đường phanh thực tế dài hơn v² / 2a: má phanh cần một phần tư giây để ép chặt, và các bánh xe đang quay cũng mang động năng mà phanh phải tiêu hao.',
+  tooClose: 'Quá gần: con bò phải chạy vội ra khỏi đường. Hãy phanh sớm hơn, hoặc tăng hệ số ma sát μ của phanh.',
+  youStopped: (m) => `Em đã dừng xe cách con bò ${m} m.`,
+  cannotStop: 'Phanh không giữ được xe trên dốc này: 2μQ nhỏ hơn P sin α = mg sin α. Hãy giảm góc nghiêng hoặc tăng lực phanh.',
+  impactSpeed: 'Tốc độ lúc va chạm',
   impactValue: (v, kmh) => `${v} m/s (${kmh} km/h)`,
-  kinetic: 'Kinetic energy ½mv²',
-  kineticValue: (kj, h) => `${kj} kJ, like dropping the car from ${h} m`,
-  momentum: (kg) => `Momentum shared with a ${kg} kg cow`,
-  momentumValue: (v1, v2) => `car slowed from ${v1} to ${v2} m/s`,
-  lateBrake: 'You braked, but too late. Try again, and brake the moment the cow appears.',
-  noBrake: 'You did not brake. Try again, and press B the moment the cow appears.',
-  cartoon: 'The cow is not part of the physics engine: the page shares the momentum between car and cow '
-    + '(m₁v = (m₁ + m₂)v′), then plays the tumble as a cartoon. The cow is fine, just annoyed.',
+  kinetic: 'Động năng Wđ = ½mv²',
+  kineticValue: (kj, h) => `${kj} kJ, bằng thế năng khi thả rơi xe từ độ cao ${h} m`,
+  momentum: (kg) => `Va chạm mềm với con bò ${kg} kg (bảo toàn động lượng)`,
+  momentumValue: (v1, v2) => `tốc độ xe giảm từ ${v1} xuống ${v2} m/s`,
+  lateBrake: 'Em đã phanh nhưng quá muộn. Thử lại và phanh ngay khi con bò xuất hiện.',
+  noBrake: 'Em chưa phanh. Thử lại và nhấn B ngay khi con bò xuất hiện.',
+  cartoon: 'Con bò không nằm trong mô hình vật lí: trang web coi đây là va chạm mềm trong hệ kín, '
+    + 'm₁v₁ = (m₁ + m₂)V, rồi cho con bò lộn nhào như phim hoạt hình. Con bò không sao, chỉ hơi bực mình.',
 };
 
 // Rolling downhill: the validated Panhard (1891) on a slope, with its forces drawn.
