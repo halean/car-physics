@@ -151,18 +151,19 @@ def main():
 
 PAGES = {   # site file: (template, scripts inlined in order)
     'garage.html': ('page.html', ('sim.js', 'input.js', 'cows.js', 'app.js')),
-    'downhill.html': ('downhill.html', ('sim.js', 'cows.js', 'downhill.js')),
+    'downhill.html': ('downhill.html', ('sim.js', 'cows.js', 'downhill_text_en.js', 'downhill.js')),
+    'downhill_vn.html': ('downhill_vn.html', ('sim.js', 'cows.js', 'downhill_text_vi.js', 'downhill.js'), 'vi'),
     'index.html': ('index.html', ()),
 }
 
 
 def write_page():
     """Each page as a full document; local.html stays as an alias of the garage for old links."""
-    for target, (template, scripts) in PAGES.items():
+    for target, (template, scripts, *lang) in PAGES.items():
         page = (WEB/template).read_text()
         for name in scripts:
             page = page.replace(f'/*{name}*/', (WEB/name).read_text().replace('export ', ''))
-        doc = ('<!doctype html>\n<html lang="en"><head><meta charset="utf-8">'
+        doc = (f'<!doctype html>\n<html lang="{lang[0] if lang else "en"}"><head><meta charset="utf-8">'
                '<meta name="viewport" content="width=device-width, initial-scale=1">'
                '</head><body>\n'+page+'\n</body></html>\n')
         (SITE/target).write_text(doc)

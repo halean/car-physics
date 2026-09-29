@@ -1,0 +1,43 @@
+// Rolling downhill: English text and number format. Inlined before downhill.js by build.py.
+const num = (v, d) => v.toFixed(d);                                   // 0.78
+const grouped = (v) => Math.round(v).toLocaleString('en-GB');          // 5,886
+const TEXT = {
+  uphill: (n) => `${n} uphill`,
+  downhill: (n) => `${n} downhill`,
+  agree: (n) => `They agree (within ${n} N).`,
+  settling: 'Settling… (the car is changing speed quickly)',
+  slow: 'Slow motion', normal: 'Normal speed',
+  loading: (p) => `Loading the MuJoCo physics engine… ${p}%`,
+  loadFail: (name, code) => `Could not load ${name} (HTTP ${code}).`,
+  starting: 'Starting MuJoCo…',
+  failed: (m) => `Could not start the simulation: ${m}`,
+  noWasm: 'This browser has no WebAssembly support.',
+  speedLimit: (kmh) => `Stopped the clock at ${kmh} km/h. An 1891 car could never go this fast, and this model has `
+    + 'no air drag or rolling resistance, so on a slope it would speed up for ever. Press Start again (R).',
+  cowAhead: (m) => `Cow on the road ${m} m ahead`,
+  closeCall: 'Close call! The cow had to trot out of the way. Brake earlier, or harder.',
+  stoppedBefore: (m) => `Stopped ${m} m before the cow.`,
+  getReady: 'Get ready. Somewhere ahead a cow will step into the road. Press B (or Brake) the moment you see it.',
+  cow: 'Cow!',
+  bang: 'THUD!',
+  reaction: 'Your reaction time',
+  thinking: 'Thinking distance (the car at full speed while you react)',
+  braking: 'Braking distance',
+  prediction: 'Physics prediction, v² / 2a',
+  predictionValue: (s, v, a) => `${s} m (v = ${v} m/s, a = ${a} m/s²)`,
+  stopping: 'Stopping distance',
+  whyLonger: 'The real stop is longer than v² / 2a: the brake takes a quarter of a second to bite, and the spinning wheels carry energy the brake must also absorb.',
+  tooClose: 'Too close: the cow had to trot out of the way. Brake sooner, or add more brake friction μ.',
+  youStopped: (m) => `You stopped ${m} m before the cow.`,
+  cannotStop: 'The brake cannot stop the car on this slope: 2μP is less than mg sin θ. Make the hill gentler or the brake stronger.',
+  impactSpeed: 'Impact speed',
+  impactValue: (v, kmh) => `${v} m/s (${kmh} km/h)`,
+  kinetic: 'Kinetic energy ½mv²',
+  kineticValue: (kj, h) => `${kj} kJ, like dropping the car from ${h} m`,
+  momentum: (kg) => `Momentum shared with a ${kg} kg cow`,
+  momentumValue: (v1, v2) => `car slowed from ${v1} to ${v2} m/s`,
+  lateBrake: 'You braked, but too late. Try again, and brake the moment the cow appears.',
+  noBrake: 'You did not brake. Try again, and press B the moment the cow appears.',
+  cartoon: 'The cow is not part of the physics engine: the page shares the momentum between car and cow '
+    + '(m₁v = (m₁ + m₂)v′), then plays the tumble as a cartoon. The cow is fine, just annoyed.',
+};

@@ -9,6 +9,21 @@ like, how they drove, and the physics underneath. Pages:
   net force as arrows from the simulation, and checks ΣF = ma live. The student sets
   the slope θ and the rim-block friction coefficient μ (F = μP per block), then
   works through three predict-then-check challenges.
+- `downhill_vn.html` (**1 · Lăn xuống dốc**): the same lesson in Vietnamese. It uses
+  the terms of Vietnam's 2018 general education programme in physics
+  ("Chương trình giáo dục phổ thông 2018 môn Vật lí", grade 10) and its
+  textbooks:
+  - trọng lực P = mg, with components P sin α and P cos α;
+  - phản lực N, lực ma sát F<sub>ms</sub> = μN, hợp lực;
+  - định luật 2 Newton, chuyển động thẳng chậm dần đều, đồ thị vận tốc – thời
+    gian;
+  - động năng Wđ, va chạm mềm with m₁v₁ = (m₁ + m₂)V;
+  - thời gian phản ứng, quãng đường phản ứng, quãng đường phanh.
+
+  It writes decimals with a comma (9,81 m/s²) and uses α for the slope angle.
+  The brake block's pressing force is Q, because P is the weight in Vietnamese
+  notation. All text and number formats live in `downhill_text_en.js` and
+  `downhill_text_vi.js`; `downhill.js` is shared.
 - `garage.html`: every car with shared controls (below). `local.html` is an alias.
 - Both pages have occasional **cows** (`cows.js`), seeded so a restart brings the
   same herd back. They are scenery, not physics: a cow on the road ambles to the

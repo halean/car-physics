@@ -13,13 +13,14 @@ const SPEED_LIMIT = 30;         // m/s: the model has no drag, so on a steep hil
 const $ = (id) => document.getElementById(id);
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const MINUS = '−';
-const newtons = (v) => `${Math.round(v).toLocaleString('en-GB')} N`;
-const signedN = (v) => `${Math.round(v) < 0 ? MINUS : ''}${Math.abs(Math.round(v)).toLocaleString('en-GB')} N`;
+// Text and number format come from downhill_text_<lang>.js (TEXT, num, grouped).
+const newtons = (v) => `${grouped(v)} N`;
+const signedN = (v) => `${Math.round(v) < 0 ? MINUS : ''}${grouped(Math.abs(v))} N`;
 function status(text, isError = false) { const el = $('status'); el.hidden = !text; el.textContent = text || ''; el.classList.toggle('error', isError); }
 
 async function fetchBytes(name, onProgress) {
   const res = await fetch(name);
-  if (!res.ok) throw new Error(`Could not load ${name} (HTTP ${res.status}).`);
+  if (!res.ok) throw new Error(TEXT.loadFail(name, res.status));
   const total = +res.headers.get('content-length') || 0;
   if (!onProgress || !res.body || !total) return new Uint8Array(await res.arrayBuffer());
   const reader = res.body.getReader(), parts = [];
@@ -126,8 +127,8 @@ function applySettings() {
   g[0] = 9.81 * Math.sin(th); g[1] = 0; g[2] = -9.81 * Math.cos(th);
   hill.rotation.y = th;
   config.pedal.devices[0].capacity = +$('mu').value * blockP * config.rear_radius;   // mu * P * r per rear wheel
-  $('slopeOut').textContent = `${(+$('slope').value).toFixed(1)}°`;
-  $('muOut').textContent = (+$('mu').value).toFixed(2);
+  $('slopeOut').textContent = `${num(+$('slope').value, 1)}°`;
+  $('muOut').textContent = num(+$('mu').value, 2);
 }
 function restart() {
   // The driver keeps the car on its line (as real drivers do; see 010's README on drift).
@@ -166,7 +167,7 @@ function startTest() {
   if (slow) $('slow').click();   // reaction times are measured in real time
   test = { phase: 'waiting', armAt: null };
   $('reactPanel').hidden = false;
-  $('reactResult').textContent = 'Get ready. Somewhere ahead a cow will step into the road. Press B (or Brake) the moment you see it.';
+  $('reactResult').textContent = TEXT.getReady;
 }
 
 // Impact: the cow is not in the physics engine, so the page applies a simple momentum model. Car and
@@ -181,7 +182,7 @@ function collide(now, front, speed) {
   hitStopUntil = now + (calm ? 0 : 380);
   shakeUntil = now + (calm ? 0 : 750);
   if (!calm) { $('flash').classList.remove('go'); void $('flash').offsetWidth; $('flash').classList.add('go'); }
-  $('bang').textContent = 'THUD!';
+  $('bang').textContent = TEXT.bang;
   $('bang').classList.remove('go'); void $('bang').offsetWidth; $('bang').classList.add('go');
   dust = makeDust(test.cow.x - 0.3, now);
   const ke = 0.5 * mass * speed * speed;
@@ -189,11 +190,11 @@ function collide(now, front, speed) {
   const braked = test.tPress != null;
   $('reactResult').innerHTML = '';
   const rows = [
-    ['Impact speed', `${speed.toFixed(2)} m/s (${(speed * 3.6).toFixed(0)} km/h)`],
-    ['Kinetic energy ½mv²', `${(ke / 1000).toFixed(1)} kJ, like dropping the car from ${(speed * speed / (2 * 9.81)).toFixed(2)} m`],
-    [`Momentum shared with a ${COW_KG} kg cow`, `car slowed from ${speed.toFixed(2)} to ${vShared.toFixed(2)} m/s`],
+    [TEXT.impactSpeed, TEXT.impactValue(num(speed, 2), num(speed * 3.6, 0))],
+    [TEXT.kinetic, TEXT.kineticValue(num(ke / 1000, 1), num(speed * speed / (2 * 9.81), 2))],
+    [TEXT.momentum(COW_KG), TEXT.momentumValue(num(speed, 2), num(vShared, 2))],
   ];
-  if (braked) rows.unshift(['Your reaction time', `${((test.tPress - test.tAppear) / 1000).toFixed(2)} s`]);
+  if (braked) rows.unshift([TEXT.reaction, `${num((test.tPress - test.tAppear) / 1000, 2)} s`]);
   for (const [k, v] of rows) {
     const row = document.createElement('div'); row.className = 'rrow';
     const a1 = document.createElement('span'); a1.textContent = k;
@@ -202,12 +203,10 @@ function collide(now, front, speed) {
   }
   const verdict = document.createElement('p');
   verdict.className = 'verdict';
-  verdict.textContent = braked ? 'You braked, but too late. Try again, and brake the moment the cow appears.'
-    : 'You did not brake. Try again, and press B the moment the cow appears.';
+  verdict.textContent = braked ? TEXT.lateBrake : TEXT.noBrake;
   const why = document.createElement('p');
   why.className = 'hint';
-  why.textContent = 'The cow is not part of the physics engine: the page shares the momentum between car and cow '
-    + '(m₁v = (m₁ + m₂)v′), then plays the tumble as a cartoon. The cow is fine, just annoyed.';
+  why.textContent = TEXT.cartoon;
   $('reactResult').append(verdict, why);
 }
 
@@ -245,7 +244,7 @@ function runTest(now, front, speed) {
       const a = brakeDecel(), spare = 1.0 * speed + (a > 0 ? 1.2 * speed * speed / (2 * a) : 20) + 5;
       test.cow = herd.spawn(front + spare, 0);
       Object.assign(test, { phase: 'cow', tAppear: now, xAppear: front, vAppear: speed });
-      $('reactResult').textContent = 'Cow!';
+      $('reactResult').textContent = TEXT.cow;
     }
   } else if ((test.phase === 'cow' || test.phase === 'braking') && front > test.cow.x - 0.45 && test.cow.state === 'graze') {
     collide(now, front, speed);
@@ -257,11 +256,11 @@ function runTest(now, front, speed) {
       const gap = test.cow.x - front;
       $('reactResult').innerHTML = '';
       const rows = [
-        ['Your reaction time', `${r.toFixed(2)} s`],
-        ['Thinking distance (the car at full speed while you react)', `${think.toFixed(1)} m`],
-        ['Braking distance', `${brake.toFixed(1)} m`],
-        ['Physics prediction, v² / 2a', `${predicted.toFixed(1)} m (v = ${test.vPress.toFixed(2)} m/s, a = ${a.toFixed(2)} m/s²)`],
-        ['Stopping distance', `${(think + brake).toFixed(1)} m`],
+        [TEXT.reaction, `${num(r, 2)} s`],
+        [TEXT.thinking, `${num(think, 1)} m`],
+        [TEXT.braking, `${num(brake, 1)} m`],
+        [TEXT.prediction, TEXT.predictionValue(num(predicted, 1), num(test.vPress, 2), num(a, 2))],
+        [TEXT.stopping, `${num(think + brake, 1)} m`],
       ];
       for (const [k, v] of rows) {
         const row = document.createElement('div'); row.className = 'rrow';
@@ -271,16 +270,15 @@ function runTest(now, front, speed) {
       }
       const why = document.createElement('p');
       why.className = 'hint';
-      why.textContent = 'The real stop is longer than v² / 2a: the brake takes a quarter of a second to bite, and the spinning wheels carry energy the brake must also absorb.';
+      why.textContent = TEXT.whyLonger;
       $('reactResult').append(why);
       const verdict = document.createElement('p');
       verdict.className = 'verdict';
-      verdict.textContent = test.close ? 'Too close: the cow had to trot out of the way. Brake sooner, or add more brake friction μ.'
-        : `You stopped ${gap.toFixed(1)} m before the cow.`;
+      verdict.textContent = test.close ? TEXT.tooClose : TEXT.youStopped(num(gap, 1));
       $('reactResult').append(verdict);
     } else if (brakeDecel() <= 0 && now - test.tPress > 4000) {
       test.phase = 'done';
-      $('reactResult').textContent = 'The brake cannot stop the car on this slope: 2μP is less than mg sin θ. Make the hill gentler or the brake stronger.';
+      $('reactResult').textContent = TEXT.cannotStop;
     }
   }
 }
@@ -323,7 +321,7 @@ function drawChart() {
   ctx.font = '11px "JetBrains Mono", ui-monospace, monospace';
   const vStep = vMax > 8 ? 2 : vMax > 4 ? 1 : 0.5;
   ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-  for (let v = 0; v <= vMax + 1e-9; v += vStep) { ctx.beginPath(); ctx.moveTo(pad.l, y(v)); ctx.lineTo(w - pad.r, y(v)); ctx.stroke(); ctx.fillText(`${+v.toFixed(1)} m/s`, pad.l - 5, y(v)); }
+  for (let v = 0; v <= vMax + 1e-9; v += vStep) { ctx.beginPath(); ctx.moveTo(pad.l, y(v)); ctx.lineTo(w - pad.r, y(v)); ctx.stroke(); ctx.fillText(`${num(+v.toFixed(1), Number.isInteger(+v.toFixed(1)) ? 0 : 1)} m/s`, pad.l - 5, y(v)); }
   ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
   const tStep = tMax > 30 ? 10 : tMax > 12 ? 5 : 2;
   for (let t = 0; t <= tMax; t += tStep) ctx.fillText(`${t} s`, x(t), h - 6);
@@ -351,8 +349,7 @@ function frame(now) {
   const vx = d.subtree_linvel[3 * sim.chassis];
   if (!paused && Math.hypot(d.qvel[0], d.qvel[1]) > SPEED_LIMIT) {
     paused = true;
-    status(`Stopped the clock at ${Math.round(SPEED_LIMIT * 3.6)} km/h. An 1891 car could never go this fast, and this model has `
-      + 'no air drag or rolling resistance, so on a slope it would speed up for ever. Press Start again (R).');
+    status(TEXT.speedLimit(Math.round(SPEED_LIMIT * 3.6)));
   }
   velHist.push([d.time, vx]);
   while (velHist.length > 2 && d.time - velHist[0][0] > 0.2) velHist.shift();
@@ -385,12 +382,12 @@ function frame(now) {
   const { nearest, hurried } = herd.update(frozen ? 0 : wall, front, speed);
   if (speed > 0.3) movedSinceStop = true;
   if (test) { /* the reaction test reports its own result */ }
-  else if (hurried) showCowNote('Close call! The cow had to trot out of the way. Brake earlier, or harder.');
+  else if (hurried) showCowNote(TEXT.closeCall);
   else if (movedSinceStop && speed < 0.03 && nearest && nearest.x - front < 40) {
-    showCowNote(`Stopped ${(nearest.x - front).toFixed(1)} m before the cow.`);
+    showCowNote(TEXT.stoppedBefore(num(nearest.x - front, 1)));
     movedSinceStop = false;
   }
-  $('cowAhead').textContent = nearest ? `Cow on the road ${Math.max(0, nearest.x - front).toFixed(0)} m ahead` : '';
+  $('cowAhead').textContent = nearest ? TEXT.cowAhead(num(Math.max(0, nearest.x - front), 0)) : '';
   // Camera follows the car across the slope; the viewer can still orbit.
   const target = hill.localToWorld(new THREE.Vector3(poses.chassis[0] + 0.8, 0, 0.5));
   if (lastCar) { const delta = target.clone().sub(lastCar); camera.position.add(delta); orbit.target.add(delta); }
@@ -405,21 +402,21 @@ function frame(now) {
   } else renderer.render(scene, camera);
   if (now - lastPanel > 120) {
     lastPanel = now;
-    $('speed').textContent = speed.toFixed(2);
-    $('dist').textContent = d.qpos[0].toFixed(1);
-    $('time').textContent = d.time.toFixed(1);
+    $('speed').textContent = num(speed, 2);
+    $('dist').textContent = num(d.qpos[0], 1);
+    $('time').textContent = num(d.time, 1);
     const F = -T.x, along = W * Math.sin(th);
     $('fW').textContent = newtons(W);
     $('fWx').textContent = newtons(along);
     $('fWz').textContent = newtons(W * Math.cos(th));
     $('fN').textContent = newtons(N.length());
-    $('fF').textContent = `${signedN(F)} uphill`;
-    $('fNet').textContent = `${signedN(along - F)} downhill`;
+    $('fF').textContent = TEXT.uphill(signedN(F));
+    $('fNet').textContent = TEXT.downhill(signedN(along - F));
     $('cSum').textContent = signedN(along - F);
     $('cMa').textContent = signedN(mass * a);
-    $('cA').textContent = `${a < 0 ? MINUS : ''}${Math.abs(a).toFixed(3)} m/s²`;
+    $('cA').textContent = `${a < 0 ? MINUS : ''}${num(Math.abs(a), 3)} m/s²`;
     const diff = Math.abs(along - F - mass * a);
-    $('cOk').textContent = diff < Math.max(15, 0.03 * Math.abs(mass * a)) ? `They agree (within ${Math.round(diff)} N).` : 'Settling… (the car is changing speed quickly)';
+    $('cOk').textContent = diff < Math.max(15, 0.03 * Math.abs(mass * a)) ? TEXT.agree(Math.max(1, Math.round(diff))) : TEXT.settling;
     const r = config.rear_radius, v = Math.abs(d.qvel[0]);
     const spin = sim.rearDofs.reduce((s, dof) => s + Math.abs(d.qvel[dof]), 0) / sim.rearDofs.length;
     $('skid').hidden = !(v > 0.2 && 1 - spin * r / v > 0.5);
@@ -435,19 +432,19 @@ async function start() {
   $('brake').addEventListener('click', () => setBrake(!braking));
   $('restart').addEventListener('click', () => sim && restart());
   $('react').addEventListener('click', startTest);
-  $('slow').addEventListener('click', () => { slow = !slow; $('slow').setAttribute('aria-pressed', String(slow)); $('slow').textContent = slow ? 'Normal speed' : 'Slow motion'; });
+  $('slow').addEventListener('click', () => { slow = !slow; $('slow').setAttribute('aria-pressed', String(slow)); $('slow').textContent = slow ? TEXT.normal : TEXT.slow; });
   addEventListener('keydown', (e) => {
     if (e.target.closest?.('button, input') && e.key !== 'b' && e.key !== 'r') return;
     if (e.key === 'b' || e.key === 'B') { setBrake(!braking); e.preventDefault(); }
     if ((e.key === 'r' || e.key === 'R') && sim) { restart(); e.preventDefault(); }
   });
   try {
-    if (typeof WebAssembly !== 'object') throw new Error('This browser has no WebAssembly support.');
+    if (typeof WebAssembly !== 'object') throw new Error(TEXT.noWasm);
     const manifest = await (await fetch('manifest.json')).json();
     const base = `cars/${CAR}/`;
     config = await (await fetch(base + 'config.json')).json();
     const [wasm, gltf] = await Promise.all([
-      fetchBytes('mujoco.wasm', (f) => status(`Loading the MuJoCo physics engine… ${Math.round(f * 100)}%`)),
+      fetchBytes('mujoco.wasm', (f) => status(TEXT.loading(Math.round(f * 100)))),
       new GLTFLoader().loadAsync(base + 'car.glb'),
     ]);
     files = Object.fromEntries(await Promise.all(config.files.map(async (f) => [f, await fetchBytes(base + f)])));
@@ -457,13 +454,13 @@ async function start() {
       node.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
       bodyGroups[body].add(node);
     }
-    status('Starting MuJoCo…');
+    status(TEXT.starting);
     const { default: loadMujoco } = await import(`https://cdn.jsdelivr.net/npm/@mujoco/mujoco@${manifest.mujoco_version}/mujoco.js`);
     mujoco = await loadMujoco({ wasmBinary: wasm.buffer });
     sim = new CarSim(mujoco, config, files, 'flat');
     for (let b = 0; b < sim.model.nbody; b++) mass += sim.model.body_mass[b];
     blockP = config.pedal.devices[0].capacity / (MU_DESIGN * config.rear_radius);   // the validated torque at mu = 0.5
-    $('pOut').textContent = Math.round(blockP).toLocaleString('en-GB');
+    $('pOut').textContent = grouped(blockP);
     paintScene();
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintScene);
     new MutationObserver(paintScene).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
@@ -475,7 +472,7 @@ async function start() {
     status('');
   } catch (err) {
     console.error(err);
-    status(`Could not start the simulation: ${err.message}`, true);
+    status(TEXT.failed(err.message), true);
   }
 }
 start();
