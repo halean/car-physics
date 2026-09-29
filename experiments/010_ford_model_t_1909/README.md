@@ -176,6 +176,46 @@ real tyres. Seat acceleration is taken from the seat point's vertical velocity,
 averaged over 20 ms to remove contact-solver noise. It is not weighted for
 human comfort (ISO 2631).
 
+## Interactive: change the springs while driving
+
+```bash
+.venv/bin/python experiments/010_ford_model_t_1909/interactive.py          # bump course
+.venv/bin/python experiments/010_ford_model_t_1909/interactive.py --flat   # flat road
+```
+
+This opens MuJoCo's viewer on the tested build, after `run.py --stage full`,
+with a camera that follows the car. The sliders are in the right-hand
+**Control** panel, prefixed `ui_`. They are zero-force actuators added only for
+this viewer, so the car itself is unchanged.
+
+| Slider | Effect |
+| --- | --- |
+| `ui_gear` | 0 neutral, 1 low, 2 high (the clutch engages over 0.5 s) |
+| `ui_throttle`, `ui_foot_brake`, `ui_hand_brake` | Engine torque, transmission brake, hub bands |
+| `ui_driver`, `ui_steer_deg` | Driver holds the start line, or you steer (at the pitman) |
+| `ui_front_rate`, `ui_rear_rate` | Spring rate at the axle, kN/m (design 28 and 26) |
+| `ui_front_damping`, `ui_rear_damping` | Damping at the axle, kN s/m (design 1.56 and 1.55) |
+| `ui_keep_ride_height` | 1: re-preload so ride height stays at design. 0: keep the spring's free shape, so a softer spring sags |
+
+Roll stiffness and roll damping scale with each axle's settings, because one
+transverse spring provides both. The top-left overlay shows:
+- speed and gear;
+- each axle's position against design and the travel used, with `ON STOPS`
+  shown when an axle reaches its stop;
+- seat RMS acceleration over the last 2 s;
+- the number of wheels on the ground.
+
+Backspace resets the car to the start with the design settings. Ctrl +
+right-drag pushes the body.
+
+`--selftest` runs a scripted session without a window. At design rates the
+axles stay within a few millimetres of ride height. At 10 kN/m with ride height
+kept, seat RMS falls from 0.24 to 0.18 g. Letting the soft springs keep their
+free shape sags the car onto its stops, with 101–116% travel.
+
+Settings changed here are exploration only. They are not validated: the gated
+results above apply to the design values.
+
 ## Not modeled
 
 - Spring wind-up and interleaf friction. The joints locate the axles; the
