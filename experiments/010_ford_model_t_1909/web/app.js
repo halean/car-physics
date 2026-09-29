@@ -159,8 +159,7 @@ function buildSim(name) {
   sim = new ModelTSim(mujoco, `model_t_${name}.xml`, files, config);
   sim.set(readControls());
   drawBars(name === 'bumps' ? config.bars : []);
-  history.length = 0;
-  lastCar = null;
+  history.length = 0;   // lastCar is kept: the camera follows the car back to the start
 }
 
 function readControls() {
@@ -210,7 +209,7 @@ document.querySelectorAll('input[name="course"]').forEach((el) => el.addEventLis
   course = el.value;
   if (mujoco) buildSim(course);
 }));
-$('restart').addEventListener('click', () => { if (sim) { sim.reset(); sim.set(readControls()); history.length = 0; lastCar = null; } });
+$('restart').addEventListener('click', () => { if (sim) { sim.reset(); sim.set(readControls()); history.length = 0; } });   // camera follows the car back
 
 // ---------- readouts ----------
 const fmt = (v, d = 1) => v.toFixed(d);
