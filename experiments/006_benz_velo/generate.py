@@ -164,7 +164,10 @@ def steering_bodies(p, kp, cx, front, cy=0.0):
                     kingpin_track=2*kp, wheelbase=wb,
                     # 3D points for sprung cars (the drag link crosses the suspension)
                     column_3d=[cx, cy, front['zl']], pitman_ball_3d=list(pitman_ball),
-                    drag_ball_3d=list(drag_ball), kingpin_left_3d=[wb, kp, front['zl']])
+                    drag_ball_3d=list(drag_ball), kingpin_left_3d=[wb, kp, front['zl']],
+                    # for independent front suspension (each knuckle at its own height)
+                    kingpins_3d={'left': [wb, kp, front['zl']], 'right': [wb, -kp, front['zl']]},
+                    arm_balls_3d={k: list(v) for k, v in balls.items()})
     return bodies, loops, steering
 
 

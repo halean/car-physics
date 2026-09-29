@@ -133,6 +133,18 @@ every earlier car was revalidated after the fix.
 .venv/bin/python experiments/010_ford_model_t_1909/run.py --stage full
 ```
 
+## Seventh car: Lancia Lambda 1922
+
+[Experiment 011](experiments/011_lancia_lambda_1922/README.md) is the first
+car with independent front suspension (sliding pillars with coil springs and
+hydraulic dampers), a load-bearing hull, and brakes on all four wheels. The
+build checks pose each front wheel separately, and two new gates test
+four-wheel braking in a turn and the weight transfer under braking.
+
+```bash
+.venv/bin/python experiments/011_lancia_lambda_1922/run.py --stage full
+```
+
 ## Required build validation
 
 [Car Downhill Check](skills/car-downhill-check/SKILL.md) defines the build gate:

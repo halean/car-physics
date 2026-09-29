@@ -12,9 +12,10 @@
 | [008](008_renault_1898/README.md) | Renault Type A (1898): shaft drive with universal joints to a live axle, direct-drive third, combined clutch/brake pedal | Implemented |
 | [009](009_mercedes_35hp_1901/README.md) | Mercedes 35 HP (1901): leaf-spring suspension on both axles, steering wheel through a box, four speeds, chains; checks at bump, rebound and roll | Implemented |
 | [010](010_ford_model_t_1909/README.md) | Ford Model T (1909): transverse springs, axles located by balls (wishbone, torque tube), planetary two-speed, transmission brake | Implemented |
-| 011 (planned) | Lofted body cross sections; enclosed car envelope | Not implemented |
-| 012 (planned) | Geometry Nodes instancing for wheels and trim | Not implemented |
-| 013 (planned) | Simplified aero geometry and controlled parameter sweeps | Not implemented |
+| [011](011_lancia_lambda_1922/README.md) | Lancia Lambda (1922): sliding-pillar independent front suspension, unitary hull, four-wheel brakes, a lengthening propeller shaft; one-sided bump poses | Implemented |
+| 012 (planned) | Lofted body cross sections; enclosed car envelope | Not implemented |
+| 013 (planned) | Geometry Nodes instancing for wheels and trim | Not implemented |
+| 014 (planned) | Simplified aero geometry and controlled parameter sweeps | Not implemented |
 
 [web](web/README.md): Brass Era Garage, every validated car in the browser with shared controls.
 

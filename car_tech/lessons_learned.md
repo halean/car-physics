@@ -1,7 +1,7 @@
-# Lessons learned: building and validating cars 001–010
+# Lessons learned: building and validating cars 001–011
 
-What building the Motorwagen, Velo, Panhard, Renault, Mercedes 35 HP and Model T
-taught us, gathered in one place. Each lesson names the experiment where it was
+What building the Motorwagen, Velo, Panhard, Renault, Mercedes 35 HP, Model T and
+Lancia Lambda taught us, gathered in one place. Each lesson names the experiment where it was
 learned; that experiment's README has the numbers. Read this before starting a
 new car, alongside the [car-downhill-check skill](../skills/car-downhill-check/SKILL.md).
 
@@ -77,6 +77,21 @@ new car, alongside the [car-downhill-check skill](../skills/car-downhill-check/S
   that for a dead band. Without castor there is no self-centring, so the
   "driver holds the line" controller, like a real driver, is the fix. The
   experiments are tabled in the 010 README.
+- **Match the drag link to the wheel's travel** (011). With a sliding pillar
+  the wheel moves straight up. A lengthwise drag link whose end swings
+  sideways then steers the wheel at first order (2.5° at 60 mm); a transverse
+  link at the ball's height, with equal parallel pitman and drag arms, makes
+  it second order (0.59°). The general rule: the link's end should move the
+  way the wheel travels, so the travel only tilts the link.
+- **Sliding and turning fits are joins, and must not be solid colliders one
+  inside the other** (011). A knuckle collar drawn as a cylinder around the
+  fixed pillar collided in MuJoCo (grandparent bodies are not excluded). A
+  ring around the carrier, declared as a join, touches at every pose and
+  connects the part to the rest of the car.
+- **Four-wheel brakes change what to gate** (011). Braking in a turn becomes
+  a gate rather than a finding, and the weight transfer that makes front
+  brakes do the work is measurable from the contact forces: the front tyres'
+  share rose from 46% to 50% while the rear wheels kept rolling.
 - **Steered wheels need room at every suspension pose** (009, 010). At full lock
   combined with bump or roll, the Mercedes' front tyres reached the frame rails,
   so the frame was narrowed from 0.76 m to 0.66 m. Hubs have touched knuckle

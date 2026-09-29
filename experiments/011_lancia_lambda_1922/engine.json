@@ -1,0 +1,17 @@
+{
+  "rated_power_w": 36000,
+  "governed_rpm": 3250,
+  "no_load_rpm": 3400,
+  "clutch_seconds": 0.5,
+  "gearbox_ratios": {
+    "first": 3.4,
+    "second": 1.9,
+    "third": 1.0
+  },
+  "final_drive_ratio": 4.5,
+  "front_drum_capacity_nm_each": 260,
+  "rear_drum_capacity_nm_each": 300,
+  "brake_ramp_seconds": 0.25,
+  "source": "First-series Lambda: narrow-angle V4, 2121 cc, 49 PS (36 kW) at 3250 rpm; three-speed gearbox; four-wheel drum brakes (Wikipedia, citing Eckermann and others). Assumed: a droop to 3400 rpm no-load standing in for the throttle, ratios 3.4/1.9/1.0 with a 4.5 final drive (top gear about 104 km/h at rated speed; sources give 68-70 mph for later series), and the drum capacities.",
+  "brake_note": "The pedal works all four drums through a mechanical linkage: 260 N m at each front drum and 300 N m at each rear, 1120 N m in all, about 0.25 g on level ground. The hand lever works the rear drums only."
+}

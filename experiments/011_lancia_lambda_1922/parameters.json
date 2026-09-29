@@ -1,0 +1,50 @@
+{
+  "wheelbase": 3.1,
+  "front_track": 1.4,
+  "rear_track": 1.4,
+  "front_radius": 0.38,
+  "rear_radius": 0.38,
+  "tire_radius": 0.055,
+  "tube_radius": 0.02,
+  "sill_y": 0.48,
+  "kingpin_inset": 0.12,
+  "steering_arm": 0.15,
+  "column_x": 2.98,
+  "column_y": -0.4,
+  "column_limit_deg": 30,
+  "linkage_heights": [
+    0.22,
+    0.27,
+    0.31,
+    0.31
+  ],
+  "steering_box_ratio": 8.0,
+  "drag_arm": 0.18,
+  "drag_arm_vector": [
+    -0.18,
+    0.0
+  ],
+  "pitman_arm_vector": [
+    -0.18,
+    0.0
+  ],
+  "front_travel_m": 0.06,
+  "rear_travel_m": 0.06,
+  "roll_travel_deg": 4.0,
+  "spokes": 24,
+  "wing_radius": 0.53,
+  "front_uj": [
+    1.8,
+    0.0,
+    0.44
+  ],
+  "rear_uj": [
+    0.16,
+    0.0,
+    0.4
+  ],
+  "dimension_note": "Wheelbase 3.10 m and overall width 1.66 m are sourced (Wikipedia; Classic & Sports Car). Track, 0.38 m wheels on 55 mm tyres, the sill spacing and all heights are assumptions. The hull's sills end 0.4 m behind the front wheels (they steer 30 deg); narrower front horns carry the pillars and radiator.",
+  "suspension_note": "Front: each wheel carrier slides on a fixed pillar (kingpin) between the hull's upper and lower arms, with a coil spring above the carrier; the hydraulic damper inside the pillar is not drawn (joint damping stands in for it). Rear: live axle on semi-elliptic springs; the friction dampers are dry friction on the axle's heave joint.",
+  "steering_note": "Steering box behind the front cross member on the right (the column is raked back to a wheel on the right: right-hand drive), pitman and drag arms equal and parallel (a parallelogram, 1:1), and the drag link crossing under the engine to the left knuckle. With the pillars' vertical travel, the link's end moves inboard only by dz^2/2L, so bump steer is second order (about 0.6 deg at full travel). A first layout with a lengthwise link and a non-parallel drag arm gave 1.6:1 steering and 2.5 deg of bump steer.",
+  "horn_y": 0.3
+}

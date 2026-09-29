@@ -194,3 +194,17 @@ colliders. It had a missing `/mass` until 010, which scaled centre-of-mass
 offsets by the body's mass. If a sprung car calibrates to implausible spring
 preloads, check the compiled `body_ipos` of the axle bodies first.
 
+## Lancia Lambda (experiment 011)
+
+As for 010: replace `010_ford_model_t_1909` with `011_lancia_lambda_1922` and
+`model_t` with `lancia_lambda`. Independent front suspension: each wheel
+carrier is a `pillar_<side>` body on a vertical slide joint, and the knuckle is
+its child. `suspension` declares `independent_front`, `front_left_joint`,
+`front_right_joint`, and `check_poses` with `front_left` / `front_right`
+travel (up positive), including one-sided poses. The tie rod is a ball joint.
+A propeller shaft is two bodies (`shafts` in `suspension`: ball at the front
+universal joint, slide for the spline) closed to the axle by a connect
+constraint. The pedal brakes all four wheels (`braked` on every wheel; the
+controller sets front and rear joint friction); the scenarios add four-wheel
+braking in a turn and a weight-transfer measurement from the contact forces.
+

@@ -1,0 +1,42 @@
+{
+  "total_mass_kg": 1200,
+  "mass_source": "1200 kg, the low end of Wikipedia's 1200-1350 kg for the Lambda; Classic & Sports Car gives 1065 kg for a fourth-series car. No occupants.",
+  "masses_kg": {
+    "rear_wheel": 22.0,
+    "front_wheel": 20.0,
+    "pillar_left": 8.0,
+    "pillar_right": 8.0,
+    "knuckle": 10.0,
+    "tie_rod": 3.0,
+    "drag_link": 2.5,
+    "column": 2.0,
+    "rear_axle": 95.0,
+    "steering_wheel": 4.0,
+    "propshaft": 5.0,
+    "propshaft_rear": 3.0
+  },
+  "chassis_com": [1.55, 0.0, 0.62],
+  "chassis_inertia": [220, 1100, 1200],
+  "tire_friction": 0.8,
+  "steering_servo": {
+    "kp": 1000,
+    "kv": 30,
+    "force_limit_nm": 80,
+    "note": "Acts at the pitman; with the 8:1 box, 80 N m there is 10 N m at the steering wheel."
+  },
+  "suspension": {
+    "pillar_left_heave": {"stiffness": 30000, "damping": 1900},
+    "pillar_right_heave": {"stiffness": 30000, "damping": 1900},
+    "rear_axle_heave": {"stiffness": 86000, "damping": 1200, "frictionloss": 300},
+    "rear_axle_roll": {"stiffness": 17000, "damping": 400, "frictionloss": 60},
+    "note": "Front: 30 kN/m per pillar (about 80 mm static deflection under ~250 kg sprung per wheel) with a hydraulic damper at about 0.35 of critical, 1.9 kN s/m. Rear: 86 kN/m heave (two semi-elliptics, about 40 mm static deflection) with light viscous damping plus the friction dampers as 300 N of dry friction at the axle (60 N m in roll); roll rate from 0.9 m spring spacing. Preloads are calibrated at run time to the design ride height."
+  },
+  "tire": {
+    "contact_shape": "ellipsoid",
+    "section_half_width_m": 0.05,
+    "contact_solref": [-2300, -48],
+    "contact_solimp": [0.5, 0.95, 0.01, 0.5, 2],
+    "note": "Beaded-edge pneumatic tyres of the period: shared compliant contact, round crown 50 mm half-width."
+  },
+  "assumptions": "Mass split, centre of mass (front engine, deep hull), inertia, spring rates, damping and the friction-damper force are estimates."
+}

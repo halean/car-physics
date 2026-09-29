@@ -89,51 +89,92 @@ def _solve_bracketed(f, near, span=math.radians(80), step=math.radians(.5)):
 
 
 def suspended_pose(geometry, phi, pose):
-    """Joint positions for a sprung car: front axle heave/roll, rear swing/roll, and the
-    steering loops closed in 3D (the drag link runs from the frame to the moving axle,
-    so axle travel steers the wheels: bump steer). Returns {joint name: qpos}."""
+    """Joint positions for a sprung car: the axles (or independent pillars) at the given pose and
+    the steering loops closed in 3D (the drag link runs from the frame to moving wheels, so
+    travel steers them: bump steer). Returns {joint name: qpos}.
+    pose keys: front_heave | front_swing, front_roll, rear_swing | rear_heave, rear_roll; or, with
+    independent_front, front_left and front_right (each pillar's travel, up positive)."""
     s, sus = geometry['steering'], geometry['suspension']
-    heave, roll = pose.get('front_heave', 0.0), pose.get('front_roll', 0.0)
-    swing = pose.get('front_swing', 0.0)
-    o = np.array(sus['front_axle_origin'])
-    R_roll = _axis_angle(sus.get('front_roll_axis', [1, 0, 0]), roll)
-    if 'front_swing_joint' in sus:
-        # Axle located by a wishbone to a ball behind it: it swings about the ball (joint order
-        # swing, then roll, as in the MJCF body) instead of heaving.
-        pivot = np.array(sus['front_pivot'])
-        axle = lambda p: pivot+_axis_angle([0, 1, 0], swing)@(o+R_roll@(np.array(p)-o)-pivot)
-    else:
-        axle = lambda p: o+R_roll@(np.array(p)-o)+np.array([0, 0, heave])
     C, P0 = np.array(s['column_3d']), np.array(s['pitman_ball_3d'])
     D0, KL = np.array(s['drag_ball_3d']), np.array(s['kingpin_left_3d'])
     P = C+_rz(phi)@(P0-C)
     drag = np.linalg.norm(D0-P0)
-    D = lambda t: axle(KL+_rz(t)@(D0-KL))
-    left = _solve_bracketed(lambda t: np.linalg.norm(D(t)-P)-drag, phi)   # drag side is near 1:1
-    # Tie rod: both knuckles ride on the axle, so this loop stays planar in the axle frame.
-    KL2, KR2 = np.array(s['kingpins']['left']), np.array(s['kingpins']['right'])
-    AL0, AR0 = np.array(s['arm_balls']['left']), np.array(s['arm_balls']['right'])
-    AL = KL2+_rot(AL0-KL2, left)
-    right = _solve_bracketed(lambda t: np.linalg.norm(KR2+_rot(AR0-KR2, t)-AL)-np.linalg.norm(AR0-AL0), left)
-    AR = KR2+_rot(AR0-KR2, right)
     angle = lambda v: math.atan2(v[1], v[0])
-    tie = angle(AR-AL)-angle(AR0-AL0)-left
-    # Drag link ball joint: shortest rotation of its rest direction, in the pitman's frame.
-    world = _quat_between(D0-P0, D(left)-P)
-    in_pitman = _quat_mul(np.array([math.cos(-phi/2), 0, 0, math.sin(-phi/2)]), world)
-    q = {'column_joint': phi, 'knuckle_left_joint': left, 'knuckle_right_joint': right, 'tie_rod_joint': tie,
-         'drag_link_joint': in_pitman, sus['front_roll_joint']: roll,
-         sus['rear_swing_joint']: pose.get('rear_swing', 0.0), sus['rear_roll_joint']: pose.get('rear_roll', 0.0)}
-    if 'front_swing_joint' in sus:
-        q[sus['front_swing_joint']] = swing
+    q = {'column_joint': phi}
+    if sus.get('independent_front'):
+        # Sliding pillars: each wheel carrier rises on its own vertical pillar and steers about it.
+        hl, hr = pose.get('front_left', 0.0), pose.get('front_right', 0.0)
+        up_l, up_r = np.array([0, 0, hl]), np.array([0, 0, hr])
+        D = lambda t: KL+up_l+_rz(t)@(D0-KL)
+        left = _solve_bracketed(lambda t: np.linalg.norm(D(t)-P)-drag, phi)
+        KL3, KR3 = np.array(s['kingpins_3d']['left']), np.array(s['kingpins_3d']['right'])
+        AL0, AR0 = np.array(s['arm_balls_3d']['left']), np.array(s['arm_balls_3d']['right'])
+        AL = KL3+up_l+_rz(left)@(AL0-KL3)
+        tie_len = np.linalg.norm(AR0-AL0)
+        AR = lambda t: KR3+up_r+_rz(t)@(AR0-KR3)
+        right = _solve_bracketed(lambda t: np.linalg.norm(AR(t)-AL)-tie_len, left)
+        # The tie rod is a ball joint on the left arm's ball: shortest rotation of its rest
+        # direction, expressed in the left knuckle's frame.
+        tie_world = _quat_between(AR0-AL0, AR(right)-AL)
+        q['tie_rod_joint'] = _quat_mul(np.array([math.cos(-left/2), 0, 0, math.sin(-left/2)]), tie_world)
+        q[sus['front_left_joint']], q[sus['front_right_joint']] = hl, hr
+        drag_end = D(left)
     else:
-        q[sus['front_heave_joint']] = heave
+        heave, roll = pose.get('front_heave', 0.0), pose.get('front_roll', 0.0)
+        swing = pose.get('front_swing', 0.0)
+        o = np.array(sus['front_axle_origin'])
+        R_roll = _axis_angle(sus.get('front_roll_axis', [1, 0, 0]), roll)
+        if 'front_swing_joint' in sus:
+            # Axle located by a wishbone to a ball behind it: it swings about the ball (joint order
+            # swing, then roll, as in the MJCF body) instead of heaving.
+            pivot = np.array(sus['front_pivot'])
+            axle = lambda p: pivot+_axis_angle([0, 1, 0], swing)@(o+R_roll@(np.array(p)-o)-pivot)
+        else:
+            axle = lambda p: o+R_roll@(np.array(p)-o)+np.array([0, 0, heave])
+        D = lambda t: axle(KL+_rz(t)@(D0-KL))
+        left = _solve_bracketed(lambda t: np.linalg.norm(D(t)-P)-drag, phi)   # drag side is near 1:1
+        # Tie rod: both knuckles ride on the axle, so this loop stays planar in the axle frame.
+        KL2, KR2 = np.array(s['kingpins']['left']), np.array(s['kingpins']['right'])
+        AL0, AR0 = np.array(s['arm_balls']['left']), np.array(s['arm_balls']['right'])
+        AL = KL2+_rot(AL0-KL2, left)
+        right = _solve_bracketed(lambda t: np.linalg.norm(KR2+_rot(AR0-KR2, t)-AL)-np.linalg.norm(AR0-AL0), left)
+        AR = KR2+_rot(AR0-KR2, right)
+        q['tie_rod_joint'] = angle(AR-AL)-angle(AR0-AL0)-left
+        q[sus['front_roll_joint']] = roll
+        if 'front_swing_joint' in sus:
+            q[sus['front_swing_joint']] = swing
+        else:
+            q[sus['front_heave_joint']] = heave
+        drag_end = D(left)
+    # Drag link ball joint: shortest rotation of its rest direction, in the pitman's frame.
+    world = _quat_between(D0-P0, drag_end-P)
+    q['drag_link_joint'] = _quat_mul(np.array([math.cos(-phi/2), 0, 0, math.sin(-phi/2)]), world)
+    q['knuckle_left_joint'], q['knuckle_right_joint'] = left, right
+    for key in ('rear_swing', 'rear_heave', 'rear_roll'):
+        if f'{key}_joint' in sus:
+            q[sus[f'{key}_joint']] = pose.get(key, 0.0)
     for c in geometry.get('couplings', []):
         if c['joint2'] == 'column_joint':
             q[c['joint1']] = c['ratio']*phi
     if sus.get('scissors'):
         q.update(_scissors(geometry, q))
+    if sus.get('shafts'):
+        q.update(_shafts(geometry, q))
     return q
+
+
+def _shafts(geometry, q):
+    """Close each propeller shaft: a body on a ball joint at the front universal joint F
+    (parent chassis) whose child slides along the shaft (a splined joint) to the rear universal
+    joint R on the axle (a connect constraint). Returns the ball quaternion and the slide."""
+    T = body_transforms(geometry, q)
+    out = {}
+    for s in geometry['suspension']['shafts']:
+        F, R0 = np.array(s['F'], dtype=float), np.array(s['R'], dtype=float)
+        R = (T[s['axle']]@np.append(R0, 1))[:3]
+        out[f"{s['body']}_joint"] = _quat_between(R0-F, R-F)
+        out[f"{s['slider']}_joint"] = float(np.linalg.norm(R-F)-np.linalg.norm(R0-F))
+    return out
 
 
 def _scissors(geometry, q):
