@@ -40,7 +40,13 @@
   header p { margin: 6px 0 0; max-width: 65ch; font-size: 17px; }
   h2 { margin: 0; font: 600 14px/1.2 var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
   .stage { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 14px; align-items: start; }
-  @media (max-width: 960px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 960px) {
+    .stage { grid-template-columns: minmax(0, 1fr); }
+    /* Phones and narrow windows: the controls come right after the simulation. */
+    .stage > .col { display: contents; }
+    #viewport { order: 1; } #controls { order: 2; } #reactPanel { order: 3; }
+    .chart-panel { order: 4; } .forces-panel { order: 5; } .check-panel { order: 6; }
+  }
   .col { display: grid; gap: 12px; min-width: 0; }
   .viewport { position: relative; height: clamp(300px, 52vh, 560px); border-radius: 6px; overflow: hidden; background: var(--sky); border: 1px solid var(--line); }
   .viewport canvas { display: block; width: 100%; height: 100%; touch-action: none; }
@@ -129,7 +135,7 @@
         <h2>Coi chừng bò: em dừng xe thế nào?</h2>
         <div id="reactResult"></div>
       </div>
-      <div class="panel">
+      <div class="panel chart-panel">
         <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><h2>Đồ thị vận tốc – thời gian</h2><span class="hint">Độ dốc của đồ thị chính là gia tốc.</span></div>
         <canvas id="vt" aria-label="Vận tốc của xe theo thời gian"></canvas>
       </div>
@@ -150,7 +156,7 @@
           <button type="button" id="react">Coi chừng bò!</button>
         </div>
       </div>
-      <div class="panel">
+      <div class="panel forces-panel">
         <h2>Các lực tác dụng lên xe</h2>
         <div class="fbd">
           <div class="force"><i style="background:var(--weight)"></i><span>Trọng lực <span class="math">P = mg</span></span><output id="fW"></output></div>
@@ -162,7 +168,7 @@
         </div>
         <p class="hint">Mũi tên: 1 m ứng với 3000 N, vẽ tại trọng tâm của xe. Chọn chiều dương là chiều chuyển động xuống dốc.</p>
       </div>
-      <div class="panel">
+      <div class="panel check-panel">
         <h2>Kiểm chứng định luật 2 Newton: F = ma</h2>
         <div class="check">
           <div class="eq"><span>P sin α − F<sub>ms</sub></span><output id="cSum"></output>
