@@ -48,6 +48,10 @@
   .hud-line { font: 400 14px var(--mono); font-variant-numeric: tabular-nums; }
   .hud .cow { font: 600 15px var(--display); letter-spacing: .04em; color: var(--ink); }
   .cow-note { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); max-width: calc(100% - 32px); padding: 8px 14px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); font-size: 15px; }
+  .rrow { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-block: 4px; }
+  .rrow output { font: 600 14px var(--mono); font-variant-numeric: tabular-nums; }
+  .verdict { margin: 8px 0 0; font-weight: 600; }
+  #react { border: 2px solid var(--brass); }
   .skid { position: absolute; right: 12px; top: 10px; padding: 4px 10px; border-radius: 4px; background: var(--warn); color: var(--paper); font: 600 14px var(--display); letter-spacing: .08em; text-transform: uppercase; }
   .status { position: absolute; inset: auto 12px 12px 12px; padding: 10px 12px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); font-size: 14px; }
   .status.error { border-color: var(--warn); }
@@ -105,6 +109,10 @@
         <div id="skid" class="skid" hidden>Rear wheels locked: skidding</div>
         <div id="status" class="status">Loading…</div>
       </div>
+      <div class="panel" id="reactPanel" hidden aria-live="polite">
+        <h2>Surprise cow: your stop</h2>
+        <div id="reactResult"></div>
+      </div>
       <div class="panel">
         <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><h2>Speed against time</h2><span class="hint">The slope of this line is the acceleration.</span></div>
         <canvas id="vt" aria-label="Speed of the car against time"></canvas>
@@ -123,6 +131,7 @@
           <button type="button" id="brake" aria-pressed="false">Brake (B)</button>
           <button type="button" id="restart">Start again (R)</button>
           <button type="button" id="slow" aria-pressed="false">Slow motion</button>
+          <button type="button" id="react">Surprise cow</button>
         </div>
       </div>
       <div class="panel">
@@ -177,9 +186,9 @@
       <article class="try">
         <h3>4. Stop for the cow</h3>
         <p class="set">θ = 5°, μ = 0.5</p>
-        <p>Cows wander onto the road now and then. Let the car reach 3 m/s, then brake. How far will it roll before it stops? Use <span class="math">a = (2μP − mg sin θ) / m</span> and <span class="math">v² = 2as</span>, then watch the distance to the cow.</p>
+        <p>Cows wander onto the road now and then. Let the car reach 3 m/s, then brake. How far will it roll before it stops? Use <span class="math">a = (2μP − mg sin θ) / m</span> and <span class="math">v² = 2as</span>, then watch the distance to the cow. Then press <b>Surprise cow</b>: a cow steps out when you least expect it, and the page measures your own reaction time.</p>
         <details><summary>Show the answer</summary>
-          <p><span class="math">a = (720 − 513) / 600 = 0.35 m/s²</span>, so <span class="math">s = 3² / (2 × 0.35) ≈ 13 m</span>. The simulated car needs about 15.5 m. The brake takes a quarter of a second to bite, and the spinning wheels carry energy that the brake must also absorb (the same effect as in challenge 1). At 5 m/s the stop is nearly three times as long. Speed counts twice in v².</p></details>
+          <p><span class="math">a = (720 − 513) / 600 = 0.35 m/s²</span>, so <span class="math">s = 3² / (2 × 0.35) ≈ 13 m</span>. The simulated car needs about 15.5 m. The brake takes a quarter of a second to bite, and the spinning wheels carry energy that the brake must also absorb (the same effect as in challenge 1). At 5 m/s the stop is nearly three times as long. Speed counts twice in v². On a real road, add the thinking distance: the car keeps going at full speed during your reaction time, so thinking distance is v × t.</p></details>
       </article>
     </div>
   </section>

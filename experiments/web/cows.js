@@ -100,6 +100,20 @@ export class Herd {
     }
   }
 
+  clear() {
+    for (const c of this.cows) this.parent.remove(c.obj.cow);
+    this.cows = [];
+  }
+
+  // A cow that walks into the road for the reaction test: it stays until the car is nearly on it.
+  spawn(x, y) {
+    const obj = makeCow(mulberry32((Math.random() * 1e9) | 0));
+    this.parent.add(obj.cow);
+    const c = { obj, x, y, heading: Math.PI / 2, phase: 0, state: 'graze', target: null, speed: 0, hurried: false, stubborn: true };
+    this.cows.push(c);
+    return c;
+  }
+
   onRoad(c) { return Math.abs(c.y) < this.opts.roadHalf + 0.6; }
 
   // carX: front of the car along the road; carSpeed in m/s. Returns the nearest cow still on the
@@ -108,12 +122,12 @@ export class Herd {
     let nearest = null, hurried = false;
     for (const c of this.cows) {
       const ahead = c.x - carX;
-      const warn = 6 + 1.6 * carSpeed;                    // a cow notices a car about 1.6 s away
+      const warn = c.stubborn ? 2 + 0.3 * carSpeed : 6 + 1.6 * carSpeed;   // most notice a car about 1.6 s away
       if (c.state === 'graze' && this.onRoad(c) && ahead > -2 && ahead < warn) {
         const side = c.y === 0 ? 1 : Math.sign(c.y);
         c.target = side * (this.opts.roadHalf + 2.5);
         c.state = 'walk';
-        c.speed = ahead < 3 + 0.6 * carSpeed ? 3.2 : 1.3;   // trots if the car is almost on it
+        c.speed = c.stubborn || ahead < 3 + 0.6 * carSpeed ? 3.2 : 1.3;   // trots if the car is almost on it
         c.hurried = c.speed > 2;
         if (c.hurried) hurried = true;
         c.heading = side > 0 ? Math.PI / 2 : -Math.PI / 2;

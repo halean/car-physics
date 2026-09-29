@@ -114,6 +114,7 @@ function setArrow(name, origin, v) {
 // ---------- simulation ----------
 let mujoco, config, files, sim, bodyGroups = {}, mass = 0, blockP = 0;
 let braking = false, brakeCmd = 0, slow = false, lastCar = null, cowNote = null, movedSinceStop = false, paused = false;
+let test = null, lastFront = 0, lastSpeed = 0;   // the surprise-cow reaction test
 const history = [];          // [t, speed, braking]
 const velHist = [];          // [t, vx] for the measured acceleration
 
@@ -131,6 +132,7 @@ function restart() {
   sim.reset({ ...CarSim.defaults(config), gear: 0, throttle: 0, driver: true, steer: 0, pedal: 0, lever: 0 });
   herd.reset();
   cowNote = null; movedSinceStop = false; paused = false; status('');
+  test = null;
   $('cowNote').hidden = true;
   braking = false; brakeCmd = 0;
   $('brake').setAttribute('aria-pressed', 'false');
@@ -143,7 +145,78 @@ function showCowNote(text) {
   $('cowNote').textContent = text;
   $('cowNote').hidden = false;
 }
-function setBrake(on) { braking = on; $('brake').setAttribute('aria-pressed', String(on)); }
+function setBrake(on) {
+  braking = on;
+  $('brake').setAttribute('aria-pressed', String(on));
+  if (on && test?.phase === 'cow') {
+    Object.assign(test, { phase: 'braking', tPress: performance.now(), xPress: lastFront, vPress: lastSpeed });
+  }
+}
+
+function brakeDecel() {   // physics prediction, per unit mass: (2 mu P - m g sin theta) / m
+  return (2 * +$('mu').value * blockP - mass * 9.81 * Math.sin(slope())) / mass;
+}
+
+function startTest() {
+  if (!sim) return;
+  restart();
+  herd.clear();
+  if (slow) $('slow').click();   // reaction times are measured in real time
+  test = { phase: 'waiting', armAt: null };
+  $('reactPanel').hidden = false;
+  $('reactResult').textContent = 'Get ready. Somewhere ahead a cow will step into the road. Press B (or Brake) the moment you see it.';
+}
+
+function runTest(now, front, speed) {
+  if (!test) return;
+  if (test.phase === 'waiting') {
+    if (speed >= 3 && test.armAt === null) test.armAt = now + 1000 + Math.random() * 2500;
+    if (test.armAt !== null && now >= test.armAt) {
+      // Room for a one-second reaction plus the real stop (about 1.2 x v^2/2a here: brake bite, spinning wheels).
+      const a = brakeDecel(), spare = 1.0 * speed + (a > 0 ? 1.2 * speed * speed / (2 * a) : 20) + 5;
+      test.cow = herd.spawn(front + spare, 0);
+      Object.assign(test, { phase: 'cow', tAppear: now, xAppear: front, vAppear: speed });
+      $('reactResult').textContent = 'Cow!';
+    }
+  } else if (test.phase === 'cow' && front > test.cow.x - 0.5) {
+    test.phase = 'done';
+    $('reactResult').textContent = 'You did not brake before reaching the cow, which had to jump out of the way. Try again.';
+  } else if (test.phase === 'braking') {
+    if (test.cow.state === 'walk') test.close = true;
+    if (speed < 0.03) {
+      test.phase = 'done';
+      const r = (test.tPress - test.tAppear) / 1000, think = test.xPress - test.xAppear, brake = front - test.xPress;
+      const a = brakeDecel(), predicted = a > 0 ? test.vPress ** 2 / (2 * a) : Infinity;
+      const gap = test.cow.x - front;
+      $('reactResult').innerHTML = '';
+      const rows = [
+        ['Your reaction time', `${r.toFixed(2)} s`],
+        ['Thinking distance (the car at full speed while you react)', `${think.toFixed(1)} m`],
+        ['Braking distance', `${brake.toFixed(1)} m`],
+        ['Physics prediction, v² / 2a', `${predicted.toFixed(1)} m (v = ${test.vPress.toFixed(2)} m/s, a = ${a.toFixed(2)} m/s²)`],
+        ['Stopping distance', `${(think + brake).toFixed(1)} m`],
+      ];
+      for (const [k, v] of rows) {
+        const row = document.createElement('div'); row.className = 'rrow';
+        const a1 = document.createElement('span'); a1.textContent = k;
+        const b1 = document.createElement('output'); b1.textContent = v;
+        row.append(a1, b1); $('reactResult').append(row);
+      }
+      const why = document.createElement('p');
+      why.className = 'hint';
+      why.textContent = 'The real stop is longer than v² / 2a: the brake takes a quarter of a second to bite, and the spinning wheels carry energy the brake must also absorb.';
+      $('reactResult').append(why);
+      const verdict = document.createElement('p');
+      verdict.className = 'verdict';
+      verdict.textContent = test.close ? 'Too close: the cow had to trot out of the way. Brake sooner, or add more brake friction μ.'
+        : `You stopped ${gap.toFixed(1)} m before the cow.`;
+      $('reactResult').append(verdict);
+    } else if (brakeDecel() <= 0 && now - test.tPress > 4000) {
+      test.phase = 'done';
+      $('reactResult').textContent = 'The brake cannot stop the car on this slope: 2μP is less than mg sin θ. Make the hill gentler or the brake stronger.';
+    }
+  }
+}
 
 function contactForces() {
   // Normal and friction force of the road on the tyres, from the constraint solver (elliptic cone:
@@ -238,9 +311,12 @@ function frame(now) {
   // Cows: the nearest one still standing on the road ahead, and how the stop went.
   const speed = Math.hypot(d.qvel[0], d.qvel[1]);
   const front = poses.chassis[0] + config.wheelbase + config.front_radius;
+  lastFront = front; lastSpeed = speed;
+  runTest(now, front, speed);
   const { nearest, hurried } = herd.update(wall, front, speed);
   if (speed > 0.3) movedSinceStop = true;
-  if (hurried) showCowNote('Close call! The cow had to trot out of the way. Brake earlier, or harder.');
+  if (test) { /* the reaction test reports its own result */ }
+  else if (hurried) showCowNote('Close call! The cow had to trot out of the way. Brake earlier, or harder.');
   else if (movedSinceStop && speed < 0.03 && nearest && nearest.x - front < 40) {
     showCowNote(`Stopped ${(nearest.x - front).toFixed(1)} m before the cow.`);
     movedSinceStop = false;
@@ -285,6 +361,7 @@ async function start() {
   $('mu').addEventListener('input', () => sim && applySettings());
   $('brake').addEventListener('click', () => setBrake(!braking));
   $('restart').addEventListener('click', () => sim && restart());
+  $('react').addEventListener('click', startTest);
   $('slow').addEventListener('click', () => { slow = !slow; $('slow').setAttribute('aria-pressed', String(slow)); $('slow').textContent = slow ? 'Normal speed' : 'Slow motion'; });
   addEventListener('keydown', (e) => {
     if (e.target.closest?.('button, input') && e.key !== 'b' && e.key !== 'r') return;
