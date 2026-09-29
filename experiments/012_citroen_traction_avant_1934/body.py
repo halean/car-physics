@@ -16,16 +16,20 @@ import numpy as np
 TOL, SKIN = .002, .002      # chord-height tolerance and panel thickness (m)
 
 # ---------- cabin and boot ----------
+# Styled on photographs of 1934 7As (Wikimedia Commons, see the README): a short, steep, rounded
+# back just behind the rear wings; a long flat roof with a slight visor; a high belt line
+# continuing the bonnet top; shallow side glass.
 CABIN = dict(
-    top=([-1.00, -.70, -.30, .10, .60, 1.20, 1.70, 1.975], [.82, .98, 1.25, 1.44, 1.51, 1.51, 1.49, 1.44]),
-    half_width=([-1.00, -.70, -.30, .40, 1.20, 1.975], [.52, .66, .715, .735, .735, .72]),
-    bottom=([-1.00, -.60, -.47, 1.975], [.47, .44, .41, .41]),
-    waist=.80, virtual_floor=0.0, n_up=4.0, n_dn=4.5, tumble=.18,
-    belt=.98, arch_top=.86, tail_dome=.08,
-    stations=[-1.08, -1.00, -.47, -.30, -.05, .30, .47, 1.00, 1.10, 1.93, 1.975],
-    windows=[(.30, 1.00), (1.10, 1.93)], rear_window=(-.30, -.05), wheel_opening=(-.47, .47))
-BONNET = dict(x=(1.97, 3.545), top=([1.97, 3.0, 3.545], [1.02, 1.01, .99]), half_width=.38,
-              waist=.80, virtual_floor=.55, n_up=3.0, n_dn=4.0, bottom=.62)
+    top=([-.68, -.58, -.42, -.20, .10, .60, 1.20, 1.80, 1.975], [.98, 1.18, 1.34, 1.44, 1.49, 1.51, 1.51, 1.50, 1.46]),
+    half_width=([-.68, -.55, -.35, .40, 1.20, 1.975], [.60, .68, .72, .735, .735, .72]),
+    bottom=([-.68, -.55, -.47, 1.975], [.47, .44, .41, .41]),
+    waist=.80, virtual_floor=0.0, n_up=4.0, n_dn=4.5, tumble=.20,
+    belt=1.04, arch_top=.86, tail_dome=.07,
+    stations=[-.75, -.68, -.47, -.36, -.18, .30, .47, 1.00, 1.10, 1.93, 1.975],
+    windows=[(.30, 1.00), (1.10, 1.93)], rear_window=(-.36, -.18), wheel_opening=(-.47, .47))
+BONNET = dict(x=(1.97, 3.47), top=([1.97, 3.0, 3.47], [1.04, 1.03, 1.00]),
+              half_width=([1.97, 2.40, 3.0, 3.47], [.43, .42, .35, .25]),
+              waist=.86, virtual_floor=.60, n_up=4.5, n_dn=4.0, bottom=.80)   # flatter top, defined shoulders
 
 
 def cabin_shell(bw):
@@ -76,11 +80,11 @@ def cabin_shell(bw):
 
 def bonnet_shell(bw):
     b = BONNET
-    top = bw.Profile(*b['top'])
+    top, width = bw.Profile(*b['top']), bw.Profile(*b['half_width'])
 
     def params(x):
         t = float(top(x))
-        return dict(a=b['half_width'], up=t-b['waist'], dn=b['waist']-b['virtual_floor'], n_up=b['n_up'],
+        return dict(a=float(width(x)), up=t-b['waist'], dn=b['waist']-b['virtual_floor'], n_up=b['n_up'],
                     n_dn=b['n_dn'], zc=b['waist'])
 
     def section(x, theta):
@@ -97,15 +101,58 @@ def bonnet_shell(bw):
     return bw.Shell(loft.P, SKIN, inward=centre), loft
 
 
+# ---------- grille ----------
+GRILLE = dict(half_width=.25, bottom=.42, shoulder=.90, crown=.14, n=2.5, rake=.10, x_bottom=3.53, depth=.02)
+
+
+def grille_outline(u):
+    """Front-view outline height at u in [-1, 1] across: straight sides to the shoulder, then a
+    superellipse arch to the crown."""
+    g = GRILLE
+    return g['shoulder']+g['crown']*(1-np.abs(u)**g['n'])**(1/g['n'])
+
+
+def grille_x(z):
+    """The shield leans back: x falls by `rake` from the bottom to the top."""
+    g = GRILLE
+    return g['x_bottom']-g['rake']*(z-g['bottom'])/(g['shoulder']+g['crown']-g['bottom'])
+
+
+def grille_shell(bw):
+    g = GRILLE
+    u = np.linspace(-1, 1, 41)
+    t = np.linspace(0, 1, 13)
+    z = g['bottom']+t[None, :]*(grille_outline(u)[:, None]-g['bottom'])
+    grid = np.stack([grille_x(z), np.broadcast_to(g['half_width']*u[:, None], z.shape), z], axis=-1)
+    back = lambda P: np.stack([-np.ones(P.shape[:2]), np.zeros(P.shape[:2]), np.zeros(P.shape[:2])], axis=-1)
+    return bw.Shell(grid, g['depth'], inward=back)
+
+
+def grille_surround():
+    """Centreline of the chrome surround along the outline (open at the bottom)."""
+    g = GRILLE
+    u = np.linspace(-1, 1, 61)
+    z = grille_outline(u)
+    top = [(float(grille_x(zz)), float(g['half_width']*uu), float(zz)) for uu, zz in zip(u, z)]
+    side = lambda y: [(float(grille_x(zz)), y, float(zz)) for zz in np.linspace(g['bottom'], g['shoulder'], 8)]
+    return side(-g['half_width'])[:-1]+top+list(reversed(side(g['half_width'])))[1:]
+
+
 # ---------- wings and running boards ----------
-WING = dict(front_centre=(2.91, .34), front_radius=.52, front_arc_deg=(25, 155),
-            rear_centre=(0.0, .34), rear_radius=.47, rear_arc_deg=(25, 150),
+WING = dict(front_centre=(2.91, .34), front_radius=.55, front_arc_deg=(12, 155),
+            rear_centre=(0.0, .34), rear_radius=.52, rear_arc_deg=(25, 150),   # the flare covers the body's wheel opening
             board=(2.15, .70, .40), tail=(-.62, .47),
             # Rear: a flare outboard of the body side (the rear track is narrower than the body).
             y=([-.62, .43, .70, 2.15, 2.44, 3.40], [.83, .83, .80, .80, .67, .67]),
-            half_width=([-.62, .43, .70, 2.15, 2.44, 3.40], [.09, .09, .09, .09, .12, .12]),
-            depth=([-.62, .43, .70, 2.15, 2.44, 3.40], [.06, .06, .02, .02, .06, .06]),
-            n=3.0)
+            # Outboard half deep (the skirt comes well down over the tyre's side), inboard half
+            # shallow and wide (towards the bonnet) but kept clear of the steered tyre.
+            half_out=([-.62, .43, .70, 2.15, 2.44, 3.46], [.10, .10, .09, .09, .15, .15]),
+            # Inboard, the front wing reaches y = 0.44 m, 25 mm outboard of the longerons (it meets
+            # the bonnet side on the car); its edge stays above the steered tyre's reach.
+            half_in=([-.62, .43, .70, 2.15, 2.44, 3.46], [.09, .09, .09, .09, .23, .23]),
+            depth_out=([-.62, .43, .70, 2.15, 2.44, 3.46], [.12, .12, .02, .02, .16, .16]),
+            depth_in=([-.62, .43, .70, 2.15, 2.44, 3.46], [.04, .04, .02, .02, .04, .04]),
+            n=2.6)
 
 
 def wing_path(bw):
@@ -132,13 +179,19 @@ def wing_path(bw):
 def wing_shell(bw, side):
     w = WING
     xz = wing_path(bw)
-    y, half, depth = (bw.Profile(*w[k]) for k in ('y', 'half_width', 'depth'))
+    y = bw.Profile(*w['y'])
+    ho, hi, do, di = (bw.Profile(*w[k]) for k in ('half_out', 'half_in', 'depth_out', 'depth_in'))
     path = np.column_stack([xz[:, 0], side*y(xz[:, 0]), xz[:, 1]])
     phi = np.linspace(0, math.pi, 41)
+    # The frames' lateral axis points to -y along this path (it runs rearward), so positive
+    # lateral is outboard for the right wing and inboard for the left.
+    outer = np.sign(np.cos(phi)) == -side
 
     def section(s, i):
         x = xz[i, 0]
-        a, h, n = float(half(x)), float(depth(x)), w['n']
+        a = np.where(outer, float(ho(x)), float(hi(x)))
+        h = np.where(outer, float(do(x)), float(di(x)))
+        n = w['n']
         lat = a*np.sign(np.cos(phi))*np.abs(np.cos(phi))**(2/n)
         nor = h*np.abs(np.sin(phi))**(2/n)-h          # crown on the path, skirts down by h
         return np.column_stack([lat, nor])
@@ -167,11 +220,11 @@ def build(bw, m, V, part):
     cabin, loft = cabin_shell(bw)
     pieces = [('Body shell', cabin, m['paint'], dict(joins=['Frame rail 1', 'Frame rail -1', 'Front bulkhead']))]
     bonnet, _ = bonnet_shell(bw)
-    pieces.append(('Bonnet', bonnet, m['paint'], dict(joins=['Front bulkhead', 'Front cross member', 'Scuttle'],
-                                                       mates=['Radiator'])))
+    pieces.append(('Bonnet', bonnet, m['paint'], dict(joins=['Front bulkhead', 'Scuttle', 'Grille'])))
+    pieces.append(('Grille', grille_shell(bw), m['iron'], dict(joins=['Radiator'])))
     for s in (1, -1):
         wing, _ = wing_shell(bw, s)
-        pieces.append((f'Wing {s}', wing, m['paint'], dict(joins=[f'Frame rail {s}'])))
+        pieces.append((f'Wing {s}', wing, m['wing'], dict(joins=[f'Frame rail {s}'])))
     for name, shell, mat, links in pieces:
         Vtx, F = shell.mesh()
         ok, info = bw.check_mesh(Vtx, F)

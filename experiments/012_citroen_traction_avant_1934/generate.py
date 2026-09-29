@@ -84,8 +84,8 @@ def front_end(V, p, m, kp):
     balls = {}
     for s, side in ((1, 'left'), (-1, 'right')):
         y, yl = s*kp, s*yi
-        part(slab(f'Front longeron {s}', 1.975, 3.56, s*.385, s*.415, .58, .78, m['paint'], V) if s > 0 else
-             slab(f'Front longeron {s}', 1.975, 3.56, -.415, -.385, .58, .78, m['paint'], V), joins=['Front bulkhead'])
+        part(slab(f'Front longeron {s}', 1.975, 3.50, s*.385, s*.415, .58, .78, m['paint'], V) if s > 0 else
+             slab(f'Front longeron {s}', 1.975, 3.50, -.415, -.385, .58, .78, m['paint'], V), joins=['Front bulkhead'])
         for tx, where in ((wb-xt, 'rear'), (wb+xt, 'front')):
             y0, y1 = sorted((s*(yi-.015), s*p['tower_outer_y']))
             part(slab(f'Suspension tower {where} {s}', tx-.01, tx+.01, y0, y1, .16, .60, m['frame'], V),
@@ -188,11 +188,17 @@ def build_full(V, p, m, kp, yi):
     for i, y in enumerate((.16, .26, .36)):
         part(rod(f'Pedal {i+1}', (1.80, y, .29), (1.72, y, .50), .012, m['steel'], V), joins=['Floor'])
     # Radiator on a cross member between the longerons, bonnet, saloon body.
-    part(slab('Front cross member', 3.46, 3.54, -.415, .415, .60, .70, m['frame'], V), joins=['Front longeron -1', 'Front longeron 1'])
-    part(slab('Radiator', 3.46, 3.54, -.30, .30, .47, .99, m['nickel'], V, .01), joins=['Front cross member'])
+    part(slab('Front cross member', 3.36, 3.42, -.415, .415, .60, .70, m['frame'], V), joins=['Front longeron -1', 'Front longeron 1'])   # behind the raked grille
+    part(slab('Radiator', 3.40, 3.47, -.22, .22, .45, .95, m['iron'], V, .01), joins=['Front cross member'])   # the core, behind the grille
+    for s_ in (-1, 1):   # headlamp bowls on stalks beside the grille
+        part(rod(f'Headlamp stalk {s_}', (float(body.grille_x(.86)), s_*.24, .86), (3.44, s_*.40, .90), .014, m['nickel'], V),
+             joins=['Grille', 'Grille surround', 'Bonnet', f'Headlamp {s_}'])   # through the bonnet side
+        part(rod(f'Headlamp {s_}', (3.38, s_*.40, .93), (3.52, s_*.40, .93), .10, m['nickel'], V))
     part(slab('Scuttle', 1.85, 1.98, -.72, .72, .95, 1.03, m['paint'], V), joins=['Front bulkhead'], mates=['Body shell'])
     # Procedural bodywork (bodywork.py, designed in body.py): cabin and boot, bonnet, wings.
     bodywork = body.build(bw, m, V, part)
+    part(tube('Grille surround', body.grille_surround(), .018, m['nickel'], V),
+         joins=['Grille', 'Bonnet'])   # the bonnet closes on it
     for label, xb, z0, floor in (('Front', 1.40, .29, 'Floor'), ('Rear', .15, .535, 'Rear floor')):
         for x in (xb-.14, xb+.14):
             for s in (-1, 1):
@@ -210,15 +216,15 @@ def build_full(V, p, m, kp, yi):
             ax, az = cx+R*math.cos(math.radians(a)), cz+R*math.sin(math.radians(a))
             part(rod(f'Front wing stay {end} {s_}', (ax, s_*.41, az), (ax, s_*float(body_y(ax)), az), .012, m['frame'], V),
                  joins=[f'Front longeron {s_}', f'Wing {s_}'])
-        for a, end in ((150, 'rear'), (30, 'front')):
+        for a, end in ((140, 'rear'), (40, 'front')):   # within the wheel-arch panels' length
             R, (cx, cz) = w['rear_radius'], w['rear_centre']
             ax, az = cx+R*math.cos(math.radians(a)), cz+R*math.sin(math.radians(a))
             part(rod(f'Rear wing stay {end} {s_}', (ax, s_*.52, az), (ax, s_*float(body_y(ax)), az), .012, m['frame'], V),
                  joins=[f'Rear arch {s_}', f'Wing {s_}'])
-    for label, x, z in (('Front', 3.72, .45), ('Rear', -1.14, .40)):
+    for label, x, z in (('Front', 3.72, .45), ('Rear', -.84, .40)):
         part(rod(f'{label} bumper', (x, -.72, z), (x, .72, z), .03, m['nickel'], V))
         for s_ in (-1, 1):
-            start = (3.555, s_*.40, .62) if label == 'Front' else (-.90, s_*.40, .47)
+            start = (3.49, s_*.40, .62) if label == 'Front' else (-.62, s_*.40, .47)
             part(rod(f'{label} bumper iron {s_}', start, (x, s_*.40, z), .015, m['frame'], V),
                  joins=[f'{label} bumper', f'Front longeron {s_}' if label == 'Front' else 'Boot floor'])
     return dict(final_drive='gearbox ahead of the front axle, open differential, half-shafts with double-Cardan outer joints',
@@ -245,7 +251,8 @@ def main():
     scene.collection.children.link(V)
     scene.collection.children.link(studio)
     m = dict(frame=material('Hull | grey primer', (.30, .32, .33), .3, .5),
-             paint=material('Body | black', (.015, .015, .018), .2, .25),
+             paint=material('Body | light grey', (.42, .43, .42), .15, .3),
+             wing=material('Wings | black', (.012, .012, .014), .2, .2),
              wood=material('Varnished ash', (.33, .16, .06), 0, .35),
              steel=material('Machined steel', (.38, .43, .45), .8, .25),
              nickel=material('Chrome', (.70, .70, .72), .95, .12),
@@ -267,7 +274,7 @@ def main():
     for s in (-1, 1):
         y0, y1 = sorted((s*.514, s*.526))
         part(slab(f'Rear arch {s}', -.40, .42, y0, y1, .46, .79, m['frame'], V), joins=['Rear floor', 'Boot floor'])
-    part(slab('Boot floor', -.92, -.34, -.52, .52, .46, .48, m['frame'], V))
+    part(slab('Boot floor', -.64, -.34, -.52, .52, .46, .48, m['frame'], V))
     part(rod('Rear torsion tube', (.55, -.715, rr), (.55, .715, rr), .0375, m['steel'], V), joins=['Frame rail -1', 'Frame rail 1'])
 
     front = front_end(V, p, m, kp)
@@ -298,9 +305,15 @@ def main():
     # --- Wheels (steel disc wheels drawn with spokes for the shared helper).
     wheels = []
     for s, side in ((1, 'left'), (-1, 'right')):
-        vg.wheel(f'rear_{side}', (0, s*rt/2, rr), rr, p['spokes'], tire, (m['rubber'], m['steel'], m['steel']), V, 'Rear axle')
-        vg.wheel(f'front_{side}', (wb, s*ft/2, fr), fr, p['spokes'], tire, (m['rubber'], m['steel'], m['steel']), V,
+        vg.wheel(f'rear_{side}', (0, s*rt/2, rr), rr, 0, tire, (m['rubber'], m['wing'], m['nickel']), V, 'Rear axle')
+        vg.wheel(f'front_{side}', (wb, s*ft/2, fr), fr, 0, tire, (m['rubber'], m['wing'], m['nickel']), V,
                  f'Stub axle {s}')
+        for name, c, r in ((f'rear_{side}', (0, s*rt/2, rr), rr), (f'front_{side}', (wb, s*ft/2, fr), fr)):
+            # Pressed-steel disc and chrome hubcap (visual; the wheel's envelope is the collider).
+            part(rod(f'{name}.disc', (c[0], c[1]-.012, c[2]), (c[0], c[1]+.012, c[2]), r-2.3*tire, m['wing'], V), name,
+                 collide=False)
+            part(rod(f'{name}.hubcap', (c[0], c[1]+s*.012, c[2]), (c[0], c[1]+s*.05, c[2]), .07, m['nickel'], V), name,
+                 collide=False)
         wheels += [dict(name=f'rear_{side}', center=[0, s*rt/2, rr], radius=rr, parent='rear_axle', driven=False),
                    dict(name=f'front_{side}', center=[wb, s*ft/2, fr], radius=fr, parent=f'knuckle_{side}', driven=True)]
     drive = build_full(V, p, m, kp, front['yi']) if args.stage == 'full' else None

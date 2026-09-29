@@ -102,15 +102,15 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
   the A-pillars ran into the scuttle, the pedals were drawn twice, and the
   steering column passed 2.2 mm from an engine bearer (5 mm needed).
 
-## Result (MuJoCo 3.14.0, full build `3e5f1158…`, procedural body)
+## Result (MuJoCo 3.14.0, full build `46aaec7c…`, procedural body after the photographs)
 
-**Chassis stage** (`a2e64d3d…`)
+**Chassis stage** (`09fb4fb6…`)
 - 5,920 pairs at 173 poses; all 103 joins touching; nothing disconnected.
 - Gate: 6.40 m.
 - All three planted defects caught.
 
 **Full build checks**
-- 806,903 pairs at 173 poses (the body's 1,316 hull colliders included); all 193 joins touching; nothing disconnected.
+- 1,085,749 pairs at 173 poses (the body's hull colliders included); all 204 joins touching; nothing disconnected.
 - All three planted defects caught.
 - Closest pairs: front brake anchor to knuckle housing 2.0 mm (static);
   front bumper iron to cross member 4.2 mm.
@@ -171,42 +171,51 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
 The saloon body is built from parametric curves by the shared
 [bodywork.py](../006_benz_velo/bodywork.py), following
 [skills/procedural-bodywork](../../skills/procedural-bodywork/SKILL.md). The
-design tables are in [body.py](body.py). The shapes are styled on the car's
-general form; none is sourced.
+design tables are in [body.py](body.py). The shapes are styled on seven
+photographs of 1934 7As [S25]; no drawing or body dimension is sourced
+except the wheelbase.
 
-- **Cabin and boot:** one loft of superellipse sections (`n_up` 4, `n_dn` 4.5,
-  tumblehome 0.18) under a shape-preserving roof line.
-  - The tail closes as a quarter-ellipse dome.
-  - The side windows, the rear window and the rear wheel openings are cut as
-    (station, key) rectangles between the sill, belt and cant lines.
-  - The front ring at the bulkhead is the windscreen opening, above the
-    scuttle.
-- **Bonnet:** a loft from the bulkhead to the radiator.
-- **Wings:** per side, one sweep on rotation-minimising frames that arches over
-  the front wheel, drops by a tangent-continuous Bézier to the running board,
-  and rises to a flare over the rear wheel. The rear track (1.30 m) is
-  narrower than the body (1.47 m), so the rear wing is a flare *outboard* of
-  the body side, as on the car.
+**What the photographs changed** (a first version was styled from general
+knowledge):
+- **A short, steep, rounded back.** The body now ends 0.68 m behind the rear
+  axle, not 1.08 m, with a domed tail. The overall length is about 4.56 m.
+- **A long flat roof with a small visor**, and a higher belt line (1.04 m)
+  continuing the bonnet top, so the side glass is 0.36 m tall, not 0.44 m.
+- **A bonnet that tapers in plan** from 0.43 m half-width at the scuttle to
+  0.25 m at a tall, narrow grille shield. The shield has a rounded top, leans
+  back 0.10 m, and has a chrome surround (the maker's chevrons are left
+  off). The bonnet top is flatter (`n_up` 4.5), and its sides come down to
+  the wing tops.
+- **Full front wings**, reaching forward and down to bumper level, with a
+  deep outboard skirt (0.16 m) and a wide, shallow inboard side that runs to
+  25 mm outboard of the longerons, above the steered tyre's reach.
+- **Rear flares outboard of the body** (the rear track is narrower than the
+  body), with a larger crown radius (0.52 m) covering the body's wheel
+  opening.
+- **Pressed-steel disc wheels** with chrome hubcaps; two headlamp bowls on
+  stalks through the bonnet sides; two-tone paint (light grey body, black
+  wings and wheels).
 
-| Shell | Grid | Faces | Collision patches | Watertight and outward |
-| --- | --- | --- | --- | --- |
-| Body shell | 57 × 53 | 5,392 | 628 | yes |
-| Bonnet | 4 × 35 | 278 | 44 | yes |
-| Each wing | 176 × 41 | 14,430 | 322 | yes |
+| Shell | Collision patches | Watertight and outward |
+| --- | --- | --- |
+| Body shell | 539 | yes |
+| Bonnet | 85 | yes |
+| Grille | (in the build report) | yes |
+| Each wing | (in the build report) | yes |
 
-Tolerance and panel thickness are both 2 mm. Each patch is collided as its
-convex hull, which contains the built panel and exceeds it by at most 2 mm,
-so clearances err on the safe side. The first build had six failures, each
-a packaging fact:
-- the lower sections were too round to reach the sills;
-- the rear wings ran through the body side (hence the flare);
-- the running board overlapped the body's lower edge;
-- the rear torsion tube touched the wing;
-- the bonnet was 2.8 mm from the steering column;
-- the bonnet met the scuttle undeclared.
+Tolerance and panel thickness are both 2 mm; each patch is collided as its
+convex hull, so clearances err on the safe side. Each revision was checked
+before styling went further:
+- The first version's six failures were packaging facts (lower sections too
+  round to reach the sills, rear wings through the body side, and others).
+- The photo revision's six were real attachments, declared as joins: the
+  grille surround against the bonnet, and the headlamp stalks through the
+  bonnet sides.
+- One loose joint appeared when the flares grew: the rear wing stays moved
+  past the ends of the wheel-arch panels, and moved back.
 
-The build checks now cover 806,903 pairs, all passing. The body replaced the
-box panels without changing any scenario result.
+The full build check now covers 1,085,749 pairs, all passing. No scenario
+result changed.
 
 ## Not modeled
 
@@ -219,4 +228,5 @@ box panels without changing any scenario result.
 - Pneumatic tyre behaviour beyond the shared compliant contact, rolling
   resistance and drag.
 - Doors and door lines, glass, lamps, the grille's chevrons, the body's own stiffness, and occupants.
-- The rear wheel openings are plain rectangles in the body side, behind the flares.
+- The rear wheel openings are plain rectangles in the body side; side-on, their corners show at each end of the flares.
+- Bonnet louvre doors, the windscreen frame and wipers, horns, and the chevrons on the grille.
