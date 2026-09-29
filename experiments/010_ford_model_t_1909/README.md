@@ -216,6 +216,37 @@ free shape sags the car onto its stops, with 101–116% travel.
 Settings changed here are exploration only. They are not validated: the gated
 results above apply to the design values.
 
+## In the browser: Model T Spring Lab
+
+```bash
+.venv/bin/python experiments/010_ford_model_t_1909/web/build.py --serve   # then open localhost:8000/local.html
+~/.nvm/versions/node/v24.21.0/bin/node experiments/010_ford_model_t_1909/web/parity_test.mjs
+```
+
+`web/` builds a page that runs this car on MuJoCo's official WebAssembly build,
+pinned to 3.14.0, the same engine version as the Python checks. The physics
+model is the validated XML, with only the mesh paths shortened. The page draws
+the car from a GLB exported from the saved `.blend`, with each part in its
+MuJoCo body's frame. `sim.js` ports the controls (engine, gears, brakes, the
+pure-pursuit driver) and the live spring settings, and it is shared by the page
+and the Node test.
+
+**Parity:** `parity_test.mjs` runs the sprung bumpy-road scenario on the
+WebAssembly build and compares it with `bumpy_road.json`. Seat RMS, peak seat
+acceleration, wheel-lift fraction, distance and final speed agree to four
+decimal places. It runs at about 10× real time on one thread under Node 24.
+
+**Controls:** gear, throttle, both brakes, driver or manual steering, spring
+rates, damping, the ride-height choice and presets. There is a chart of axle
+travel against the stops, wheel contact and seat RMS. The course can be bumps
+or flat.
+
+**Not hosted:** the artifact host only lets a page fetch files published with
+it, so a hosted copy would need MuJoCo's 10 MB `mujoco.wasm` published
+alongside the page. That binary is not reviewed here and has not been
+published. The page is plain static files, so any static host that serves
+`.wasm` works.
+
 ## Not modeled
 
 - Spring wind-up and interleaf friction. The joints locate the axles; the

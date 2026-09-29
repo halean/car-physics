@@ -1,0 +1,222 @@
+<title>Model T Spring Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --paper: #f1f2ec; --panel: #e5e8df; --ink: #1b211e; --muted: #5d6760; --line: #c5cbbf;
+    --green: #1f4a3a; --brass: #b8892b; --warn: #b23a26; --good: #2f7a52;
+    --sky: #dfe3da; --field: #a8b592; --road: #c9b58a;
+    --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+    --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #121614; --panel: #1a201d; --ink: #e5e9e1; --muted: #99a39c; --line: #313a35;
+      --green: #6aae8c; --brass: #d7a84b; --warn: #e0654e; --good: #62b889;
+      --sky: #1d2320; --field: #2c3829; --road: #5a4f3a;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #121614; --panel: #1a201d; --ink: #e5e9e1; --muted: #99a39c; --line: #313a35;
+    --green: #6aae8c; --brass: #d7a84b; --warn: #e0654e; --good: #62b889;
+    --sky: #1d2320; --field: #2c3829; --road: #5a4f3a;
+  }
+  body { background: var(--paper); color: var(--ink); font: 15px/1.5 var(--body); }
+  .app { max-width: 1400px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 32px; display: grid; gap: 14px; }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+  h1 { margin: 0; font: 700 30px/1.1 var(--display); letter-spacing: .01em; text-wrap: balance; }
+  .sub { margin: 0; color: var(--muted); }
+  h2 { margin: 0; font: 600 13px/1.2 var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+  .stage { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 14px; align-items: start; }
+  @media (max-width: 900px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+  .view-col { display: grid; gap: 12px; min-width: 0; }
+  .viewport { position: relative; height: clamp(300px, 56vh, 640px); border-radius: 6px; overflow: hidden; background: var(--sky); border: 1px solid var(--line); }
+  .viewport canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .hud { position: absolute; left: 14px; top: 12px; display: grid; gap: 2px; pointer-events: none; }
+  .speed { font: 600 40px/1 var(--mono); font-variant-numeric: tabular-nums; }
+  .speed small, .hud-line small { font: 600 13px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-left: 4px; }
+  .hud-line { font: 400 14px var(--mono); font-variant-numeric: tabular-nums; }
+  .rate { position: absolute; right: 12px; bottom: 10px; font: 400 12px var(--mono); color: var(--muted); }
+  .status { position: absolute; inset: auto 12px 12px 12px; padding: 10px 12px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); font-size: 14px; }
+  .status.error { border-color: var(--warn); color: var(--ink); }
+  .instruments { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, .9fr); gap: 12px; }
+  @media (max-width: 1100px) { .instruments { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .chart-panel { grid-column: 1 / -1; } }
+  @media (max-width: 560px) { .instruments { grid-template-columns: minmax(0, 1fr); } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .legend { display: flex; gap: 12px; font-size: 13px; color: var(--muted); }
+  .legend span::before { content: ""; display: inline-block; width: 14px; height: 3px; margin-right: 6px; vertical-align: middle; background: currentColor; }
+  .legend .f { color: var(--brass); } .legend .r { color: var(--green); }
+  #chart { width: 100%; height: 150px; display: block; }
+  .gauge { display: grid; gap: 4px; }
+  .gauge-row { display: flex; justify-content: space-between; gap: 8px; font: 400 13px var(--mono); font-variant-numeric: tabular-nums; }
+  .gauge-row b { font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; }
+  .track { position: relative; height: 10px; border-radius: 5px; background: color-mix(in srgb, var(--line) 70%, transparent); overflow: hidden; }
+  .track i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--brass); border-radius: 5px; transition: width .1s linear; }
+  #rearGauge .track i { background: var(--green); }
+  .gauge.on-stops .track i { background: var(--warn); }
+  .gauge .stops { display: none; color: var(--warn); font: 600 12px var(--display); letter-spacing: .08em; }
+  .gauge.on-stops .stops { display: inline; }
+  .muted { color: var(--muted); }
+  .plan { display: grid; grid-template-columns: 22px 30px 22px; grid-template-rows: 22px 34px 22px; justify-content: start; align-items: center; justify-items: center; }
+  .pip { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); background: transparent; }
+  .pip.down { background: var(--good); border-color: var(--good); }
+  .plan .axle { grid-column: 2; width: 4px; height: 100%; background: var(--line); grid-row: 1 / 4; }
+  #front_left { grid-area: 1 / 1; } #front_right { grid-area: 1 / 3; } #rear_left { grid-area: 3 / 1; } #rear_right { grid-area: 3 / 3; }
+  .wheels-row { display: flex; gap: 14px; align-items: center; }
+  .big { font: 600 26px/1 var(--mono); font-variant-numeric: tabular-nums; }
+  .controls { display: grid; gap: 12px; }
+  fieldset { margin: 0; border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px 14px; display: grid; gap: 12px; background: var(--panel); min-width: 0; }
+  legend { padding: 0 6px; font: 600 13px var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+  .field { display: grid; gap: 4px; }
+  .field-head { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+  .field-head output { font: 400 13px var(--mono); font-variant-numeric: tabular-nums; }
+  .hint { font-size: 12.5px; color: var(--muted); margin: 0; }
+  input[type="range"] { width: 100%; accent-color: var(--green); margin: 0; }
+  input[type="range"]:disabled { opacity: .45; }
+  .segmented { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+  .segmented input { position: absolute; opacity: 0; pointer-events: none; }
+  .segmented label { text-align: center; padding: 7px 4px; font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; background: var(--paper); }
+  .segmented label + input + label, .segmented input + label ~ label { border-left: 1px solid var(--line); }
+  .segmented input:checked + label { background: var(--green); color: var(--paper); }
+  .segmented input:focus-visible + label { outline: 2px solid var(--brass); outline-offset: -3px; }
+  .two { grid-template-columns: repeat(2, 1fr); }
+  .check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+  .check input { margin-top: 3px; accent-color: var(--green); }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  button { font: 600 13px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; cursor: pointer; }
+  button:hover { border-color: var(--green); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+  #restart { background: var(--green); color: var(--paper); border-color: var(--green); }
+  details { border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; font-size: 14px; }
+  summary { cursor: pointer; font: 600 13px var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+  details p, details ul { max-width: 65ch; }
+  code { font: 12.5px var(--mono); overflow-wrap: anywhere; }
+  @media (prefers-reduced-motion: reduce) { .track i { transition: none; } }
+</style>
+
+<div class="app">
+  <header class="top">
+    <h1>Model T Spring Lab</h1>
+    <p class="sub">1909 Ford Model T touring, transverse leaf springs. <span id="engine">MuJoCo 3.14.0, WebAssembly</span></p>
+  </header>
+  <main class="stage">
+    <section class="view-col" aria-label="Simulation">
+      <div id="viewport" class="viewport">
+        <div class="hud" aria-live="off">
+          <div class="speed"><span id="speed">0.0</span><small>km/h</small></div>
+          <div class="hud-line"><span id="distance">0.0</span><small>m</small> <span class="muted">· bars from 10 m to 55 m</span></div>
+        </div>
+        <div id="rate" class="rate"></div>
+        <div id="status" class="status">Loading…</div>
+      </div>
+      <div class="instruments">
+        <div class="panel chart-panel">
+          <div class="panel-head"><h2>Axle travel against the stops</h2>
+            <div class="legend"><span class="f">Front</span><span class="r">Rear</span></div></div>
+          <canvas id="chart" aria-label="Front and rear axle travel over the last 8 seconds, as a percentage of the bump and rebound stops"></canvas>
+        </div>
+        <div class="panel">
+          <h2>Axles</h2>
+          <div id="frontGauge" class="gauge">
+            <div class="gauge-row"><b>Front</b><span><span class="stops">ON STOPS</span> <span id="frontTravel">0%</span></span></div>
+            <div class="track"><i id="frontBar"></i></div>
+            <div class="gauge-row muted"><span id="frontOffset">+0.0 mm</span><span id="frontPeak">peak 0%</span></div>
+          </div>
+          <div id="rearGauge" class="gauge">
+            <div class="gauge-row"><b>Rear</b><span><span class="stops">ON STOPS</span> <span id="rearTravel">0%</span></span></div>
+            <div class="track"><i id="rearBar"></i></div>
+            <div class="gauge-row muted"><span id="rearOffset">+0.0 mm</span><span id="rearPeak">peak 0%</span></div>
+          </div>
+          <p class="hint">Offset from design ride height; + is compressed.</p>
+        </div>
+        <div class="panel">
+          <h2>Ride</h2>
+          <div class="wheels-row">
+            <div class="plan" aria-hidden="true"><span id="front_left" class="pip"></span><span class="axle"></span><span id="front_right" class="pip"></span><span id="rear_left" class="pip"></span><span id="rear_right" class="pip"></span></div>
+            <div><div id="wheelsText" class="muted">4 of 4 on the road</div></div>
+          </div>
+          <div><div class="big"><span id="seatRms">0.00</span> <span class="muted" style="font-size:14px">g</span></div>
+            <p class="hint">Vertical acceleration at the driver's seat, RMS over the last 2 s.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <aside id="controls" class="controls" aria-label="Controls">
+      <fieldset>
+        <legend>Drive</legend>
+        <div class="segmented" role="radiogroup" aria-label="Gear">
+          <input type="radio" name="gear" id="gear0" value="0"><label for="gear0">Neutral</label>
+          <input type="radio" name="gear" id="gear1" value="1" checked><label for="gear1">Low</label>
+          <input type="radio" name="gear" id="gear2" value="2"><label for="gear2">High</label>
+        </div>
+        <div class="field"><div class="field-head"><label for="throttle">Throttle</label><output id="throttleOut"></output></div>
+          <input type="range" id="throttle" min="0" max="100" step="1" value="100"></div>
+        <div class="field"><div class="field-head"><label for="footBrake">Brake pedal (transmission)</label><output id="footBrakeOut"></output></div>
+          <input type="range" id="footBrake" min="0" max="100" step="1" value="0"></div>
+        <div class="field"><div class="field-head"><label for="handBrake">Hand lever (hub bands)</label><output id="handBrakeOut"></output></div>
+          <input type="range" id="handBrake" min="0" max="100" step="1" value="0"></div>
+        <label class="check"><input type="checkbox" id="driver" checked><span>Driver holds the straight line</span></label>
+        <div class="field"><div class="field-head"><label for="steer">Steering (at the pitman arm)</label><output id="steerOut"></output></div>
+          <input type="range" id="steer" min="-25" max="25" step="1" value="0"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Springs</legend>
+        <div class="presets" role="group" aria-label="Spring presets">
+          <button type="button" data-preset="design">Design</button>
+          <button type="button" data-preset="soft">Soft</button>
+          <button type="button" data-preset="sag">Soft, sagging</button>
+          <button type="button" data-preset="stiff">Very stiff</button>
+          <button type="button" data-preset="bouncy">Little damping</button>
+        </div>
+        <div class="field"><div class="field-head"><label for="frontRate">Front spring rate</label><output id="frontRateOut"></output></div>
+          <input type="range" id="frontRate" min="5" max="120" step="1" value="28"></div>
+        <div class="field"><div class="field-head"><label for="rearRate">Rear spring rate</label><output id="rearRateOut"></output></div>
+          <input type="range" id="rearRate" min="5" max="120" step="1" value="26"></div>
+        <div class="field"><div class="field-head"><label for="frontDamping">Front damping</label><output id="frontDampingOut"></output></div>
+          <input type="range" id="frontDamping" min="0" max="6" step="0.01" value="1.56"></div>
+        <div class="field"><div class="field-head"><label for="rearDamping">Rear damping</label><output id="rearDampingOut"></output></div>
+          <input type="range" id="rearDamping" min="0" max="6" step="0.01" value="1.55"></div>
+        <label class="check"><input type="checkbox" id="keepRide" checked><span>Keep ride height<br><span class="hint">Re-arch the leaves so the car sits at design height. Off: a softer spring keeps its shape and the car sags.</span></span></label>
+        <p class="hint">Rates are at the axle. Design: 28 and 26 kN/m, about 68 and 78 mm of static sag. Roll stiffness follows each rate, since one transverse spring does both jobs.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Road</legend>
+        <div class="segmented two" role="radiogroup" aria-label="Road">
+          <input type="radio" name="course" id="courseBumps" value="bumps" checked><label for="courseBumps">Bump course</label>
+          <input type="radio" name="course" id="courseFlat" value="flat"><label for="courseFlat">Flat road</label>
+        </div>
+        <button type="button" id="restart">Restart from the line</button>
+        <p class="hint">Bars 30 to 50 mm, some under one side only, then a 15 mm washboard. Drag to orbit the camera; scroll to zoom.</p>
+      </fieldset>
+
+      <details>
+        <summary>About this simulation</summary>
+        <p>The physics runs in your browser on MuJoCo's official WebAssembly build, the same engine version as the Python validation. The model is the validated car file: the same bodies, joints, springs, tyres and engine. On the bump course with design settings, this port reproduces the Python run to four decimal places (seat RMS 0.218 g, 76.94 m in 13 s).</p>
+        <ul>
+          <li>Settings you change here are for exploring. Only the design values have passed the repository's checks.</li>
+          <li>The tyres are stiffer than a real 30 × 3½ clincher, so wheels lift off more than they would on a real car.</li>
+          <li>The springs are linear, with no interleaf friction or wind-up; damping stands in for both.</li>
+        </ul>
+        <p>Run it locally from the repository: <code>.venv/bin/python experiments/010_ford_model_t_1909/web/build.py</code>, then <code>python3 -m http.server -d experiments/010_ford_model_t_1909/output/web 8000</code> and open <code>localhost:8000/local.html</code>.</p>
+      </details>
+    </aside>
+  </main>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+/*SIM_JS*/
+/*APP_JS*/
+</script>
