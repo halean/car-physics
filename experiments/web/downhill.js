@@ -115,6 +115,8 @@ function setArrow(name, origin, v) {
 let mujoco, config, files, sim, bodyGroups = {}, mass = 0, blockP = 0;
 let braking = false, brakeCmd = 0, slow = false, lastCar = null, cowNote = null, movedSinceStop = false, paused = false;
 let test = null, lastFront = 0, lastSpeed = 0;   // the surprise-cow reaction test
+const COW_KG = 600;                              // a typical beef cow
+let hitStopUntil = 0, shakeUntil = 0, dust = null;
 const history = [];          // [t, speed, braking]
 const velHist = [];          // [t, vx] for the measured acceleration
 
@@ -167,6 +169,73 @@ function startTest() {
   $('reactResult').textContent = 'Get ready. Somewhere ahead a cow will step into the road. Press B (or Brake) the moment you see it.';
 }
 
+// Impact: the cow is not in the physics engine, so the page applies a simple momentum model. Car and
+// cow share momentum (perfectly inelastic); the car's velocities are scaled to the shared speed, and
+// the cow is thrown ahead. Then the drama: freeze-frame, shake, flash, dust, and a cartoon tumble.
+function collide(now, front, speed) {
+  const vShared = mass * speed / (mass + COW_KG);
+  const qv = sim.data.qvel;
+  for (let i = 0; i < sim.model.nv; i++) qv[i] *= vShared / speed;
+  herd.knock(test.cow, vShared * 1.35);
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  hitStopUntil = now + (calm ? 0 : 380);
+  shakeUntil = now + (calm ? 0 : 750);
+  if (!calm) { $('flash').classList.remove('go'); void $('flash').offsetWidth; $('flash').classList.add('go'); }
+  $('bang').textContent = 'THUD!';
+  $('bang').classList.remove('go'); void $('bang').offsetWidth; $('bang').classList.add('go');
+  dust = makeDust(test.cow.x - 0.3, now);
+  const ke = 0.5 * mass * speed * speed;
+  Object.assign(test, { phase: 'hit', hitAt: now, vHit: speed, vAfter: vShared, keHit: ke });
+  const braked = test.tPress != null;
+  $('reactResult').innerHTML = '';
+  const rows = [
+    ['Impact speed', `${speed.toFixed(2)} m/s (${(speed * 3.6).toFixed(0)} km/h)`],
+    ['Kinetic energy ½mv²', `${(ke / 1000).toFixed(1)} kJ, like dropping the car from ${(speed * speed / (2 * 9.81)).toFixed(2)} m`],
+    [`Momentum shared with a ${COW_KG} kg cow`, `car slowed from ${speed.toFixed(2)} to ${vShared.toFixed(2)} m/s`],
+  ];
+  if (braked) rows.unshift(['Your reaction time', `${((test.tPress - test.tAppear) / 1000).toFixed(2)} s`]);
+  for (const [k, v] of rows) {
+    const row = document.createElement('div'); row.className = 'rrow';
+    const a1 = document.createElement('span'); a1.textContent = k;
+    const b1 = document.createElement('output'); b1.textContent = v;
+    row.append(a1, b1); $('reactResult').append(row);
+  }
+  const verdict = document.createElement('p');
+  verdict.className = 'verdict';
+  verdict.textContent = braked ? 'You braked, but too late. Try again, and brake the moment the cow appears.'
+    : 'You did not brake. Try again, and press B the moment the cow appears.';
+  const why = document.createElement('p');
+  why.className = 'hint';
+  why.textContent = 'The cow is not part of the physics engine: the page shares the momentum between car and cow '
+    + '(m₁v = (m₁ + m₂)v′), then plays the tumble as a cartoon. The cow is fine, just annoyed.';
+  $('reactResult').append(verdict, why);
+}
+
+function makeDust(x, now) {
+  const n = 90, pos = new Float32Array(n * 3), vel = [];
+  for (let i = 0; i < n; i++) {
+    pos.set([x, (Math.random() - 0.5) * 1.2, 0.1 + Math.random() * 0.4], i * 3);
+    vel.push([1 + Math.random() * 3, (Math.random() - 0.5) * 3, 1 + Math.random() * 2.5]);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color: new THREE.Color(css('--road')).offsetHSL(0, -0.1, 0.12), size: 0.22, transparent: true, opacity: 0.85, depthWrite: false }));
+  hill.add(pts);
+  return { pts, vel, born: now };
+}
+function updateDust(now, dt) {
+  if (!dust) return;
+  const age = (now - dust.born) / 1000, a = dust.pts.geometry.attributes.position;
+  for (let i = 0; i < dust.vel.length; i++) {
+    const v = dust.vel[i];
+    v[2] -= 4 * dt; v[0] *= 1 - dt; v[1] *= 1 - dt;
+    a.setXYZ(i, a.getX(i) + v[0] * dt, a.getY(i) + v[1] * dt, Math.max(0.02, a.getZ(i) + v[2] * dt));
+  }
+  a.needsUpdate = true;
+  dust.pts.material.opacity = Math.max(0, 0.85 * (1 - age / 1.6));
+  if (age > 1.6) { hill.remove(dust.pts); dust = null; }
+}
+
 function runTest(now, front, speed) {
   if (!test) return;
   if (test.phase === 'waiting') {
@@ -178,11 +247,9 @@ function runTest(now, front, speed) {
       Object.assign(test, { phase: 'cow', tAppear: now, xAppear: front, vAppear: speed });
       $('reactResult').textContent = 'Cow!';
     }
-  } else if (test.phase === 'cow' && front > test.cow.x - 0.5) {
-    test.phase = 'done';
-    $('reactResult').textContent = 'You did not brake before reaching the cow, which had to jump out of the way. Try again.';
+  } else if ((test.phase === 'cow' || test.phase === 'braking') && front > test.cow.x - 0.45 && test.cow.state === 'graze') {
+    collide(now, front, speed);
   } else if (test.phase === 'braking') {
-    if (test.cow.state === 'walk') test.close = true;
     if (speed < 0.03) {
       test.phase = 'done';
       const r = (test.tPress - test.tAppear) / 1000, think = test.xPress - test.xAppear, brake = front - test.xPress;
@@ -274,7 +341,8 @@ function frame(now) {
   const wall = Math.min(0.05, (now - (lastFrame || now)) / 1000) * (slow ? 0.25 : 1);
   lastFrame = now;
   const d = sim.data, dt = sim.model.opt.timestep;
-  for (let i = 0, n = paused ? 0 : Math.min(60, Math.round(wall / dt)); i < n; i++) {
+  const frozen = now < hitStopUntil;
+  for (let i = 0, n = paused || frozen ? 0 : Math.min(60, Math.round(wall / dt)); i < n; i++) {
     brakeCmd = Math.max(0, Math.min(1, brakeCmd + (braking ? 1 : -1) * dt / config.engine.brake_ramp_seconds));
     sim.set({ pedal: brakeCmd });
     sim.step(1);
@@ -313,7 +381,8 @@ function frame(now) {
   const front = poses.chassis[0] + config.wheelbase + config.front_radius;
   lastFront = front; lastSpeed = speed;
   runTest(now, front, speed);
-  const { nearest, hurried } = herd.update(wall, front, speed);
+  updateDust(now, frozen ? 0 : wall);
+  const { nearest, hurried } = herd.update(frozen ? 0 : wall, front, speed);
   if (speed > 0.3) movedSinceStop = true;
   if (test) { /* the reaction test reports its own result */ }
   else if (hurried) showCowNote('Close call! The cow had to trot out of the way. Brake earlier, or harder.');
@@ -329,7 +398,11 @@ function frame(now) {
   sun.position.set(target.x - 3, target.y - 6, target.z + 9);
   sun.target.position.copy(target);
   orbit.update();
-  renderer.render(scene, camera);
+  if (now < shakeUntil) {                           // camera shake, decaying
+    const k = (shakeUntil - now) / 750 * 0.12;
+    const jolt = new THREE.Vector3((Math.random() - 0.5) * k, (Math.random() - 0.5) * k, (Math.random() - 0.5) * k);
+    camera.position.add(jolt); renderer.render(scene, camera); camera.position.sub(jolt);
+  } else renderer.render(scene, camera);
   if (now - lastPanel > 120) {
     lastPanel = now;
     $('speed').textContent = speed.toFixed(2);

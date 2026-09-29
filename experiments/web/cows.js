@@ -108,10 +108,20 @@ export class Herd {
   // A cow that walks into the road for the reaction test: it stays until the car is nearly on it.
   spawn(x, y) {
     const obj = makeCow(mulberry32((Math.random() * 1e9) | 0));
+    obj.cow.rotation.order = 'ZYX';   // rotation.x rolls the cow about its own long axis
     this.parent.add(obj.cow);
-    const c = { obj, x, y, heading: Math.PI / 2, phase: 0, state: 'graze', target: null, speed: 0, hurried: false, stubborn: true };
+    const c = { obj, x, y, z: 0, roll: 0, heading: Math.PI / 2, phase: 0, state: 'graze', target: null, speed: 0,
+      hurried: false, stubborn: true, stayPut: true };
     this.cows.push(c);
     return c;
+  }
+
+  // Bowled over by a car moving at vCar (m/s): thrown ahead and up, rolling; lands, lies stunned,
+  // gets up and trots off. A cartoon: the cow is never hurt.
+  knock(c, vCow) {
+    // Thrown ahead at about the car's speed and sideways onto the near verge (the camera's side,
+    // y < 0) so the tumble is in view and the car rolls past.
+    Object.assign(c, { state: 'tumble', vx: vCow, vy: -(2.6 + 0.3 * vCow), vz: 1.2 + 0.25 * vCow, spin: -(5 + 1.5 * vCow), t: 0 });
   }
 
   onRoad(c) { return Math.abs(c.y) < this.opts.roadHalf + 0.6; }
@@ -123,7 +133,7 @@ export class Herd {
     for (const c of this.cows) {
       const ahead = c.x - carX;
       const warn = c.stubborn ? 2 + 0.3 * carSpeed : 6 + 1.6 * carSpeed;   // most notice a car about 1.6 s away
-      if (c.state === 'graze' && this.onRoad(c) && ahead > -2 && ahead < warn) {
+      if (c.state === 'graze' && !c.stayPut && this.onRoad(c) && ahead > -2 && ahead < warn) {
         const side = c.y === 0 ? 1 : Math.sign(c.y);
         c.target = side * (this.opts.roadHalf + 2.5);
         c.state = 'walk';
@@ -134,6 +144,37 @@ export class Herd {
       }
       c.phase += dt;
       const { cow, legs, neck, tail } = c.obj;
+      if (c.state === 'tumble') {                       // ballistic flight, rolling, bouncing
+        c.t += dt;
+        c.vz -= 9.81 * dt;
+        c.x += c.vx * dt; c.y += c.vy * dt; c.z += c.vz * dt; c.roll += c.spin * dt;
+        if (c.z <= 0 && c.vz < 0) {
+          c.z = 0; c.vz = -0.3 * c.vz; c.vx *= 0.55; c.vy *= 0.45; c.spin *= 0.5;
+          if (Math.abs(c.vz) < 0.4 && Math.abs(c.vx) < 0.6) { c.state = 'stunned'; c.t = 0; c.vx = c.vy = 0; c.spin = 0; }
+        }
+        legs.forEach((l, i) => { l.rotation.y = Math.sin(c.phase * 20 + i) * 0.6; });
+        cow.position.set(c.x, c.y, c.z);
+        cow.rotation.x = c.roll;
+        continue;
+      }
+      if (c.state === 'stunned' || c.state === 'rising') {
+        c.t += dt;
+        const lying = Math.PI / 2 * Math.sign(Math.sin(c.roll) || 1);
+        if (c.state === 'stunned') {
+          c.roll += (lying - ((c.roll + Math.PI) % (Math.PI * 2) - Math.PI)) * Math.min(1, dt * 6);
+          legs.forEach((l, i) => { l.rotation.y = 0.3 * Math.sin(c.phase * 9 + i); });   // legs kick
+          if (c.t > 1.6) { c.state = 'rising'; c.t = 0; c.roll = (c.roll + Math.PI) % (Math.PI * 2) - Math.PI; }
+        } else {
+          c.roll *= Math.max(0, 1 - dt * 3.5);
+          if (Math.abs(c.roll) < 0.02) {
+            c.roll = 0; c.stayPut = false; c.state = 'walk'; c.speed = 1.6; c.heading = -Math.PI / 2;
+            c.target = -(this.opts.roadHalf + 3);   // trots off, away from the road
+          }
+        }
+        cow.position.set(c.x, c.y, 0.25 * Math.abs(Math.sin(c.roll)));
+        cow.rotation.x = c.roll;
+        continue;
+      }
       if (c.state === 'walk') {
         const step = Math.sign(c.target - c.y) * c.speed * dt;
         if (Math.abs(c.target - c.y) <= Math.abs(step)) { c.y = c.target; c.state = 'graze'; }

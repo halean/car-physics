@@ -14,6 +14,16 @@ like, how they drove, and the physics underneath. Pages:
   same herd back. They are scenery, not physics: a cow on the road ambles to the
   verge when a car comes near, and trots if the car is almost on it. On the
   downhill page, "stop for the cow" is challenge 4 (a stopping distance).
+- **Surprise cow** (downhill page): a cow steps out at a random moment. The page
+  measures the student's reaction time and splits the stop into thinking and
+  braking distance. If the car reaches the cow there is a cartoon collision:
+  freeze-frame, shake, flash, "THUD!", dust, and the cow tumbles onto the verge,
+  lies stunned, gets up and trots off. The cow is not in the physics engine, so
+  the page applies a momentum model: the car's velocities are scaled to
+  m₁v / (m₁ + m₂) with a 600 kg cow. The result panel shows the impact speed,
+  the kinetic energy (with the equivalent drop height) and the speed lost. Both
+  paths were checked end to end in headless Chrome, driven over the DevTools
+  protocol.
 - On the downhill page a driver holds the car on its line. The run pauses at
   30 m/s: with no drag in the model, a steep hill would otherwise build
   unlimited speed (the driver loses the line only above about 97 m/s).

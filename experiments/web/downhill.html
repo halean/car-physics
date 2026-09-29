@@ -52,6 +52,18 @@
   .rrow output { font: 600 14px var(--mono); font-variant-numeric: tabular-nums; }
   .verdict { margin: 8px 0 0; font-weight: 600; }
   #react { border: 2px solid var(--brass); }
+  .flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  .flash.go { animation: flash .45s ease-out; }
+  @keyframes flash { 0% { opacity: .85; } 100% { opacity: 0; } }
+  .bang { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%) scale(.6); opacity: 0; pointer-events: none;
+    font: 700 clamp(48px, 10vw, 110px)/1 var(--display); letter-spacing: .04em; color: #fff; -webkit-text-stroke: 3px var(--friction);
+    text-shadow: 0 4px 0 var(--friction); }
+  .bang.go { animation: bang 1.3s cubic-bezier(.2, 1.6, .4, 1) forwards; }
+  @keyframes bang { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.4) rotate(-8deg); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1) rotate(-4deg); }
+    70% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-4deg); }
+    100% { opacity: 0; transform: translate(-50%, -60%) scale(1) rotate(-4deg); } }
+  @media (prefers-reduced-motion: reduce) { .bang.go { animation: bang-calm 1.3s forwards; } @keyframes bang-calm { 0%, 80% { opacity: 1; transform: translate(-50%, -50%); } 100% { opacity: 0; } } }
   .skid { position: absolute; right: 12px; top: 10px; padding: 4px 10px; border-radius: 4px; background: var(--warn); color: var(--paper); font: 600 14px var(--display); letter-spacing: .08em; text-transform: uppercase; }
   .status { position: absolute; inset: auto 12px 12px 12px; padding: 10px 12px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); font-size: 14px; }
   .status.error { border-color: var(--warn); }
@@ -106,6 +118,8 @@
           <div class="hud-line cow" id="cowAhead"></div>
         </div>
         <div id="cowNote" class="cow-note" role="status" hidden></div>
+        <div id="flash" class="flash" aria-hidden="true"></div>
+        <div id="bang" class="bang" aria-hidden="true"></div>
         <div id="skid" class="skid" hidden>Rear wheels locked: skidding</div>
         <div id="status" class="status">Loading…</div>
       </div>
