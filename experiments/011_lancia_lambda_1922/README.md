@@ -47,6 +47,19 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
 # ... --stage full --render, then run.py --stage full, record.py, and render_views.py with views.json
 ```
 
+Steering and suspension animation (body and engine hidden, posed by the same
+linkage solver as the build checks; 9 s, two panels):
+
+```bash
+blender --background experiments/011_lancia_lambda_1922/output/full/lancia_lambda.blend --python-exit-code 1 \
+  --python experiments/006_benz_velo/animate_steering.py -- experiments/011_lancia_lambda_1922/output/full/physics/geometry.json \
+  experiments/011_lancia_lambda_1922/output/full/physics/steering_animation.mp4 experiments/011_lancia_lambda_1922/animation_hide.json
+```
+
+It sweeps the column lock to lock at ride height, then raises one wheel while
+the other drops (the tie rod tilts, the drag link stays put), then does both
+at once. The script works for any car in the series.
+
 ## New mechanisms and how they are checked
 
 - **Sliding pillars.** Each side has a fixed pillar (the kingpin) between the
