@@ -54,7 +54,7 @@ def part_inertia(colliders, mass):
             points.append(np.array(c['pos']))
             weights.append(8*np.prod(c['size']))
     p, w = np.array(points), np.array(weights)/sum(weights)*mass
-    com = (p*w[:, None]).sum(axis=0)
+    com = (p*w[:, None]).sum(axis=0)/mass   # (was missing /mass: offsets scaled by the body's mass in kg)
     d = p-com
     inertia = np.zeros((3, 3))
     for vec, m in zip(d, w):

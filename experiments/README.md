@@ -11,9 +11,10 @@
 | [007](007_panhard_1891/README.md) | Panhard et Levassor (1891): front engine, clutch, three-speed gearbox, chains, rim-block brakes; built on 006 tooling | Implemented |
 | [008](008_renault_1898/README.md) | Renault Type A (1898): shaft drive with universal joints to a live axle, direct-drive third, combined clutch/brake pedal | Implemented |
 | [009](009_mercedes_35hp_1901/README.md) | Mercedes 35 HP (1901): leaf-spring suspension on both axles, steering wheel through a box, four speeds, chains; checks at bump, rebound and roll | Implemented |
-| 010 (planned) | Lofted body cross sections; enclosed car envelope | Not implemented |
-| 011 (planned) | Geometry Nodes instancing for wheels and trim | Not implemented |
-| 012 (planned) | Simplified aero geometry and controlled parameter sweeps | Not implemented |
+| [010](010_ford_model_t_1909/README.md) | Ford Model T (1909): transverse springs, axles located by balls (wishbone, torque tube), planetary two-speed, transmission brake | Implemented |
+| 011 (planned) | Lofted body cross sections; enclosed car envelope | Not implemented |
+| 012 (planned) | Geometry Nodes instancing for wheels and trim | Not implemented |
+| 013 (planned) | Simplified aero geometry and controlled parameter sweeps | Not implemented |
 
 Give each experiment an input configuration, generator, README, generated output,
 and validation report. Keep source inputs separate from rebuildable artifacts.

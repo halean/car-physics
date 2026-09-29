@@ -94,8 +94,16 @@ def suspended_pose(geometry, phi, pose):
     so axle travel steers the wheels: bump steer). Returns {joint name: qpos}."""
     s, sus = geometry['steering'], geometry['suspension']
     heave, roll = pose.get('front_heave', 0.0), pose.get('front_roll', 0.0)
+    swing = pose.get('front_swing', 0.0)
     o = np.array(sus['front_axle_origin'])
-    axle = lambda p: o+_rx(roll)@(np.array(p)-o)+np.array([0, 0, heave])
+    R_roll = _axis_angle(sus.get('front_roll_axis', [1, 0, 0]), roll)
+    if 'front_swing_joint' in sus:
+        # Axle located by a wishbone to a ball behind it: it swings about the ball (joint order
+        # swing, then roll, as in the MJCF body) instead of heaving.
+        pivot = np.array(sus['front_pivot'])
+        axle = lambda p: pivot+_axis_angle([0, 1, 0], swing)@(o+R_roll@(np.array(p)-o)-pivot)
+    else:
+        axle = lambda p: o+R_roll@(np.array(p)-o)+np.array([0, 0, heave])
     C, P0 = np.array(s['column_3d']), np.array(s['pitman_ball_3d'])
     D0, KL = np.array(s['drag_ball_3d']), np.array(s['kingpin_left_3d'])
     P = C+_rz(phi)@(P0-C)
@@ -114,8 +122,12 @@ def suspended_pose(geometry, phi, pose):
     world = _quat_between(D0-P0, D(left)-P)
     in_pitman = _quat_mul(np.array([math.cos(-phi/2), 0, 0, math.sin(-phi/2)]), world)
     q = {'column_joint': phi, 'knuckle_left_joint': left, 'knuckle_right_joint': right, 'tie_rod_joint': tie,
-         'drag_link_joint': in_pitman, sus['front_heave_joint']: heave, sus['front_roll_joint']: roll,
+         'drag_link_joint': in_pitman, sus['front_roll_joint']: roll,
          sus['rear_swing_joint']: pose.get('rear_swing', 0.0), sus['rear_roll_joint']: pose.get('rear_roll', 0.0)}
+    if 'front_swing_joint' in sus:
+        q[sus['front_swing_joint']] = swing
+    else:
+        q[sus['front_heave_joint']] = heave
     for c in geometry.get('couplings', []):
         if c['joint2'] == 'column_joint':
             q[c['joint1']] = c['ratio']*phi

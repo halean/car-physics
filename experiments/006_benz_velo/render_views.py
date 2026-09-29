@@ -23,7 +23,8 @@ scene = bpy.context.scene
 objects = [o for o in bpy.data.collections[report['collection']].objects if o.type in {'MESH', 'CURVE'}]
 rest = {o.name: o.matrix_world.copy() for o in objects}
 steer = {'knuckle_left', 'knuckle_right', 'tie_rod', 'column', 'drag_link', 'front_left', 'front_right'}
-body_parts = ('Seat', 'Bench', 'Body', 'Bonnet', 'Engine box', 'Dash', 'Footboard', 'Fuel tank', 'Mudguard', 'Floor')
+body_parts = ('Seat', 'Bench', 'Body', 'Bonnet', 'Engine box', 'Dash', 'Footboard', 'Fuel tank', 'Mudguard', 'Floor',
+              'Front mudguard', 'Rear mudguard', 'Running board', 'Tonneau', 'Front seat', 'Rear seat')
 colors = {'chassis': (.2, .45, .3, 1)}
 for o in objects:
     b = o['body']

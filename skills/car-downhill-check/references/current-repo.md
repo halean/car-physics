@@ -181,3 +181,16 @@ preloads to ride height, then gates on 20–150 mm static deflection, suspension
 travel, and bump and roll steer. `record.py` reads the calibrated preloads from
 `report.json`, so run it after `run.py --stage full`.
 
+## Ford Model T (experiment 010)
+
+As for 009: replace `009_mercedes_35hp_1901` with `010_ford_model_t_1909` and
+`mercedes_35hp` with `model_t`. Both axles swing about a ball and roll about the
+line from the ball to the axle centre. `suspension` then declares
+`front_swing_joint`, `front_pivot` and `front_roll_axis`, which
+`linkage.suspended_pose` supports alongside the heave-type front axle.
+
+Watch for this: `vehicle.part_inertia` places each small body's mass from its
+colliders. It had a missing `/mass` until 010, which scaled centre-of-mass
+offsets by the body's mass. If a sprung car calibrates to implausible spring
+preloads, check the compiled `body_ipos` of the axle bodies first.
+

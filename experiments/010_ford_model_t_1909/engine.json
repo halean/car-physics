@@ -1,0 +1,16 @@
+{
+  "rated_power_w": 14900,
+  "governed_rpm": 1600,
+  "no_load_rpm": 1700,
+  "clutch_seconds": 0.5,
+  "gearbox_ratios": {
+    "low": 2.75,
+    "high": 1.0
+  },
+  "axle_ratio": 3.636,
+  "rear_drum_capacity_nm_each": 200,
+  "foot_brake_capacity_nm_at_wheels": 600,
+  "brake_ramp_seconds": 0.25,
+  "source": "2.9 L four, 20 hp (14.9 kW); two-speed planetary transmission worked by three pedals (low, reverse, transmission brake) and a lever (high-speed clutch and parking brake); torque tube to the rear axle; the right pedal's transmission brake is the only service brake, the lever works bands on the rear hubs; top speed 68 km/h (Wikipedia). Assumed: rated speed 1600 rpm with a governor-like droop to 1700 rpm no-load (the car had a hand throttle, not a governor), planetary low 2.75:1, bevel 40:11 (3.636), and brake capacities. With these, high gear reaches 67 km/h at 1700 rpm, matching the sourced top speed. Reverse is not simulated.",
+  "brake_note": "Transmission brake (foot) acts through the drive shaft and differential: 600 N m at the wheels. Hub bands (hand lever) 200 N m each: twice the 5-degree holding torque, above high-gear drive (324 N m) and well below lock (about 900 N m on the rear axle)."
+}

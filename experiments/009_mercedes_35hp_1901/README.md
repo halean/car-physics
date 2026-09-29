@@ -24,7 +24,7 @@ through a steering box. It is built gate-first on the 006 tooling.
 - Gearbox 3.6/2.2/1.45/1.0 with a 1.145 bevel and 2.13 chains, so fourth gear
   gives about 75 km/h at the governor.
 - Hand brake 500 N m per rear drum; foot brake 1400 N m at the wheels.
-- Spring rates (static deflection about 100 mm front and 74 mm rear) and
+- Spring rates (static deflection about 83 mm front and 42 mm rear) and
   damping.
 - Steering geometry, the frame width and all the bodywork.
 - Reverse gear is not simulated.
@@ -96,6 +96,14 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
   rested at +0.1 to +0.7 mm. The margin was removed; the elliptic cone had
   already fixed the dropouts it was added for. All four cars were revalidated
   again, and every video was re-recorded.
+- **Linkage and axle mass in the wrong place.** The Model T (010) calibrated its
+  springs to impossible preloads, and the cause was traced to the shared
+  `part_inertia`. It was missing a division by mass, so every small body's
+  centre-of-mass offset was multiplied by its mass in kilograms. This car's rear
+  axle, whose mass sits along the radius rods, had its centre of mass placed
+  about 14 m forward. The bug was present since 006. After the fix, the static
+  rear deflection fell from 74 to 42 mm and loop closure improved from 23 to
+  2 µm. All five cars were revalidated and re-recorded.
 - **Loop metric.** `max_loop_violation_m` had mixed the steering box's
   coupling (in radians) into a distance. It now counts connect equalities only.
 
@@ -115,25 +123,25 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
   the moving limit.
 
 **Downhill gate**
-- 6.22 m travelled, under 0.01 mm sideways.
-- Rolling error below 0.1%.
-- Loops closed within 23 µm.
-- Front heave used 13% of its travel.
-- Static spring deflection 100 mm front and 74 mm rear.
+- 6.22 m travelled, 0.14 mm sideways.
+- Rolling error 0.3%.
+- Loops closed within 2.2 µm.
+- Front heave used 14% of its travel.
+- Static spring deflection 83 mm front and 42 mm rear.
 - Blocked-wheel control caught.
 
 | Scenario | Result |
 | --- | --- |
-| Steered descents ±20°, foot brake at 3 s | Yaw 43.9° and −46.3°, against 45.6° and −48.3° kinematic. Stops and holds. |
-| Hand brake (rear drums), 5° | Stop 2.11 m / 2.44 s from 1.56 m/s; 1.8 mm hold drift; half dt 2.115 m. Holds before release and rolls after. Unbraked control fails. |
-| Foot brake (countershaft), 5° | Stop 1.24 m / 1.38 s; 2.1 mm hold drift; half dt 1.238 m. |
-| Launch through four gears, 40 s, pure-pursuit driver | 4.222 m/s at 2 s against 4.214 reference; 715.2 m against 716.8 m. Governed 5.8, 9.4, 14.3 and 20.8 m/s; final 21.8 m/s (79 km/h, no-load). 25.70 kW peak. Lateral 0.2 mm. |
-| 15° hill start, first gear | 92.2 m against 91.95 reference; no rollback. Predicted limit 22.2°. |
+| Steered descents ±20°, foot brake at 3 s | Yaw 45.4° and −48.1°, against 47.0° and −50.0° kinematic. Stops and holds. |
+| Hand brake (rear drums), 5° | Stop 2.11 m / 2.42 s from 1.56 m/s; 1.8 mm hold drift; half dt 2.112 m. Holds before release and rolls after. Unbraked control fails. |
+| Foot brake (countershaft), 5° | Stop 1.24 m / 1.38 s; 2.2 mm hold drift; half dt 1.238 m. |
+| Launch through four gears, 40 s, pure-pursuit driver | 4.222 m/s at 2 s against 4.214 reference; 715.1 m against 716.8 m. Governed 5.8, 9.4, 14.3 and 20.8 m/s; final 21.8 m/s (79 km/h, no-load). 25.70 kW peak. Lateral 0.02 mm. |
+| 15° hill start, first gear | 91.9 m against 91.95 reference; no rollback. Predicted limit 22.2°. |
 | 8° hill start, fourth gear (negative control) | Rolls back 3.11 m against 3.14 reference. Predicted limit 6.0°. |
-| Powered turns, first gear, ±10° | Radius 13.2 and 12.3 m, about 0.28–0.30 g. Differential ratio 1.111 against 1.112, and 1.119 against 1.120. Tyre loads steady within 0.02%. |
+| Powered turns, first gear, ±10° | Radius 13.4 and 12.6 m, about 0.27–0.29 g. Differential ratio 1.109 against 1.110, and 1.116 against 1.118. Tyre loads steady within 0.01%. |
 | Locked differential (negative control) | 1.000 against 1.112, so caught. |
 | Engine against the hand brake, fourth gear | 631 N m of drive is held by the 1000 N m brake; the car stops. |
-| Road bump, 40 mm, third gear | All wheels on the ground; peak travel 95% front heave and 97% rear swing (limit 100%); 4.0° peak tilt. |
+| Road bump, 40 mm, third gear | All wheels on the ground; peak travel 98% front heave and 74% rear swing (limit 100%); 1.8° peak tilt. |
 | Half timestep, launch | Changes of 0.0004% in speed and 0.03% in distance. |
 
 **Findings (informational)**
@@ -141,11 +149,11 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
   1000 N m brake. The driver must declutch, as with any car of the period.
 - *Foot brake in a turn:* it works through the open differential (the Velo
   lesson). This time no wheel slid.
-- *Fixed-hands launch:* drifts 18.4 m sideways over 716 m. The fixed column
+- *Fixed-hands launch:* drifts 10.8 m sideways over 716 m. The fixed column
   holds a small linkage offset, and at speed this adds up.
 - *Ackermann:* up to 1.9° over ideal at full lock.
-- *Bump margin:* the 40 mm bump uses 95–97% of travel. That passes, but a
-  larger bump would hit the stops.
+- *Bump margin:* the 40 mm bump uses 98% of the front travel. That passes, but
+  a larger bump would hit the stops.
 
 ## Not modeled
 

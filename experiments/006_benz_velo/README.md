@@ -124,8 +124,9 @@ Wikipedia's 4.4 N m is inconsistent with its own rating and is not used.
 
 ## Result (MuJoCo 3.14.0, full build `6ecd8208…`)
 
-First validation. For current figures after the 2026-09-29 shared-contact
-changes (elliptic cone, no tyre margin), see `output/full/validation.md`.
+First validation. For current figures after the 2026-09-29 shared-adapter
+fixes (elliptic cone, no tyre margin, linkage inertia), see
+`output/full/validation.md`.
 
 **Build checks**
 - 97,472 collider pairs at 121 steering angles.

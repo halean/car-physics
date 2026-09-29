@@ -78,8 +78,9 @@ This car's own files:
 
 ## Result (MuJoCo 3.14.0, full build `c49ca0e8…`)
 
-First validation. For current figures after the 2026-09-29 shared-contact
-changes (elliptic cone, no tyre margin), see `output/full/validation.md`.
+First validation. For current figures after the 2026-09-29 shared-adapter
+fixes (elliptic cone, no tyre margin, linkage inertia), see
+`output/full/validation.md`.
 
 **Chassis stage** (`40d8cbb6…`)
 - Build checks: 1,104 pairs, all 47 joins touching.

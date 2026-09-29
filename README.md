@@ -119,6 +119,18 @@ bump, rebound and roll poses as well as across the steering range.
 .venv/bin/python experiments/009_mercedes_35hp_1901/run.py --stage full
 ```
 
+## Sixth car: Ford Model T 1909
+
+[Experiment 010](experiments/010_ford_model_t_1909/README.md) hangs each beam
+axle from a transverse leaf spring and locates it with a ball: a wishbone at
+the front, the torque tube at the rear. It drives through a pedal-worked
+two-speed planetary transmission. Building it exposed a shared inertia bug;
+every earlier car was revalidated after the fix.
+
+```bash
+.venv/bin/python experiments/010_ford_model_t_1909/run.py --stage full
+```
+
 ## Required build validation
 
 [Car Downhill Check](skills/car-downhill-check/SKILL.md) defines the build gate:
