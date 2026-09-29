@@ -1,0 +1,188 @@
+{
+ "id": "panhard_1891",
+ "name": "Panhard et Levassor",
+ "short": "Panhard 1891",
+ "year": 1891,
+ "controls": "Tiller steering, a clutch and a three-speed sliding-gear lever. The engine runs at its governed speed; the brake is a lever pressing blocks on the rear tyres.",
+ "source_sha256": "c49ca0e853e1b35c2717ce1f619a315f9427d53e3dac9c9d164155de874c7698",
+ "stage": "full",
+ "mass_kg": 600,
+ "engine": {
+  "rated_power_w": 2980,
+  "governed_rpm": 750,
+  "no_load_rpm": 780,
+  "shift_seconds": 0.5,
+  "brake_ramp_seconds": 0.25
+ },
+ "gears": [
+  {
+   "name": "first",
+   "label": "1st"
+  },
+  {
+   "name": "second",
+   "label": "2nd"
+  },
+  {
+   "name": "third",
+   "label": "3rd"
+  }
+ ],
+ "pedal": {
+  "label": "Brake lever",
+  "detail": "Rim blocks on the rear tyres, worked by a lever",
+  "devices": [
+   {
+    "kind": "joints",
+    "capacity": 180
+   }
+  ]
+ },
+ "lever": null,
+ "lever_note": "The rim-block lever is the only brake; it is on the brake control.",
+ "declutch_on_pedal": false,
+ "steering": {
+  "kind": "Tiller",
+  "box_ratio": 1.0,
+  "limit_deg": 30
+ },
+ "wheelbase": 1.6,
+ "bodies": [
+  "chassis",
+  "knuckle_left",
+  "knuckle_right",
+  "tie_rod",
+  "column",
+  "drag_link",
+  "rear_left",
+  "front_left",
+  "rear_right",
+  "front_right"
+ ],
+ "rear_radius": 0.5,
+ "front_radius": 0.35,
+ "seat": [
+  0.8,
+  0.0,
+  0.9199999999999999
+ ],
+ "suspension": null,
+ "shocks": null,
+ "parity": {
+  "first_gear_at": 0.5,
+  "pedal_at": 4.0,
+  "seconds": 8.0,
+  "rows": [
+   [
+    0.5,
+    -0.0002862577662128513,
+    1.269498611412257e-08,
+    6.673370614066569e-06
+   ],
+   [
+    1.0,
+    0.0911410580270997,
+    -3.081556889147009e-07,
+    0.5469848526738229
+   ],
+   [
+    1.5,
+    0.6389475710534951,
+    -3.3711417125077795e-05,
+    1.642278804033361
+   ],
+   [
+    2.0,
+    1.6535505098133627,
+    -0.0002309619033953054,
+    2.1487321047466468
+   ],
+   [
+    2.5,
+    2.7279242775654273,
+    -0.0004752105321232677,
+    2.1487484982620906
+   ],
+   [
+    3.0,
+    3.8022984990243773,
+    -0.000719052891216935,
+    2.148748498181594
+   ],
+   [
+    3.5,
+    4.876672720599155,
+    -0.0009623126247595756,
+    2.148748498249536
+   ],
+   [
+    4.0,
+    5.951046942313441,
+    -0.0012049914647165182,
+    2.1487484982430973
+   ],
+   [
+    4.5,
+    7.011440963962691,
+    -0.0014395674037263727,
+    2.1074426730658873
+   ],
+   [
+    5.0,
+    8.065160154056743,
+    -0.0016681773205648345,
+    2.107438092346801
+   ],
+   [
+    5.5,
+    9.118879175566105,
+    -0.0018962156526967278,
+    2.1074380923521203
+   ],
+   [
+    6.0,
+    10.172598197186637,
+    -0.0021236945279983228,
+    2.1074380923508356
+   ],
+   [
+    6.5,
+    11.226317218930332,
+    -0.0023506137212665553,
+    2.1074380923623193
+   ],
+   [
+    7.0,
+    12.280036240802449,
+    -0.002576973236685698,
+    2.1074380923788154
+   ],
+   [
+    7.5,
+    13.333755262805102,
+    -0.002802773073442795,
+    2.1074380923995424
+   ],
+   [
+    8.0,
+    14.387474284940522,
+    -0.003028013230941155,
+    2.107438092426499
+   ]
+  ]
+ },
+ "files": [
+  "chassis.obj",
+  "column.obj",
+  "drag_link.obj",
+  "front_left.obj",
+  "front_right.obj",
+  "knuckle_left.obj",
+  "knuckle_right.obj",
+  "model_bumps.xml",
+  "model_flat.xml",
+  "rear_left.obj",
+  "rear_right.obj",
+  "tie_rod.obj"
+ ]
+}

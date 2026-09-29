@@ -1,0 +1,288 @@
+<mujoco model="Benz Velo">
+  <compiler angle="radian" inertiafromgeom="false" />
+  <option timestep=".001" gravity="0 0 -9.81" integrator="implicitfast" cone="elliptic" impratio="50">
+    <flag filterparent="disable" />
+  </option>
+  <visual>
+    <global offwidth="1920" offheight="1080" />
+  </visual>
+  <default>
+    <geom friction="0.8 .005 .0001" condim="3" solref=".005 1" />
+  </default>
+  <asset>
+    <mesh name="chassis" file="chassis.obj" />
+    <mesh name="knuckle_left" file="knuckle_left.obj" />
+    <mesh name="knuckle_right" file="knuckle_right.obj" />
+    <mesh name="tie_rod" file="tie_rod.obj" />
+    <mesh name="column" file="column.obj" />
+    <mesh name="drag_link" file="drag_link.obj" />
+    <mesh name="rear_left" file="rear_left.obj" />
+    <mesh name="front_left" file="front_left.obj" />
+    <mesh name="rear_right" file="rear_right.obj" />
+    <mesh name="front_right" file="front_right.obj" />
+    <texture name="road_grid" type="2d" builtin="checker" rgb1=".25 .3 .34" rgb2=".45 .5 .54" width="256" height="256" />
+    <material name="road" texture="road_grid" texrepeat="1 1" texuniform="true" />
+  </asset>
+  <worldbody>
+    <light pos="0 -3 6" dir="0 0 -1" directional="true" />
+    <geom name="slope" type="plane" size="1000 60 .1" quat="1 0 0 0" material="road" contype="1" conaffinity="6" />
+    <geom name="road_bar_0" type="capsule" size="0.04" fromto="10.0 -1.3 0 10.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_1" type="capsule" size="0.04" fromto="16.0 0.25 0 16.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_2" type="capsule" size="0.04" fromto="21.0 -1.3 0 21.0 -0.25 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_3" type="capsule" size="0.03" fromto="27.0 -1.3 0 27.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_4" type="capsule" size="0.03" fromto="29.5 -1.3 0 29.5 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_5" type="capsule" size="0.05" fromto="36.0 0.25 0 36.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_6" type="capsule" size="0.05" fromto="38.5 -1.3 0 38.5 -0.25 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_7" type="capsule" size="0.015" fromto="45.0 -1.3 0 45.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_8" type="capsule" size="0.015" fromto="46.0 -1.3 0 46.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_9" type="capsule" size="0.015" fromto="47.0 -1.3 0 47.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_10" type="capsule" size="0.015" fromto="48.0 -1.3 0 48.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_11" type="capsule" size="0.015" fromto="49.0 -1.3 0 49.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_12" type="capsule" size="0.015" fromto="50.0 -1.3 0 50.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_13" type="capsule" size="0.015" fromto="51.0 -1.3 0 51.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_14" type="capsule" size="0.015" fromto="52.0 -1.3 0 52.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_15" type="capsule" size="0.015" fromto="53.0 -1.3 0 53.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_16" type="capsule" size="0.015" fromto="54.0 -1.3 0 54.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <geom name="road_bar_17" type="capsule" size="0.015" fromto="55.0 -1.3 0 55.0 1.3 0" contype="1" conaffinity="6" rgba=".5 .45 .35 1" />
+    <body name="chassis" pos="0 0 0.003" quat="1 0 0 0">
+      <freejoint name="root" />
+      <inertial pos="0.55 0 0.45" mass="226.2" diaginertia="18 40 45" />
+      <geom name="visual_chassis" type="mesh" mesh="chassis" contype="0" conaffinity="0" group="2" rgba=".25 .22 .2 1" />
+      <geom name="Frame rail -1:0" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.349999994 -0.219999999 0.419999987 1.35000002 -0.219999999 0.419999987" size="0.018" />
+      <geom name="Frame rail 1:0" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.349999994 0.219999999 0.419999987 1.35000002 0.219999999 0.419999987" size="0.018" />
+      <geom name="Frame crossmember -0.3:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.300000012 -0.220000029 0.420000017 -0.300000012 0.220000029 0.419999957" size="0.018" />
+      <geom name="Frame crossmember 1.33:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.33000004 -0.220000029 0.420000017 1.33000004 0.220000029 0.419999957" size="0.018" />
+      <geom name="Column bearing:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.819999993 -0.159999996 0.389999986 0.819999993 -0.159999996 0.449999988" size="0.03" />
+      <geom name="Column crossmember -1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.819999993 -0.219999999 0.419999987 0.819999993 -0.189999998 0.419999987" size="0.018" />
+      <geom name="Column crossmember 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.819999993 -0.13000001 0.420000017 0.819999993 0.220000014 0.419999957" size="0.018" />
+      <geom name="Axle housing:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.340000033 0.330000073 0 0.340000033 0.329999954" size="0.035" />
+      <geom name="Differential housing:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.0700000077 0.330000013 0 0.0700000077 0.330000013" size="0.085" />
+      <geom name="Rear axle:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.560000062 0.330000103 0 0.560000062 0.329999924" size="0.02" />
+      <geom name="Axle mount -1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.219999999 0.36500001 0 -0.219999999 0.439999998" size="0.025" />
+      <geom name="Front hanger -1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.25 -0.219999999 0.420000017 1.25 -0.219999999 0.300000012" size="0.02" />
+      <geom name="Axle mount 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0.219999999 0.36500001 0 0.219999999 0.439999998" size="0.025" />
+      <geom name="Front hanger 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.25 0.219999999 0.420000017 1.25 0.219999999 0.300000012" size="0.02" />
+      <geom name="Front beam:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.25 -0.335000038 0.300000072 1.25 0.335000038 0.299999952" size="0.022" />
+      <geom name="Axle eye 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.25 0.36500001 0.275000036 1.25 0.36500001 0.324999988" size="0.03" />
+      <geom name="Axle eye -1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.25 -0.36500001 0.275000036 1.25 -0.36500001 0.324999988" size="0.03" />
+      <geom name="Crankcase" type="box" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" pos="1.08000004 0 0.340000004" quat="1 0 0 0" size="0.100000001 0.0900000036 0.0900000036" />
+      <geom name="Cylinder:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.08000004 0 0.430000037 1.08000004 0 0.74000001" size="0.055" />
+      <geom name="Cooling fin 0:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.08000004 0 0.5 1.08000004 0 0.506000042" size="0.085" />
+      <geom name="Cooling fin 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.08000004 0 0.544999957 1.08000004 0 0.550999999" size="0.085" />
+      <geom name="Cooling fin 2:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.08000004 0 0.589999974 1.08000004 0 0.596000016" size="0.085" />
+      <geom name="Cooling fin 3:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.08000004 0 0.63499999 1.08000004 0 0.641000032" size="0.085" />
+      <geom name="Cooling fin 4:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.08000004 0 0.679999948 1.08000004 0 0.68599999" size="0.085" />
+      <geom name="Cooling fin 5:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.08000004 0 0.725000024 1.08000004 0 0.731000066" size="0.085" />
+      <geom name="Engine bearer -1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.08000004 -0.219999999 0.400000006 1.08000004 -0.0900000036 0.389999956" size="0.014" />
+      <geom name="Engine bearer 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="1.08000004 0.219999999 0.399999976 1.08000004 0.0900000036 0.389999986" size="0.014" />
+      <geom name="Clutch shaft:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.99000001 0 0.340000004 0.730000019 0 0.340000004" size="0.018" />
+      <geom name="Clutch cone:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.879999995 0 0.340000004 0.939999938 0 0.340000004" size="0.075" />
+      <geom name="Gearbox" type="box" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" pos="0.629999995 0 0.340000004" quat="1 0 0 0" size="0.109999999 0.0900000036 0.0700000003" />
+      <geom name="Gearbox cradle -1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.629999995 -0.220000029 0.419999987 0.629999995 -0.0899999812 0.369999975" size="0.014" />
+      <geom name="Gearbox cradle 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.629999995 0.220000029 0.419999987 0.629999995 0.0899999812 0.369999975" size="0.014" />
+      <geom name="Gearbox output:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.519999981 0 0.340000004 0.481999993 0 0.340000004" size="0.018" />
+      <geom name="Front universal joint:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.481999993 -0.0279999971 0.340000004 0.481999993 0.0279999971 0.340000004" size="0.028" />
+      <geom name="Propeller shaft:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.481999993 1.52525619e-08 0.340000004 0.139999986 -1.52525619e-08 0.335000008" size="0.016" />
+      <geom name="Rear universal joint:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.140000001 -0.0279999971 0.335000008 0.140000001 0.0279999971 0.335000008" size="0.028" />
+      <geom name="Pinion shaft:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.140000001 0 0.330000013 0.0700000077 0 0.330000013" size="0.018" />
+      <geom name="Rear brake band -1:0" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0909999982 -0.402500004 0.330000013 0.0892514586 -0.402500004 0.347753227" size="0.006" />
+      <geom name="Rear brake band -1:1" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0892514586 -0.402500004 0.347753227 0.0840730369 -0.402500004 0.364824206" size="0.006" />
+      <geom name="Rear brake band -1:2" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0840730369 -0.402500004 0.364824206 0.075663738 -0.402500004 0.380556911" size="0.006" />
+      <geom name="Rear brake band -1:3" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.075663738 -0.402500004 0.380556911 0.0643467158 -0.402500004 0.394346714" size="0.006" />
+      <geom name="Rear brake band -1:4" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0643467158 -0.402500004 0.394346714 0.0505568907 -0.402500004 0.405663759" size="0.006" />
+      <geom name="Rear brake band -1:5" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0505568907 -0.402500004 0.405663759 0.0348241925 -0.402500004 0.41407305" size="0.006" />
+      <geom name="Rear brake band -1:6" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0348241925 -0.402500004 0.41407305 0.0177532192 -0.402500004 0.419251472" size="0.006" />
+      <geom name="Rear brake band -1:7" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0177532192 -0.402500004 0.419251472 5.57214296e-18 -0.402500004 0.421000004" size="0.006" />
+      <geom name="Rear brake band -1:8" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="5.57214296e-18 -0.402500004 0.421000004 -0.0177532192 -0.402500004 0.419251472" size="0.006" />
+      <geom name="Rear brake band -1:9" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0177532192 -0.402500004 0.419251472 -0.0348241925 -0.402500004 0.41407305" size="0.006" />
+      <geom name="Rear brake band -1:10" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0348241925 -0.402500004 0.41407305 -0.0505568907 -0.402500004 0.405663759" size="0.006" />
+      <geom name="Rear brake band -1:11" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0505568907 -0.402500004 0.405663759 -0.0643467158 -0.402500004 0.394346714" size="0.006" />
+      <geom name="Rear brake band -1:12" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0643467158 -0.402500004 0.394346714 -0.075663738 -0.402500004 0.380556911" size="0.006" />
+      <geom name="Rear brake band -1:13" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.075663738 -0.402500004 0.380556911 -0.0840730369 -0.402500004 0.364824206" size="0.006" />
+      <geom name="Rear brake band -1:14" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0840730369 -0.402500004 0.364824206 -0.0892514586 -0.402500004 0.347753227" size="0.006" />
+      <geom name="Rear brake band -1:15" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0892514586 -0.402500004 0.347753227 -0.0909999982 -0.402500004 0.330000013" size="0.006" />
+      <geom name="Rear brake band -1:16" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0909999982 -0.402500004 0.330000013 -0.0892514586 -0.402500004 0.312246799" size="0.006" />
+      <geom name="Rear brake band -1:17" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0892514586 -0.402500004 0.312246799 -0.0840730369 -0.402500004 0.295175821" size="0.006" />
+      <geom name="Rear brake band -1:18" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0840730369 -0.402500004 0.295175821 -0.075663738 -0.402500004 0.279443115" size="0.006" />
+      <geom name="Rear brake band -1:19" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.075663738 -0.402500004 0.279443115 -0.0643467158 -0.402500004 0.265653312" size="0.006" />
+      <geom name="Rear brake band -1:20" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0643467158 -0.402500004 0.265653312 -0.0505568907 -0.402500004 0.254336268" size="0.006" />
+      <geom name="Rear brake band -1:21" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0505568907 -0.402500004 0.254336268 -0.0348241925 -0.402500004 0.245926976" size="0.006" />
+      <geom name="Rear brake band -1:22" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0348241925 -0.402500004 0.245926976 -0.0177532192 -0.402500004 0.240748554" size="0.006" />
+      <geom name="Rear brake band -1:23" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0177532192 -0.402500004 0.240748554 -1.67164285e-17 -0.402500004 0.239000022" size="0.006" />
+      <geom name="Rear brake band -1:24" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-1.67164285e-17 -0.402500004 0.239000022 0.0177532192 -0.402500004 0.240748554" size="0.006" />
+      <geom name="Rear brake band -1:25" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0177532192 -0.402500004 0.240748554 0.0348241925 -0.402500004 0.245926976" size="0.006" />
+      <geom name="Rear brake band -1:26" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0348241925 -0.402500004 0.245926976 0.0505568907 -0.402500004 0.254336268" size="0.006" />
+      <geom name="Rear brake band -1:27" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0505568907 -0.402500004 0.254336268 0.0643467158 -0.402500004 0.265653312" size="0.006" />
+      <geom name="Rear brake band -1:28" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0643467158 -0.402500004 0.265653312 0.075663738 -0.402500004 0.279443115" size="0.006" />
+      <geom name="Rear brake band -1:29" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.075663738 -0.402500004 0.279443115 0.0840730369 -0.402500004 0.295175821" size="0.006" />
+      <geom name="Rear brake band -1:30" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0840730369 -0.402500004 0.295175821 0.0892514586 -0.402500004 0.312246799" size="0.006" />
+      <geom name="Rear brake band -1:31" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0892514586 -0.402500004 0.312246799 0.0909999982 -0.402500004 0.330000013" size="0.006" />
+      <geom name="Rear brake anchor -1:0" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.402500004 0.231000006 0 -0.402500004 0.215000004" size="0.008" />
+      <geom name="Rear brake anchor -1:1" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.402500004 0.215000004 0 -0.330000013 0.215000004" size="0.008" />
+      <geom name="Rear brake anchor -1:2" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.330000013 0.215000004 0 -0.330000013 0.294999987" size="0.008" />
+      <geom name="Rear brake band 1:0" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0909999982 0.402500004 0.330000013 0.0892514586 0.402500004 0.347753227" size="0.006" />
+      <geom name="Rear brake band 1:1" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0892514586 0.402500004 0.347753227 0.0840730369 0.402500004 0.364824206" size="0.006" />
+      <geom name="Rear brake band 1:2" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0840730369 0.402500004 0.364824206 0.075663738 0.402500004 0.380556911" size="0.006" />
+      <geom name="Rear brake band 1:3" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.075663738 0.402500004 0.380556911 0.0643467158 0.402500004 0.394346714" size="0.006" />
+      <geom name="Rear brake band 1:4" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0643467158 0.402500004 0.394346714 0.0505568907 0.402500004 0.405663759" size="0.006" />
+      <geom name="Rear brake band 1:5" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0505568907 0.402500004 0.405663759 0.0348241925 0.402500004 0.41407305" size="0.006" />
+      <geom name="Rear brake band 1:6" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0348241925 0.402500004 0.41407305 0.0177532192 0.402500004 0.419251472" size="0.006" />
+      <geom name="Rear brake band 1:7" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0177532192 0.402500004 0.419251472 5.57214296e-18 0.402500004 0.421000004" size="0.006" />
+      <geom name="Rear brake band 1:8" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="5.57214296e-18 0.402500004 0.421000004 -0.0177532192 0.402500004 0.419251472" size="0.006" />
+      <geom name="Rear brake band 1:9" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0177532192 0.402500004 0.419251472 -0.0348241925 0.402500004 0.41407305" size="0.006" />
+      <geom name="Rear brake band 1:10" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0348241925 0.402500004 0.41407305 -0.0505568907 0.402500004 0.405663759" size="0.006" />
+      <geom name="Rear brake band 1:11" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0505568907 0.402500004 0.405663759 -0.0643467158 0.402500004 0.394346714" size="0.006" />
+      <geom name="Rear brake band 1:12" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0643467158 0.402500004 0.394346714 -0.075663738 0.402500004 0.380556911" size="0.006" />
+      <geom name="Rear brake band 1:13" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.075663738 0.402500004 0.380556911 -0.0840730369 0.402500004 0.364824206" size="0.006" />
+      <geom name="Rear brake band 1:14" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0840730369 0.402500004 0.364824206 -0.0892514586 0.402500004 0.347753227" size="0.006" />
+      <geom name="Rear brake band 1:15" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0892514586 0.402500004 0.347753227 -0.0909999982 0.402500004 0.330000013" size="0.006" />
+      <geom name="Rear brake band 1:16" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0909999982 0.402500004 0.330000013 -0.0892514586 0.402500004 0.312246799" size="0.006" />
+      <geom name="Rear brake band 1:17" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0892514586 0.402500004 0.312246799 -0.0840730369 0.402500004 0.295175821" size="0.006" />
+      <geom name="Rear brake band 1:18" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0840730369 0.402500004 0.295175821 -0.075663738 0.402500004 0.279443115" size="0.006" />
+      <geom name="Rear brake band 1:19" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.075663738 0.402500004 0.279443115 -0.0643467158 0.402500004 0.265653312" size="0.006" />
+      <geom name="Rear brake band 1:20" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0643467158 0.402500004 0.265653312 -0.0505568907 0.402500004 0.254336268" size="0.006" />
+      <geom name="Rear brake band 1:21" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0505568907 0.402500004 0.254336268 -0.0348241925 0.402500004 0.245926976" size="0.006" />
+      <geom name="Rear brake band 1:22" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0348241925 0.402500004 0.245926976 -0.0177532192 0.402500004 0.240748554" size="0.006" />
+      <geom name="Rear brake band 1:23" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0177532192 0.402500004 0.240748554 -1.67164285e-17 0.402500004 0.239000022" size="0.006" />
+      <geom name="Rear brake band 1:24" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-1.67164285e-17 0.402500004 0.239000022 0.0177532192 0.402500004 0.240748554" size="0.006" />
+      <geom name="Rear brake band 1:25" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0177532192 0.402500004 0.240748554 0.0348241925 0.402500004 0.245926976" size="0.006" />
+      <geom name="Rear brake band 1:26" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0348241925 0.402500004 0.245926976 0.0505568907 0.402500004 0.254336268" size="0.006" />
+      <geom name="Rear brake band 1:27" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0505568907 0.402500004 0.254336268 0.0643467158 0.402500004 0.265653312" size="0.006" />
+      <geom name="Rear brake band 1:28" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0643467158 0.402500004 0.265653312 0.075663738 0.402500004 0.279443115" size="0.006" />
+      <geom name="Rear brake band 1:29" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.075663738 0.402500004 0.279443115 0.0840730369 0.402500004 0.295175821" size="0.006" />
+      <geom name="Rear brake band 1:30" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0840730369 0.402500004 0.295175821 0.0892514586 0.402500004 0.312246799" size="0.006" />
+      <geom name="Rear brake band 1:31" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.0892514586 0.402500004 0.312246799 0.0909999982 0.402500004 0.330000013" size="0.006" />
+      <geom name="Rear brake anchor 1:0" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0.402500004 0.231000006 0 0.402500004 0.215000004" size="0.008" />
+      <geom name="Rear brake anchor 1:1" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0.402500004 0.215000004 0 0.330000013 0.215000004" size="0.008" />
+      <geom name="Rear brake anchor 1:2" type="capsule" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0.330000013 0.215000004 0 0.330000013 0.294999987" size="0.008" />
+      <geom name="Pedal shaft:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.75999999 -0.220000029 0.390000015 0.75999999 0.220000029 0.389999956" size="0.012" />
+      <geom name="Pedal:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.75999999 0.13000001 0.389999986 0.700000048 0.12999998 0.550000012" size="0.014" />
+      <geom name="Pedal pad" type="box" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" pos="0.699999988 0.129999995 0.560000002" quat="1 0 0 0" size="0.0149999997 0.0399999991 0.00999999978" />
+      <geom name="Seat support -0.05.-1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0500000007 -0.219999999 0.420000017 -0.0500000007 -0.219999999 0.699999988" size="0.016" />
+      <geom name="Seat support -0.05.1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-0.0500000007 0.219999999 0.420000017 -0.0500000007 0.219999999 0.699999988" size="0.016" />
+      <geom name="Seat support 0.3.-1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.300000012 -0.219999999 0.420000017 0.300000012 -0.219999999 0.699999988" size="0.016" />
+      <geom name="Seat support 0.3.1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0.300000012 0.219999999 0.420000017 0.300000012 0.219999999 0.699999988" size="0.016" />
+      <geom name="Seat base" type="box" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" pos="0.129999995 0 0.714999974" quat="1 0 0 0" size="0.25 0.400000006 0.0149999997" />
+      <geom name="Seat cushion" type="box" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" pos="0.144999996 0 0.769999981" quat="1 0 0 0" size="0.219999999 0.379999995 0.0399999991" />
+      <geom name="Seat back" type="box" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" pos="-0.104999997 0 0.920000017" quat="1 0 0 0" size="0.0299999993 0.379999995 0.189999998" />
+      <geom name="Footboard" type="box" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" pos="0.555000007 0.0799999982 0.450500011" quat="1 0 0 0" size="0.144999996 0.200000003 0.0125000002" />
+      <geom name="Dash" type="box" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" pos="0.954999983 0 0.61500001" quat="1 0 0 0" size="0.00999999978 0.25999999 0.185000002" />
+      <geom name="Bonnet side -1" type="box" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" pos="1.13 -0.211999997 0.61500001" quat="1 0 0 0" size="0.165000007 0.00600000005 0.185000002" />
+      <geom name="Bonnet side 1" type="box" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" pos="1.13 0.211999997 0.61500001" quat="1 0 0 0" size="0.165000007 0.00600000005 0.185000002" />
+      <geom name="Bonnet lid" type="box" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" pos="1.13 0 0.810000002" quat="1 0 0 0" size="0.174999997 0.25 0.00999999978" />
+      <geom name="Bonnet front" type="box" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" pos="1.29999995 0 0.61500001" quat="1 0 0 0" size="0.00600000005 0.25 0.185000002" />
+      <body name="knuckle_left" pos="1.25 0.365 0.3">
+        <joint name="knuckle_left_joint" type="hinge" axis="0 0 1" damping="0.5" armature="0.01" />
+        <inertial pos="-0.00619647981 0.0255830482 -0.0514072662" mass="1.5" fullinertia="0.013219205 0.00855052671 0.00598611739 -0.000444760825 -0.00110228638 -0.00350457053" />
+        <geom name="visual_knuckle_left" type="mesh" mesh="knuckle_left" contype="0" conaffinity="0" group="2" rgba=".25 .22 .2 1" />
+        <geom name="Kingpin 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0 -0.180000007 0 0 0.0499999821" size="0.012" />
+        <geom name="Knuckle upper ear 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0 0.0409999788 0 0.0479999781 0.0409999788" size="0.012" />
+        <geom name="Knuckle lower ear 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0 -0.0410000086 0 0.0479999781 -0.0410000086" size="0.012" />
+        <geom name="Knuckle web 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0.0479999781 -0.0410000086 0 0.0479999781 0.0410000086" size="0.012" />
+        <geom name="Stub axle 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0.0479999781 0 0 0.170000017 0" size="0.015" />
+        <geom name="Steering arm 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 2.98023224e-08 -0.170000017 -0.105590582 -0.0308324397 -0.170000017" size="0.011" />
+        <geom name="Drag arm:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0 -0.100000009 0 -0.100000024 -0.100000009" size="0.011" />
+        <geom name="Drag arm stud:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.100000024 -0.100000009 0 -0.100000024 -0.128000006" size="0.008" />
+        <body name="tie_rod" pos="-0.105590534 -0.030832436 -0.17">
+          <joint name="tie_rod_joint" type="hinge" axis="0 0 1" damping="0.5" armature="0.01" />
+          <inertial pos="0 -0.334167585 1.18168659e-24" mass="0.7" fullinertia="0.0347481539 7e-06 0.0347481539 0 0 -4.64751979e-09" />
+          <geom name="visual_tie_rod" type="mesh" mesh="tie_rod" contype="0" conaffinity="0" group="2" rgba=".25 .22 .2 1" />
+          <geom name="Tie rod:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 2.98023224e-08 4.47034836e-08 0 -0.668335199 -4.47034836e-08" size="0.011" />
+        </body>
+        <body name="front_left" pos="0 0.11 0">
+          <joint name="front_left_joint" type="hinge" axis="0 1 0" damping=".01" solreffriction=".004 1" solimpfriction=".999 .999 .001 .5 2" />
+          <inertial pos="0 0 0" mass="4.0" diaginertia="0.18 0.36 0.18" />
+          <geom name="front_left_envelope" type="cylinder" fromto="0 -0.035 0 0 0.035 0" size="0.3" contype="8" conaffinity="2" group="3" rgba=".2 .2 .2 .2" />
+          <geom name="front_left_rolling" type="ellipsoid" size="0.3 0.03 0.3" solref="-2300 -48" solimp="0.5 0.95 0.01 0.5 2" contype="4" conaffinity="3" group="3" rgba=".1 .1 .1 .5" />
+          <geom name="visual_front_left" type="mesh" mesh="front_left" contype="0" conaffinity="0" group="2" rgba=".25 .22 .2 1" />
+          <geom name="front_left.hub:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.0399999917 0 0 0.0399999917 0" size="0.035" />
+        </body>
+      </body>
+      <body name="knuckle_right" pos="1.25 -0.365 0.3">
+        <joint name="knuckle_right_joint" type="hinge" axis="0 0 1" damping="0.5" armature="0.01" />
+        <inertial pos="-0.00706151532 -0.0370349343 -0.044371545" mass="1.5" fullinertia="0.0125820873 0.00911983121 0.00494319169 0.000628151296 -0.00133069114 0.00299074562" />
+        <geom name="visual_knuckle_right" type="mesh" mesh="knuckle_right" contype="0" conaffinity="0" group="2" rgba=".25 .22 .2 1" />
+        <geom name="Kingpin -1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0 -0.180000007 0 0 0.0499999821" size="0.012" />
+        <geom name="Knuckle upper ear -1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0 0.0409999788 0 -0.0479999781 0.0409999788" size="0.012" />
+        <geom name="Knuckle lower ear -1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0 -0.0410000086 0 -0.0479999781 -0.0410000086" size="0.012" />
+        <geom name="Knuckle web -1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.0479999781 -0.0410000086 0 -0.0479999781 0.0410000086" size="0.012" />
+        <geom name="Stub axle -1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.0479999781 0 0 -0.170000017 0" size="0.015" />
+        <geom name="Steering arm -1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0 -0.170000002 -0.105590582 0.0308324099 -0.170000032" size="0.011" />
+        <body name="front_right" pos="0 -0.11 0">
+          <joint name="front_right_joint" type="hinge" axis="0 1 0" damping=".01" solreffriction=".004 1" solimpfriction=".999 .999 .001 .5 2" />
+          <inertial pos="0 0 0" mass="4.0" diaginertia="0.18 0.36 0.18" />
+          <geom name="front_right_envelope" type="cylinder" fromto="0 -0.035 0 0 0.035 0" size="0.3" contype="8" conaffinity="2" group="3" rgba=".2 .2 .2 .2" />
+          <geom name="front_right_rolling" type="ellipsoid" size="0.3 0.03 0.3" solref="-2300 -48" solimp="0.5 0.95 0.01 0.5 2" contype="4" conaffinity="3" group="3" rgba=".1 .1 .1 .5" />
+          <geom name="visual_front_right" type="mesh" mesh="front_right" contype="0" conaffinity="0" group="2" rgba=".25 .22 .2 1" />
+          <geom name="front_right.hub:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.0399999917 0 0 0.0399999917 0" size="0.035" />
+        </body>
+      </body>
+      <body name="column" pos="0.82 -0.16 0.2">
+        <joint name="column_joint" type="hinge" axis="0 0 1" damping="0.5" armature="0.01" limited="true" range="-0.523598776 0.523598776" />
+        <inertial pos="0 -0.00270488348 0.503776183" mass="1.5" fullinertia="0.139707494 0.115669497 0.0240529969 0 0 -0.00201039146" />
+        <geom name="visual_column" type="mesh" mesh="column" contype="0" conaffinity="0" group="2" rgba=".25 .22 .2 1" />
+        <geom name="Steering column:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0 0.0149999708 0 0 0.75" size="0.016" />
+        <geom name="Pitman arm:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0 0.0150000006 0 -0.099999994 0.0150000006" size="0.011" />
+        <geom name="Pitman stud:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.099999994 0.0150000006 0 -0.099999994 -0.0279999822" size="0.008" />
+        <geom name="Handlebar:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.200000048 0.75 0 0.200000018 0.75" size="0.012" />
+        <geom name="Handlebar grip -1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.200000018 0.75 0 -0.300000042 0.75" size="0.018" />
+        <geom name="Handlebar grip 1:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0.199999988 0.75 0 0.300000012 0.75" size="0.018" />
+        <body name="drag_link" pos="0 -0.1 -0.028">
+          <joint name="drag_link_joint" type="hinge" axis="0 0 1" damping="0.5" armature="0.01" />
+          <inertial pos="0.214999974 0.262499973 1.03397577e-24" mass="0.6" fullinertia="0.0183810004 0.0123326705 0.0307076709 -0.0150500025 8.54333374e-10 1.0430813e-09" />
+          <geom name="visual_drag_link" type="mesh" mesh="drag_link" contype="0" conaffinity="0" group="2" rgba=".25 .22 .2 1" />
+          <geom name="Drag link:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="-5.96046448e-08 -2.98023224e-08 1.49011612e-08 0.430000007 0.524999976 -1.49011612e-08" size="0.011" />
+        </body>
+      </body>
+      <body name="rear_left" pos="0 0.5 0.33">
+        <joint name="rear_left_joint" type="hinge" axis="0 1 0" damping=".01" solreffriction=".004 1" solimpfriction=".999 .999 .001 .5 2" />
+        <inertial pos="0 0 0" mass="5.0" diaginertia="0.27225 0.5445 0.27225" />
+        <geom name="rear_left_envelope" type="cylinder" fromto="0 -0.035 0 0 0.035 0" size="0.33" contype="8" conaffinity="2" group="3" rgba=".2 .2 .2 .2" />
+        <geom name="rear_left_rolling" type="ellipsoid" size="0.33 0.03 0.33" solref="-2300 -48" solimp="0.5 0.95 0.01 0.5 2" contype="4" conaffinity="3" group="3" rgba=".1 .1 .1 .5" />
+        <geom name="visual_rear_left" type="mesh" mesh="rear_left" contype="0" conaffinity="0" group="2" rgba=".25 .22 .2 1" />
+        <geom name="rear_left.hub:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.0400000215 0 0 0.0400000215 0" size="0.035" />
+        <geom name="rear_left.brake_drum:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.120000005 0 0 -0.0749999881 0" size="0.085" />
+        <geom name="rear_left.drum_carrier:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.0800000131 0 0 -0.0349999964 0" size="0.035" />
+      </body>
+      <body name="rear_right" pos="0 -0.5 0.33">
+        <joint name="rear_right_joint" type="hinge" axis="0 1 0" damping=".01" solreffriction=".004 1" solimpfriction=".999 .999 .001 .5 2" />
+        <inertial pos="0 0 0" mass="5.0" diaginertia="0.27225 0.5445 0.27225" />
+        <geom name="rear_right_envelope" type="cylinder" fromto="0 -0.035 0 0 0.035 0" size="0.33" contype="8" conaffinity="2" group="3" rgba=".2 .2 .2 .2" />
+        <geom name="rear_right_rolling" type="ellipsoid" size="0.33 0.03 0.33" solref="-2300 -48" solimp="0.5 0.95 0.01 0.5 2" contype="4" conaffinity="3" group="3" rgba=".1 .1 .1 .5" />
+        <geom name="visual_rear_right" type="mesh" mesh="rear_right" contype="0" conaffinity="0" group="2" rgba=".25 .22 .2 1" />
+        <geom name="rear_right.hub:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 -0.0400000215 0 0 0.0400000215 0" size="0.035" />
+        <geom name="rear_right.brake_drum:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0.120000005 0 0 0.0749999881 0" size="0.085" />
+        <geom name="rear_right.drum_carrier:0" type="cylinder" contype="2" conaffinity="15" group="3" rgba=".2 .6 .3 .35" fromto="0 0.0800000131 0 0 0.0349999964 0" size="0.035" />
+      </body>
+    </body>
+  </worldbody>
+  <contact>
+    <exclude body1="chassis" body2="column" />
+    <exclude body1="chassis" body2="knuckle_left" />
+    <exclude body1="chassis" body2="knuckle_right" />
+    <exclude body1="chassis" body2="rear_left" />
+    <exclude body1="chassis" body2="rear_right" />
+    <exclude body1="column" body2="drag_link" />
+    <exclude body1="drag_link" body2="knuckle_left" />
+    <exclude body1="front_left" body2="knuckle_left" />
+    <exclude body1="front_right" body2="knuckle_right" />
+    <exclude body1="knuckle_left" body2="tie_rod" />
+    <exclude body1="knuckle_right" body2="tie_rod" />
+  </contact>
+  <equality>
+    <connect body1="tie_rod" body2="knuckle_right" anchor="0 -0.668335128 0" solref=".002 1" />
+    <connect body1="drag_link" body2="knuckle_left" anchor="0.43 0.525 0" solref=".002 1" />
+  </equality>
+  <actuator>
+    <position name="column" joint="column_joint" kp="1000" kv="30" ctrllimited="true" ctrlrange="-0.523598776 0.523598776" forcelimited="true" forcerange="-30 30" />
+    <motor name="drive_first" tendon="differential" gear="17.4" ctrllimited="true" ctrlrange="0 8.21239506" />
+    <motor name="drive_second" tendon="differential" gear="10.44" ctrllimited="true" ctrlrange="0 8.21239506" />
+    <motor name="drive_third" tendon="differential" gear="5.8" ctrllimited="true" ctrlrange="0 8.21239506" />
+  </actuator>
+  <tendon>
+    <fixed name="differential" frictionloss="0" solreffriction=".004 1" solimpfriction=".999 .999 .001 .5 2">
+      <joint joint="rear_left_joint" coef="0.5" />
+      <joint joint="rear_right_joint" coef="0.5" />
+    </fixed>
+  </tendon>
+</mujoco>

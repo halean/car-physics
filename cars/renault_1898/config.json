@@ -1,0 +1,188 @@
+{
+ "id": "renault_1898",
+ "name": "Renault Type A",
+ "short": "Renault 1898",
+ "year": 1898,
+ "controls": "Handlebar steering and a three-speed gearbox with a direct-drive third. One pedal declutches and then brakes.",
+ "source_sha256": "2c3a1273b51e96c014da3504252c699d70bea6b11e16c42779388871bb65d4e4",
+ "stage": "full",
+ "mass_kg": 250,
+ "engine": {
+  "rated_power_w": 1290,
+  "governed_rpm": 1500,
+  "no_load_rpm": 1560,
+  "shift_seconds": 0.5,
+  "brake_ramp_seconds": 0.25
+ },
+ "gears": [
+  {
+   "name": "first",
+   "label": "1st"
+  },
+  {
+   "name": "second",
+   "label": "2nd"
+  },
+  {
+   "name": "third",
+   "label": "3rd, direct"
+  }
+ ],
+ "pedal": {
+  "label": "Combined pedal",
+  "detail": "Declutches, then brakes the rear drums",
+  "devices": [
+   {
+    "kind": "joints",
+    "capacity": 100
+   }
+  ]
+ },
+ "lever": null,
+ "lever_note": "The single pedal does both jobs; this model has no separate hand brake.",
+ "declutch_on_pedal": true,
+ "steering": {
+  "kind": "Handlebar",
+  "box_ratio": 1.0,
+  "limit_deg": 30
+ },
+ "wheelbase": 1.25,
+ "bodies": [
+  "chassis",
+  "knuckle_left",
+  "knuckle_right",
+  "tie_rod",
+  "column",
+  "drag_link",
+  "rear_left",
+  "front_left",
+  "rear_right",
+  "front_right"
+ ],
+ "rear_radius": 0.33,
+ "front_radius": 0.3,
+ "seat": [
+  0.55,
+  0.0,
+  0.75
+ ],
+ "suspension": null,
+ "shocks": null,
+ "parity": {
+  "first_gear_at": 0.5,
+  "pedal_at": 4.0,
+  "seconds": 8.0,
+  "rows": [
+   [
+    0.5,
+    -0.00021739621084513954,
+    3.3058612439138726e-08,
+    1.2164567011736763e-05
+   ],
+   [
+    1.0,
+    0.06731693558761798,
+    -2.2474651978512954e-08,
+    0.40405652748288357
+   ],
+   [
+    1.5,
+    0.4719442999010013,
+    -1.0664411697210748e-05,
+    1.2129048020095712
+   ],
+   [
+    2.0,
+    1.2809303447730835,
+    -8.737183437156507e-05,
+    2.0213199187062254
+   ],
+   [
+    2.5,
+    2.493969681969841,
+    -0.0003416627991732746,
+    2.8291193687008547
+   ],
+   [
+    3.0,
+    4.013917103842569,
+    -0.0008553274485351238,
+    3.0899743017276755
+   ],
+   [
+    3.5,
+    5.5590716269566345,
+    -0.0014083651927456462,
+    3.0903645560640154
+   ],
+   [
+    4.0,
+    7.1042539656226165,
+    -0.001960643361309642,
+    3.090364927343804
+   ],
+   [
+    4.5,
+    8.483572584832505,
+    -0.002398095244095555,
+    2.2398550646263335
+   ],
+   [
+    5.0,
+    9.319397832387514,
+    -0.002529721322014403,
+    1.1058598665132764
+   ],
+   [
+    5.5,
+    9.588628739102054,
+    -0.0025471309642837534,
+    0.00033273696731778586
+   ],
+   [
+    6.0,
+    9.58863414868617,
+    -0.0025471274360282714,
+    1.205029024078588e-09
+   ],
+   [
+    6.5,
+    9.588634148455872,
+    -0.002547127433845561,
+    1.907116730222629e-10
+   ],
+   [
+    7.0,
+    9.588634148216432,
+    -0.00254712743350355,
+    2.3519057929729595e-10
+   ],
+   [
+    7.5,
+    9.588634147979159,
+    -0.00254712743319854,
+    2.924085768700048e-10
+   ],
+   [
+    8.0,
+    9.588634147742821,
+    -0.0025471274329042872,
+    3.638720524727508e-10
+   ]
+  ]
+ },
+ "files": [
+  "chassis.obj",
+  "column.obj",
+  "drag_link.obj",
+  "front_left.obj",
+  "front_right.obj",
+  "knuckle_left.obj",
+  "knuckle_right.obj",
+  "model_bumps.xml",
+  "model_flat.xml",
+  "rear_left.obj",
+  "rear_right.obj",
+  "tie_rod.obj"
+ ]
+}

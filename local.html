@@ -1,0 +1,1244 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>
+<meta charset="utf-8">
+<title>Brass Era Garage</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --paper: #f1f2ec; --panel: #e5e8df; --ink: #1b211e; --muted: #5d6760; --line: #c5cbbf;
+    --green: #1f4a3a; --brass: #b8892b; --warn: #b23a26; --good: #2f7a52;
+    --throttle: #2f7a52; --brake: #b23a26; --lever: #b8892b;
+    --sky: #dfe3da; --field: #a8b592; --road: #c9b58a;
+    --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+    --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #121614; --panel: #1a201d; --ink: #e5e9e1; --muted: #99a39c; --line: #313a35;
+      --green: #6aae8c; --brass: #d7a84b; --warn: #e0654e; --good: #62b889;
+      --throttle: #62b889; --brake: #e0654e; --lever: #d7a84b;
+      --sky: #1d2320; --field: #2c3829; --road: #5a4f3a;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #121614; --panel: #1a201d; --ink: #e5e9e1; --muted: #99a39c; --line: #313a35;
+    --green: #6aae8c; --brass: #d7a84b; --warn: #e0654e; --good: #62b889;
+    --throttle: #62b889; --brake: #e0654e; --lever: #d7a84b;
+    --sky: #1d2320; --field: #2c3829; --road: #5a4f3a;
+  }
+  [hidden] { display: none !important; }   /* grid/flex rules below must not un-hide */
+  body { background: var(--paper); color: var(--ink); font: 15px/1.5 var(--body); }
+  .app { max-width: 1440px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 32px; display: grid; gap: 12px; }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; }
+  h1 { margin: 0; font: 700 30px/1.1 var(--display); letter-spacing: .01em; text-wrap: balance; }
+  .sub { margin: 0; color: var(--muted); }
+  h2 { margin: 0; font: 600 13px/1.2 var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+  .cars { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cars button { display: grid; gap: 0; text-align: left; padding: 6px 12px; }
+  .cars button small { font: 400 12px var(--mono); color: var(--muted); letter-spacing: 0; text-transform: none; }
+  .cars button[aria-pressed="true"] { background: var(--green); color: var(--paper); border-color: var(--green); }
+  .cars button[aria-pressed="true"] small { color: inherit; opacity: .8; }
+  .stage { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 14px; align-items: start; }
+  @media (max-width: 960px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+  .view-col { display: grid; gap: 12px; min-width: 0; }
+  .viewport { position: relative; height: clamp(300px, 54vh, 620px); border-radius: 6px; overflow: hidden; background: var(--sky); border: 1px solid var(--line); }
+  .viewport canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .hud { position: absolute; left: 14px; top: 12px; display: grid; gap: 2px; pointer-events: none; }
+  .speed { font: 600 40px/1 var(--mono); font-variant-numeric: tabular-nums; }
+  .speed small, .hud-line small { font: 600 13px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-left: 4px; }
+  .hud-line { font: 400 14px var(--mono); font-variant-numeric: tabular-nums; }
+  .rate { position: absolute; right: 12px; top: 10px; font: 400 12px var(--mono); color: var(--muted); }
+  .status { position: absolute; inset: auto 12px 12px 12px; padding: 10px 12px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); font-size: 14px; z-index: 2; }
+  .status.error { border-color: var(--warn); }
+  .toast { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); padding: 6px 12px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); font-size: 13px; pointer-events: none; }
+  .pedal { position: absolute; bottom: 14px; width: 64px; height: 118px; border-radius: 10px 10px 6px 6px; border: 2px solid var(--line); background: color-mix(in srgb, var(--panel) 85%, transparent); display: grid; place-items: end center; padding-bottom: 8px; font: 600 12px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); touch-action: none; user-select: none; cursor: pointer; overflow: hidden; }
+  .pedal::before { content: ""; position: absolute; inset: 10px 12px 30px; border-radius: 4px; background: repeating-linear-gradient(180deg, var(--line) 0 3px, transparent 3px 9px); }
+  .pedal .fill { position: absolute; left: 0; right: 0; bottom: 0; height: 0; opacity: .35; }
+  .pedal.pressed { border-color: var(--ink); }
+  #padBrake { left: 14px; } #padBrake .fill { background: var(--brake); }
+  #padThrottle { right: 14px; } #padThrottle .fill { background: var(--throttle); }
+  @media (hover: hover) and (pointer: fine) { .pedal { width: 52px; height: 92px; opacity: .85; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .cockpit { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px; align-items: stretch; }
+  @media (max-width: 640px) { .cockpit { grid-template-columns: auto minmax(0, 1fr); } .steer-box { grid-column: 1 / -1; } }
+  .bars { display: flex; gap: 10px; align-items: flex-end; }
+  .bar { display: grid; gap: 4px; justify-items: center; font: 600 11px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); width: 44px; text-align: center; }
+  .bar .track { position: relative; width: 20px; height: 110px; border-radius: 4px; background: color-mix(in srgb, var(--line) 70%, transparent); overflow: hidden; }
+  .bar .track i { position: absolute; left: 0; right: 0; bottom: 0; height: 0; border-radius: 4px; }
+  .bar output { font: 600 12px var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+  #barThrottle i { background: var(--throttle); } #barPedal i { background: var(--brake); } #barLever i { background: var(--lever); }
+  .bar.off { opacity: .35; }
+  .trace { display: grid; gap: 6px; min-width: 0; }
+  #trace, #chart { width: 100%; display: block; }
+  #trace { height: 132px; }
+  #chart { height: 140px; }
+  .legend { display: flex; gap: 12px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+  .legend span::before { content: ""; display: inline-block; width: 14px; height: 3px; margin-right: 6px; vertical-align: middle; background: currentColor; }
+  .lg-t { color: var(--throttle); } .lg-b { color: var(--brake); } .lg-l { color: var(--lever); } .lg-f { color: var(--brass); } .lg-r { color: var(--green); }
+  .steer-box { display: grid; justify-items: center; align-content: center; gap: 4px; min-width: 110px; }
+  #wheelSvg { width: 96px; height: 96px; }
+  #wheelSvg .rim { fill: none; stroke: var(--ink); stroke-width: 6; }
+  #wheelSvg .spoke { stroke: var(--ink); stroke-width: 5; stroke-linecap: round; }
+  #wheelSvg .mark { fill: var(--brass); }
+  .steer-box output { font: 400 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .instruments { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 12px; }
+  @media (max-width: 760px) { .instruments { grid-template-columns: minmax(0, 1fr); } }
+  .gauge { display: grid; gap: 4px; }
+  .gauge-row { display: flex; justify-content: space-between; gap: 8px; font: 400 13px var(--mono); font-variant-numeric: tabular-nums; }
+  .gauge-row b { font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; }
+  .gtrack { position: relative; height: 10px; border-radius: 5px; background: color-mix(in srgb, var(--line) 70%, transparent); overflow: hidden; }
+  .gtrack i { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--brass); border-radius: 5px; }
+  #rearGauge .gtrack i { background: var(--green); }
+  .gauge.on-stops .gtrack i { background: var(--warn); }
+  .gauge .stops { display: none; color: var(--warn); font: 600 12px var(--display); letter-spacing: .08em; }
+  .gauge.on-stops .stops { display: inline; }
+  .muted { color: var(--muted); }
+  .plan { display: grid; grid-template-columns: 22px 30px 22px; grid-template-rows: 22px 34px 22px; justify-content: start; align-items: center; justify-items: center; }
+  .pip { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); }
+  .pip.down { background: var(--good); border-color: var(--good); }
+  .plan .axle { grid-column: 2; width: 4px; height: 100%; background: var(--line); grid-row: 1 / 4; }
+  #front_left { grid-area: 1 / 1; } #front_right { grid-area: 1 / 3; } #rear_left { grid-area: 3 / 1; } #rear_right { grid-area: 3 / 3; }
+  .ride { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .big { font: 600 24px/1 var(--mono); font-variant-numeric: tabular-nums; }
+  .controls { display: grid; gap: 12px; }
+  fieldset { margin: 0; border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px 14px; display: grid; gap: 12px; background: var(--panel); min-width: 0; }
+  legend { padding: 0 6px; font: 600 13px var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+  .car-card h3 { margin: 0; font: 700 22px/1.1 var(--display); }
+  .car-card p { margin: 0; font-size: 14px; }
+  .field { display: grid; gap: 4px; }
+  .field-head { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+  .field-head output { font: 400 13px var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hint { font-size: 12.5px; color: var(--muted); margin: 0; }
+  input[type="range"] { width: 100%; accent-color: var(--green); margin: 0; }
+  input[type="range"]:disabled { opacity: .45; }
+  .gears { display: flex; flex-wrap: wrap; gap: 6px; }
+  .gears button[aria-pressed="true"] { background: var(--green); color: var(--paper); border-color: var(--green); }
+  .check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+  .check input { margin-top: 3px; accent-color: var(--green); }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  button { font: 600 13px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; cursor: pointer; }
+  button:hover { border-color: var(--green); }
+  button:focus-visible, input:focus-visible, .pedal:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+  .segmented { display: grid; grid-template-columns: repeat(2, 1fr); border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+  .segmented input { position: absolute; opacity: 0; pointer-events: none; }
+  .segmented label { text-align: center; padding: 7px 4px; font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; cursor: pointer; background: var(--paper); }
+  .segmented label + input + label { border-left: 1px solid var(--line); }
+  .segmented input:checked + label { background: var(--green); color: var(--paper); }
+  .segmented input:focus-visible + label { outline: 2px solid var(--brass); outline-offset: -3px; }
+  #restart { background: var(--green); color: var(--paper); border-color: var(--green); }
+  details { border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; font-size: 14px; }
+  summary { cursor: pointer; font: 600 13px var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+  details p, details ul { max-width: 65ch; }
+  .keys { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 8px 0 0; }
+  .keys dt { font: 600 12.5px var(--mono); } .keys dd { margin: 0; }
+  code { font: 12.5px var(--mono); overflow-wrap: anywhere; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <p class="sub"><a href="index.html">Brass Era Garage</a> · <a href="downhill.html">1 · Rolling downhill</a> · The garage</p>
+  <header class="top">
+    <h1>Brass Era Garage</h1>
+    <p class="sub">Five early cars and one aftermarket upgrade, simulated in MuJoCo <span id="mjv">3.14.0</span>. Same controls; each car's own mechanisms.</p>
+  </header>
+  <nav class="cars" id="cars" aria-label="Car"></nav>
+  <main class="stage">
+    <section class="view-col" aria-label="Simulation">
+      <div id="viewport" class="viewport">
+        <div class="hud">
+          <div class="speed"><span id="speed">0.0</span><small>km/h</small></div>
+          <div class="hud-line"><span id="gearHud">—</span> · <span id="rpm">0</span><small>rpm</small></div>
+          <div class="hud-line"><span id="distance">0.0</span><small>m</small></div>
+        </div>
+        <div id="rate" class="rate"></div>
+        <div id="toast" class="toast" hidden></div>
+        <div id="padBrake" class="pedal" role="button" tabindex="0" aria-label="Brake pedal: press and hold; higher is harder"><span class="fill"></span>Brake</div>
+        <div id="padThrottle" class="pedal" role="button" tabindex="0" aria-label="Throttle: press and hold for more than the hand throttle"><span class="fill"></span>Gas</div>
+        <div id="status" class="status">Loading…</div>
+      </div>
+
+      <div class="panel cockpit">
+        <div class="bars" aria-label="Driver inputs">
+          <div class="bar" id="barThrottle"><output id="outThrottle">0%</output><div class="track"><i></i></div>Throttle</div>
+          <div class="bar" id="barPedal"><output id="outPedal">0%</output><div class="track"><i></i></div><span id="pedalName">Pedal</span></div>
+          <div class="bar" id="barLever"><output id="outLever">0%</output><div class="track"><i></i></div><span id="leverName">Lever</span></div>
+        </div>
+        <div class="trace">
+          <div class="panel-head"><h2>Inputs, last 8 s</h2>
+            <div class="legend"><span class="lg-t">Throttle</span><span class="lg-b" id="lgPedal">Brake</span><span class="lg-l" id="lgLever">Lever</span></div></div>
+          <canvas id="trace" aria-label="Throttle, brake pedal and brake lever over the last 8 seconds"></canvas>
+        </div>
+        <div class="steer-box">
+          <svg id="wheelSvg" viewBox="-50 -50 100 100" aria-hidden="true"><g id="wheelRot"><circle class="rim" r="40"/><line class="spoke" x1="-40" y1="0" x2="40" y2="0"/><line class="spoke" x1="0" y1="0" x2="0" y2="40"/><circle class="mark" cx="0" cy="-40" r="6"/></g></svg>
+          <output id="steerOut">0°</output>
+          <span class="hint" id="steerKind">Steering</span>
+        </div>
+      </div>
+
+      <div class="instruments">
+        <div class="panel" id="suspPanel">
+          <div class="panel-head"><h2>Axle travel against the stops</h2>
+            <div class="legend"><span class="lg-f">Front</span><span class="lg-r">Rear</span></div></div>
+          <canvas id="chart" aria-label="Front and rear axle travel over the last 8 seconds"></canvas>
+          <div id="frontGauge" class="gauge">
+            <div class="gauge-row"><b>Front</b><span><span class="stops">ON STOPS</span> <span id="frontTravel">0%</span> · <span id="frontOffset">0.0 mm</span></span></div>
+            <div class="gtrack"><i id="frontBar"></i></div>
+          </div>
+          <div id="rearGauge" class="gauge">
+            <div class="gauge-row"><b>Rear</b><span><span class="stops">ON STOPS</span> <span id="rearTravel">0%</span> · <span id="rearOffset">0.0 mm</span></span></div>
+            <div class="gtrack"><i id="rearBar"></i></div>
+          </div>
+          <p class="hint" id="noSusp" hidden>This car has no suspension in the model: its axles are fixed to the frame.</p>
+        </div>
+        <div class="panel">
+          <h2>Ride</h2>
+          <div class="ride">
+            <div class="plan" aria-hidden="true"><span id="front_left" class="pip"></span><span class="axle"></span><span id="front_right" class="pip"></span><span id="rear_left" class="pip"></span><span id="rear_right" class="pip"></span></div>
+            <div id="wheelsText" class="muted">4 of 4 on the road</div>
+          </div>
+          <div><div class="big"><span id="seatRms">0.00</span> <span class="muted" style="font-size:14px">g</span></div>
+            <p class="hint">Vertical acceleration of the body at seat height, RMS over the last 2 s.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <aside id="controls" class="controls" aria-label="Controls">
+      <div class="panel car-card">
+        <h3 id="carName">—</h3>
+        <p class="muted" id="carMeta"></p>
+        <p id="carControls"></p>
+      </div>
+      <fieldset>
+        <legend>Drive</legend>
+        <div class="gears" id="gears" role="group" aria-label="Gear"></div>
+        <div class="field"><div class="field-head"><label for="throttle">Hand throttle</label><output id="throttleOut"></output></div>
+          <input type="range" id="throttle" min="0" max="100" step="1" value="100"></div>
+        <div class="field"><div class="field-head"><label for="lever" id="leverLabel">Brake lever</label><output id="leverOut"></output></div>
+          <input type="range" id="lever" min="0" max="100" step="1" value="0">
+          <p class="hint" id="leverHint"></p></div>
+        <p class="hint" id="pedalHint"></p>
+        <label class="check"><input type="checkbox" id="driver" checked><span>Driver holds the straight line</span></label>
+        <p class="hint" id="driftHint" hidden>With no driver correcting it, the car slowly drifts off line. Pulling away and changing gear nudge the front wheels by a few hundredths of a degree, and nothing turns them back. Real drivers make these small corrections all the time.</p>
+        <div class="field"><div class="field-head"><label for="steer">Steering</label><output id="steerSlider"></output></div>
+          <input type="range" id="steer" min="-100" max="100" step="1" value="0"></div>
+      </fieldset>
+
+      <fieldset id="springs" hidden>
+        <legend>Springs</legend>
+        <div class="presets" role="group" aria-label="Spring presets">
+          <button type="button" data-preset="design">Design</button>
+          <button type="button" data-preset="soft">Soft</button>
+          <button type="button" data-preset="sag">Soft, sagging</button>
+          <button type="button" data-preset="stiff">Very stiff</button>
+          <button type="button" data-preset="bouncy">Little damping</button>
+        </div>
+        <div class="field"><div class="field-head"><label for="frontRate">Front spring rate</label><output id="frontRateOut"></output></div>
+          <input type="range" id="frontRate" min="5" max="150" step="1"></div>
+        <div class="field"><div class="field-head"><label for="rearRate">Rear spring rate</label><output id="rearRateOut"></output></div>
+          <input type="range" id="rearRate" min="5" max="150" step="1"></div>
+        <div class="field"><div class="field-head"><label for="frontDamping">Front damping</label><output id="frontDampingOut"></output></div>
+          <input type="range" id="frontDamping" min="0" max="8" step="0.01"></div>
+        <div class="field"><div class="field-head"><label for="rearDamping">Rear damping</label><output id="rearDampingOut"></output></div>
+          <input type="range" id="rearDamping" min="0" max="8" step="0.01"></div>
+        <label class="check"><input type="checkbox" id="keepRide" checked><span>Keep ride height<br><span class="hint">Re-arch the leaves so the car sits at design height. Off: a softer spring keeps its shape and the car sags.</span></span></label>
+        <p class="hint" id="springHint"></p>
+      </fieldset>
+
+      <fieldset id="shockSet" hidden>
+        <legend>Friction shocks</legend>
+        <div class="field"><div class="field-head"><label for="shock">Knee friction (star nut)</label><output id="shockOut"></output></div>
+          <input type="range" id="shock" min="0" max="150" step="1"></div>
+        <p class="hint">Each Hartford-type unit clamps its scissor knee between friction discs. 0 leaves the springs free; design is 40 N·m.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>Road</legend>
+        <div class="segmented" role="radiogroup" aria-label="Road">
+          <input type="radio" name="road" id="roadBumps" value="bumps" checked><label for="roadBumps">Bump course</label>
+          <input type="radio" name="road" id="roadFlat" value="flat"><label for="roadFlat">Flat road</label>
+        </div>
+        <button type="button" id="restart">Restart from the line</button>
+        <p class="hint">Bars 30 to 50 mm from 10 m, some under one side only, then a 15 mm washboard. Further on, cows: scenery only, and they always step aside. Drag to orbit; scroll to zoom.</p>
+      </fieldset>
+
+      <details>
+        <summary>Keyboard, gamepad and pedals</summary>
+        <dl class="keys" id="keys"></dl>
+        <p class="hint">Gamepad: right trigger throttle, left trigger brake pedal, left stick steers, bumpers change gear, A toggles the brake lever, Y the driver, Start restarts. The on-screen pedals work with a mouse or a finger: press higher on a pedal to press it harder.</p>
+      </details>
+      <details>
+        <summary>About this simulation</summary>
+        <p>Every car runs on MuJoCo's official WebAssembly build, the same engine version as the repository's Python validation. Each car's model is its validated file: bodies, joints, springs, tyres, engine and brakes. For each car, the build drives its own Python controls over a launch and a brake application. <code>parity_test.mjs</code> checks that this page's controls reproduce the result.</p>
+        <ul>
+          <li>The hand throttle scales engine torque below the governor. The cars had governors, hand throttles or both; the throttle is this page's common control.</li>
+          <li>Settings you change here are for exploring. Only the design values passed the repository's checks.</li>
+          <li>The tyres are stiffer than real tyres of the period, so wheels lift more on bumps.</li>
+        </ul>
+        <p>Run it locally from the repository: <code>.venv/bin/python experiments/web/build.py --serve</code>, then open <code>localhost:8321/local.html</code>.</p>
+      </details>
+    </aside>
+  </main>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+// Shared simulation core for every car in the web simulator: no DOM, runs in the browser and Node.
+// It mirrors the cars' validated control.py exactly: governed engine (full torque below governed
+// speed, droop to no-load), clutch/belt engagement ramp, brakes as joint or tendon friction at the
+// capacities in each car's engine.json, a position servo at the steering column. The config comes
+// from build.py (cars.py + each car's own files).
+
+class CarSim {
+  constructor(mujoco, config, files, road) {
+    this.mj = mujoco;
+    this.cfg = config;
+    this.vfs = new mujoco.MjVFS();
+    for (const [name, bytes] of Object.entries(files)) this.vfs.addBuffer(name, bytes);
+    this.model = mujoco.MjModel.mj_loadXML(`model_${road}.xml`, this.vfs);
+    this.data = new mujoco.MjData(this.model);
+    const m = this.model;
+    const id = (type, name) => {
+      const i = mujoco.mj_name2id(m, mujoco.mjtObj[type].value, name);
+      if (i < 0) throw new Error(`${name} is not in the ${config.short} model`);
+      return i;
+    };
+    this.chassis = id('mjOBJ_BODY', 'chassis');
+    this.bodies = config.bodies.map((name) => ({ name, id: id('mjOBJ_BODY', name) }));
+    this.drives = config.gears.map((g) => id('mjOBJ_ACTUATOR', `drive_${g.name}`));
+    this.column = id('mjOBJ_ACTUATOR', 'column');
+    this.diff = id('mjOBJ_TENDON', 'differential');
+    this.rearDofs = ['rear_left_joint', 'rear_right_joint'].map((n) => m.jnt_dofadr[id('mjOBJ_JOINT', n)]);
+    this.columnJoint = id('mjOBJ_JOINT', 'column_joint');
+    const joint = (name) => {
+      const j = id('mjOBJ_JOINT', name);
+      return { id: j, dof: m.jnt_dofadr[j], qpos: m.jnt_qposadr[j], range: m.jnt_range[2 * j + 1],
+        k0: m.jnt_stiffness[j], c0: m.dof_damping[m.jnt_dofadr[j]], ref0: m.qpos_spring[m.jnt_qposadr[j]],
+        f0: m.dof_frictionloss[m.jnt_dofadr[j]] };
+    };
+    this.axles = {};
+    for (const [axle, a] of Object.entries(config.suspension || {})) this.axles[axle] = { ...a, joints: a.joints.map(joint) };
+    this.shocks = config.shocks ? config.shocks.joints.map(joint) : [];
+    this.road = new Set();
+    this.tyre = new Map();
+    for (let g = 0; g < m.ngeom; g++) {
+      const name = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_GEOM.value, g) || '';
+      if (name === 'slope' || name.startsWith('road_')) this.road.add(g);
+      if (name.endsWith('_rolling')) this.tyre.set(g, name.replace('_rolling', ''));
+    }
+    const e = config.engine;
+    this.governed = e.governed_rpm * 2 * Math.PI / 60;
+    this.noLoad = e.no_load_rpm * 2 * Math.PI / 60;
+    this.maxTorque = e.rated_power_w / this.governed;
+    this.reset();
+  }
+
+  static defaults(config) {
+    const springs = {};
+    for (const [axle, a] of Object.entries(config.suspension || {})) springs[axle] = { rate: a.design_rate_kn, damping: a.design_damping_kns };
+    return { throttle: 1, pedal: 0, lever: 0, steer: 0, driver: true, gear: 1,
+      springs, keepRideHeight: true, shockFriction: config.shocks ? config.shocks.design_nm : 0 };
+  }
+
+  reset(input) {
+    this.mj.mj_resetData(this.model, this.data);
+    this.mj.mj_forward(this.model, this.data);
+    this.in = input ? { ...input } : CarSim.defaults(this.cfg);
+    this.gear = 0;
+    this.since = 0;
+    this.seat = [];
+    this.peak = {};
+    this.applyChassis();
+  }
+
+  set(input) {
+    Object.assign(this.in, input);
+    this.applyChassis();
+  }
+
+  // Springs, dampers and shocks: joint parameters MuJoCo reads at every step.
+  applyChassis() {
+    const m = this.model, k = m.jnt_stiffness, c = m.dof_damping, ref = m.qpos_spring, fl = m.dof_frictionloss;
+    for (const [axle, a] of Object.entries(this.axles)) {
+      const s = this.in.springs[axle];
+      const sk = s.rate / a.design_rate_kn, sc = s.damping / a.design_damping_kns;
+      for (const j of a.joints) {
+        const kj = j.k0 * sk;
+        k[j.id] = kj;
+        c[j.dof] = j.c0 * sc;
+        // Same preload torque keeps ride height; otherwise the spring keeps its free shape and sags.
+        ref[j.qpos] = this.in.keepRideHeight ? j.ref0 * j.k0 / kj : j.ref0;
+      }
+    }
+    for (const j of this.shocks) fl[j.dof] = this.in.shockFriction;
+  }
+
+  engineTorque(speed) {
+    if (speed <= this.governed) return this.maxTorque;
+    return this.maxTorque * Math.max(0, (this.noLoad - speed) / (this.noLoad - this.governed));
+  }
+
+  pursuit() {
+    // Pure pursuit to a point on the starting line ~0.8 s ahead (as control.Steer in 009/010).
+    const d = this.data, x = d.xmat, b = 9 * this.chassis, qv = d.qvel;
+    const yaw = Math.atan2(x[b + 3], x[b]);
+    const look = Math.max(4, 0.8 * Math.hypot(qv[0], qv[1]));
+    const error = d.qpos[1] + look * Math.sin(yaw);
+    return -Math.atan(2 * this.cfg.wheelbase * error / (look * look));
+  }
+
+  control() {
+    const m = this.model, d = this.data, cfg = this.cfg, inp = this.in;
+    const gear = Math.round(inp.gear);
+    if (gear !== this.gear) { this.gear = gear; this.since = d.time; }
+    const declutched = cfg.declutch_on_pedal && inp.pedal > 0;
+    const ctrl = d.ctrl, vel = d.actuator_velocity;
+    this.drives.forEach((act, i) => {
+      ctrl[act] = 0;
+      if (gear === i + 1 && !declutched) {
+        const engage = Math.min(1, Math.max(0, (d.time - this.since) / cfg.engine.shift_seconds));
+        ctrl[act] = engage * inp.throttle * this.engineTorque(vel[act]);
+      }
+    });
+    let tendon = 0, joints = 0;
+    for (const [control, value] of [[cfg.pedal, inp.pedal], [cfg.lever, inp.lever]]) {
+      if (!control) continue;
+      for (const dev of control.devices) {
+        if (dev.kind === 'tendon') tendon += value * dev.capacity;
+        else joints += value * dev.capacity;
+      }
+    }
+    m.tendon_frictionloss[this.diff] = tendon;
+    const fl = m.dof_frictionloss;
+    for (const dof of this.rearDofs) fl[dof] = joints;
+    ctrl[this.column] = inp.driver ? this.pursuit() : inp.steer * cfg.steering.limit_deg * Math.PI / 180;
+  }
+
+  seatVz() {
+    const d = this.data, b = 9 * this.chassis, R = d.xmat, qv = d.qvel, bp = this.model.body_pos, s = this.cfg.seat;
+    const r = [0, 1, 2].map((i) => s[i] - bp[3 * this.chassis + i]);
+    const w = [0, 1, 2].map((i) => R[b + 3 * i] * qv[3] + R[b + 3 * i + 1] * qv[4] + R[b + 3 * i + 2] * qv[5]);
+    const rw = [0, 1, 2].map((i) => R[b + 3 * i] * r[0] + R[b + 3 * i + 1] * r[1] + R[b + 3 * i + 2] * r[2]);
+    return qv[2] + (w[0] * rw[1] - w[1] * rw[0]);
+  }
+
+  step(n = 1) {
+    const d = this.data;
+    for (let i = 0; i < n; i++) {
+      this.control();
+      this.mj.mj_step(this.model, d);
+      this.seat.push([d.time, this.seatVz()]);
+      if (this.seat.length > 2000) this.seat.shift();
+      for (const [axle, a] of Object.entries(this.axles)) {
+        const j = a.joints[0];
+        this.peak[axle] = Math.max(this.peak[axle] || 0, Math.abs(d.qpos[j.qpos]) / j.range);
+      }
+    }
+  }
+
+  wheelsOnGround() {
+    const d = this.data, found = new Set(), vec = d.contact;
+    try {
+      for (let i = 0; i < d.ncon; i++) {
+        const c = vec.get(i), a = c.geom1, b = c.geom2;
+        if (this.road.has(a) && this.tyre.has(b)) found.add(this.tyre.get(b));
+        if (this.road.has(b) && this.tyre.has(a)) found.add(this.tyre.get(a));
+        c.delete?.();
+      }
+    } finally {
+      vec.delete();
+    }
+    return found;
+  }
+
+  seatRms() {
+    const s = this.seat, n = 20;
+    if (s.length < 3 * n) return 0;
+    const v = [];
+    for (let i = n - 1; i < s.length; i++) {
+      let sum = 0;
+      for (let k = i - n + 1; k <= i; k++) sum += s[k][1];
+      v.push([s[i][0], sum / n]);
+    }
+    let acc2 = 0;
+    for (let i = 1; i < v.length; i++) acc2 += ((v[i][1] - v[i - 1][1]) / (v[i][0] - v[i - 1][0])) ** 2;
+    return Math.sqrt(acc2 / (v.length - 1)) / 9.81;
+  }
+
+  engineRpm() {
+    const g = this.gear;
+    return g > 0 ? this.data.actuator_velocity[this.drives[g - 1]] * 60 / (2 * Math.PI) : 0;
+  }
+
+  readout() {
+    const d = this.data, out = {
+      time: d.time, x: d.qpos[0], speed: Math.hypot(d.qvel[0], d.qvel[1]), gear: this.gear,
+      rpm: this.engineRpm(), columnDeg: d.qpos[this.model.jnt_qposadr[this.columnJoint]] * 180 / Math.PI,
+      seatRmsG: this.seatRms(), wheels: this.wheelsOnGround(), axles: {},
+    };
+    for (const [axle, a] of Object.entries(this.axles)) {
+      const j = a.joints[0], q = d.qpos[j.qpos];
+      out.axles[axle] = { offsetMm: q * a.lever_m * a.sign * 1000, used: Math.abs(q) / j.range, peak: this.peak[axle] || 0 };
+    }
+    return out;
+  }
+
+  poses() {
+    const d = this.data, p = d.xpos, q = d.xquat, out = {};
+    for (const { name, id } of this.bodies) {
+      out[name] = [p[3 * id], p[3 * id + 1], p[3 * id + 2], q[4 * id], q[4 * id + 1], q[4 * id + 2], q[4 * id + 3]];
+    }
+    return out;
+  }
+
+  dispose() {
+    this.data.delete();
+    this.model.delete();
+    this.vfs.delete();
+  }
+}
+
+// One input layer for keyboard, gamepad and on-screen pedals (mouse or touch), producing the
+// shared driving actions: hand throttle (a lever: stays where set), brake pedal (momentary),
+// brake lever (latches), steering (-1..1, self-centring) and discrete events (gears, restart).
+// Keys ramp so a digital key still gives a progressive, analog-like input; gamepad axes and
+// triggers get a small deadzone; on-screen pedals read pressure from where the pointer is.
+
+const KEYMAP = [
+  ['W / ↑', 'open the hand throttle'], ['Q', 'close the hand throttle'],
+  ['S / ↓', 'brake pedal (hold)'], ['Space', 'brake lever on / off'],
+  ['A D / ← →', 'steer (takes over from the driver)'], ['0–4', 'neutral, gears'],
+  ['E / C', 'gear up / down'], ['T', 'driver holds the line'], ['R', 'restart from the line'],
+];
+
+const DEADZONE = 0.12;
+const RATE = { throttleOpen: 0.8, throttleClose: 1.2, pedalOn: 3.0, pedalOff: 5.0, steerOn: 1.4, steerCentre: 2.8 };
+const dz = (v) => (Math.abs(v) < DEADZONE ? 0 : (v - Math.sign(v) * DEADZONE) / (1 - DEADZONE));
+const clamp = (v, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
+
+class Inputs {
+  constructor() {
+    this.keys = new Set();
+    this.throttle = 1;        // the hand throttle lever
+    this.keyPedal = 0;
+    this.lever = 0;
+    this.keySteer = 0;
+    this.pointer = { pedal: 0, throttle: 0 };
+    this.events = [];
+    this.padPrev = [];
+    this.source = 'keyboard';
+    const typing = (e) => e.target.closest?.('input, select, textarea, button') && !e.target.matches('input[type="range"]');
+    addEventListener('keydown', (e) => {
+      if (typing(e) || e.metaKey || e.ctrlKey || e.altKey) return;
+      const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      const handled = this.onKey(k, e.repeat);
+      if (handled) { e.preventDefault(); this.source = 'keyboard'; }
+    });
+    addEventListener('keyup', (e) => this.keys.delete(e.key.length === 1 ? e.key.toLowerCase() : e.key));
+    addEventListener('blur', () => this.keys.clear());
+  }
+
+  onKey(k, repeat) {
+    const held = ['w', 'ArrowUp', 'q', 's', 'ArrowDown', 'a', 'd', 'ArrowLeft', 'ArrowRight'];
+    if (held.includes(k)) { this.keys.add(k); return true; }
+    if (repeat) return ['0', '1', '2', '3', '4', ' ', 'e', 'c', 't', 'r'].includes(k);
+    if (k >= '0' && k <= '4') { this.events.push({ type: 'gear', value: +k }); return true; }
+    if (k === 'e') { this.events.push({ type: 'gearStep', value: 1 }); return true; }
+    if (k === 'c') { this.events.push({ type: 'gearStep', value: -1 }); return true; }
+    if (k === ' ') { this.lever = this.lever > 0 ? 0 : 1; this.events.push({ type: 'lever' }); return true; }
+    if (k === 't') { this.events.push({ type: 'driver' }); return true; }
+    if (k === 'r') { this.events.push({ type: 'restart' }); return true; }
+    return false;
+  }
+
+  // An on-screen pedal: pressure from the pointer's height on the pedal (top = full).
+  bindPedal(el, which) {
+    const read = (e) => {
+      const r = el.getBoundingClientRect();
+      this.pointer[which] = clamp(1 - (e.clientY - r.top) / r.height, 0.15, 1);
+      this.source = e.pointerType === 'touch' ? 'touch' : 'mouse';
+    };
+    el.addEventListener('pointerdown', (e) => { el.setPointerCapture(e.pointerId); read(e); el.classList.add('pressed'); });
+    el.addEventListener('pointermove', (e) => { if (el.hasPointerCapture(e.pointerId)) read(e); });
+    const release = () => { this.pointer[which] = 0; el.classList.remove('pressed'); };
+    el.addEventListener('pointerup', release);
+    el.addEventListener('pointercancel', release);
+  }
+
+  gamepad() {
+    const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : [];
+    const pad = pads.find((p) => p.mapping === 'standard') || pads[0];
+    if (!pad) return null;
+    const b = (i) => pad.buttons[i] || { value: 0, pressed: false };
+    const edge = (i) => { const now = b(i).pressed, was = this.padPrev[i]; this.padPrev[i] = now; return now && !was; };
+    if (edge(4)) this.events.push({ type: 'gearStep', value: -1 });
+    if (edge(5)) this.events.push({ type: 'gearStep', value: 1 });
+    if (edge(0)) { this.lever = this.lever > 0 ? 0 : 1; this.events.push({ type: 'lever' }); }
+    if (edge(3)) this.events.push({ type: 'driver' });
+    if (edge(9)) this.events.push({ type: 'restart' });
+    const out = { throttle: dz(b(7).value), pedal: dz(b(6).value), steer: dz(pad.axes[0] || 0), id: pad.id };
+    if (out.throttle || out.pedal || out.steer) this.source = 'gamepad';
+    return out;
+  }
+
+  // Advance ramps by dt seconds; returns the actions for this frame.
+  update(dt) {
+    const k = this.keys, has = (...names) => names.some((n) => k.has(n));
+    if (has('w', 'ArrowUp')) this.throttle = clamp(this.throttle + RATE.throttleOpen * dt);
+    if (has('q')) this.throttle = clamp(this.throttle - RATE.throttleClose * dt);
+    this.keyPedal = has('s', 'ArrowDown') ? clamp(this.keyPedal + RATE.pedalOn * dt) : clamp(this.keyPedal - RATE.pedalOff * dt);
+    const want = (has('a', 'ArrowLeft') ? 1 : 0) - (has('d', 'ArrowRight') ? 1 : 0);   // left is positive
+    if (want) this.keySteer = clamp(this.keySteer + want * RATE.steerOn * dt, -1, 1);
+    else this.keySteer = Math.sign(this.keySteer) * Math.max(0, Math.abs(this.keySteer) - RATE.steerCentre * dt);
+    const pad = this.gamepad();
+    const steerPad = pad ? -pad.steer : 0;   // stick right steers right (negative)
+    const steer = Math.abs(steerPad) > Math.abs(this.keySteer) ? steerPad : this.keySteer;
+    const events = this.events;
+    this.events = [];
+    return {
+      throttle: Math.max(this.throttle, pad ? pad.throttle : 0, this.pointer.throttle),
+      pedal: Math.max(this.keyPedal, pad ? pad.pedal : 0, this.pointer.pedal),
+      lever: this.lever, steer, steering: Math.abs(steer) > 0.02, events, source: this.source, pad: pad?.id,
+    };
+  }
+}
+
+// Occasional cows along the road: scenery only (not in the physics model; they never touch the
+// car). A cow standing on the road ambles off to the verge when a car comes near, and hurries if
+// the car is fast. Positions are seeded, so a restart brings the same herd back.
+// THREE comes from the page's module (build.py inlines this file next to the page script).
+
+function mulberry32(seed) {
+  return () => {
+    seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hideTexture(rng, base, spot) {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = base; g.fillRect(0, 0, 256, 128);
+  g.fillStyle = spot;
+  for (let i = 0; i < 7; i++) {
+    g.beginPath();
+    const x = rng() * 256, y = rng() * 128, r = 12 + rng() * 26;
+    for (let k = 0; k <= 10; k++) {
+      const a = k / 10 * Math.PI * 2, rr = r * (0.7 + 0.5 * rng());
+      k ? g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr * 0.8) : g.moveTo(x + rr, y);
+    }
+    g.fill();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+// A cow about 2.1 m long and 1.4 m at the withers, facing +x, feet at z = 0.
+function makeCow(rng) {
+  const cow = new THREE.Group();
+  const brown = rng() < 0.3;
+  const hide = new THREE.MeshStandardMaterial({ map: hideTexture(rng, brown ? '#8a5a36' : '#f2efe6', brown ? '#f2efe6' : '#1e1c1a'), roughness: 0.9 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x2a2522, roughness: 0.9 });
+  const pink = new THREE.MeshStandardMaterial({ color: 0xd99a92, roughness: 0.8 });
+  const horn = new THREE.MeshStandardMaterial({ color: 0xe8dcc0, roughness: 0.6 });
+  const mesh = (geo, mat, x, y, z, parent = cow) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; parent.add(m); return m; };
+  // Body: one rounded barrel along x (a capsule is built along y, so turn it).
+  mesh(new THREE.CapsuleGeometry(0.4, 1.15, 6, 14).rotateZ(Math.PI / 2), hide, 0, 0, 1.06).scale.set(1, 0.92, 1.05);
+  mesh(new THREE.SphereGeometry(0.2, 10, 6), pink, -0.2, 0, 0.62);                       // udder
+  const legs = [];
+  for (const [x, y] of [[0.62, 0.24], [0.62, -0.24], [-0.62, 0.24], [-0.62, -0.24]]) {
+    const pivot = new THREE.Group();
+    pivot.position.set(x, y, 0.72);
+    cow.add(pivot);
+    mesh(new THREE.CylinderGeometry(0.075, 0.065, 0.66, 8).rotateX(Math.PI / 2), hide, 0, 0, -0.33, pivot);
+    mesh(new THREE.CylinderGeometry(0.075, 0.08, 0.08, 8).rotateX(Math.PI / 2), dark, 0, 0, -0.68, pivot);
+    legs.push(pivot);
+  }
+  const neck = new THREE.Group();
+  neck.position.set(0.95, 0, 1.2);
+  cow.add(neck);
+  mesh(new THREE.BoxGeometry(0.45, 0.34, 0.36), hide, 0.25, 0, 0.02, neck);
+  mesh(new THREE.BoxGeometry(0.2, 0.3, 0.24), pink, 0.52, 0, -0.06, neck);             // muzzle
+  for (const s of [1, -1]) {
+    mesh(new THREE.ConeGeometry(0.035, 0.18, 6).rotateX(-s * Math.PI / 2.4), horn, 0.18, s * 0.19, 0.22, neck);
+    mesh(new THREE.BoxGeometry(0.06, 0.16, 0.1), hide, 0.12, s * 0.24, 0.1, neck);     // ears
+  }
+  // Tail hangs from the rump: a cylinder is built along y, so stand it on z; pivot at the top.
+  const tail = new THREE.Group();
+  tail.position.set(-0.98, 0, 1.28);
+  cow.add(tail);
+  mesh(new THREE.CylinderGeometry(0.022, 0.018, 0.62, 6).rotateX(Math.PI / 2), hide, 0, 0, -0.31, tail);
+  mesh(new THREE.SphereGeometry(0.05, 8, 6), dark, 0, 0, -0.64, tail).scale.set(1, 1, 1.8);   // switch
+  tail.rotation.y = -0.12;
+  return { cow, legs, neck, tail };
+}
+
+class Herd {
+  // parent: the group the road lives in (x along the road, y across it, z up)
+  constructor(parent, { seed = 7, from = 40, to = 2000, gap = [45, 110], roadHalf = 1.6 } = {}) {
+    this.parent = parent;
+    this.opts = { seed, from, to, gap, roadHalf };
+    this.cows = [];
+    this.reset();
+  }
+
+  reset() {
+    for (const c of this.cows) this.parent.remove(c.obj.cow);
+    this.cows = [];
+    const { seed, from, to, gap, roadHalf } = this.opts;
+    const rng = mulberry32(seed);
+    for (let x = from + rng() * gap[0]; x < to; x += gap[0] + rng() * (gap[1] - gap[0])) {
+      const onRoad = rng() < 0.6;
+      const side = rng() < 0.5 ? -1 : 1;
+      const y = onRoad ? (rng() * 2 - 1) * (roadHalf - 0.5) : side * (roadHalf + 2 + rng() * 6);
+      const obj = makeCow(rng);
+      const heading = rng() * Math.PI * 2;
+      obj.cow.position.set(x, y, 0);
+      obj.cow.rotation.z = heading;
+      obj.cow.scale.setScalar(0.92 + rng() * 0.16);
+      this.parent.add(obj.cow);
+      this.cows.push({ obj, x, y, heading, phase: rng() * 10, state: 'graze', target: null, speed: 0, hurried: false });
+    }
+  }
+
+  clear() {
+    for (const c of this.cows) this.parent.remove(c.obj.cow);
+    this.cows = [];
+  }
+
+  // A cow that walks into the road for the reaction test: it stays until the car is nearly on it.
+  spawn(x, y) {
+    const obj = makeCow(mulberry32((Math.random() * 1e9) | 0));
+    obj.cow.rotation.order = 'ZYX';   // rotation.x rolls the cow about its own long axis
+    this.parent.add(obj.cow);
+    const c = { obj, x, y, z: 0, roll: 0, heading: Math.PI / 2, phase: 0, state: 'graze', target: null, speed: 0,
+      hurried: false, stubborn: true, stayPut: true };
+    this.cows.push(c);
+    return c;
+  }
+
+  // Bowled over by a car moving at vCar (m/s): thrown ahead and up, rolling; lands, lies stunned,
+  // gets up and trots off. A cartoon: the cow is never hurt.
+  knock(c, vCow) {
+    // Thrown ahead at about the car's speed and sideways onto the near verge (the camera's side,
+    // y < 0) so the tumble is in view and the car rolls past.
+    Object.assign(c, { state: 'tumble', vx: vCow, vy: -(2.6 + 0.3 * vCow), vz: 1.2 + 0.25 * vCow, spin: -(5 + 1.5 * vCow), t: 0 });
+  }
+
+  onRoad(c) { return Math.abs(c.y) < this.opts.roadHalf + 0.6; }
+
+  // carX: front of the car along the road; carSpeed in m/s. Returns the nearest cow still on the
+  // road ahead (or null) and whether any cow had to hurry this frame.
+  update(dt, carX, carSpeed) {
+    let nearest = null, hurried = false;
+    for (const c of this.cows) {
+      const ahead = c.x - carX;
+      const warn = c.stubborn ? 2 + 0.3 * carSpeed : 6 + 1.6 * carSpeed;   // most notice a car about 1.6 s away
+      if (c.state === 'graze' && !c.stayPut && this.onRoad(c) && ahead > -2 && ahead < warn) {
+        const side = c.y === 0 ? 1 : Math.sign(c.y);
+        c.target = side * (this.opts.roadHalf + 2.5);
+        c.state = 'walk';
+        c.speed = c.stubborn || ahead < 3 + 0.6 * carSpeed ? 3.2 : 1.3;   // trots if the car is almost on it
+        c.hurried = c.speed > 2;
+        if (c.hurried) hurried = true;
+        c.heading = side > 0 ? Math.PI / 2 : -Math.PI / 2;
+      }
+      c.phase += dt;
+      const { cow, legs, neck, tail } = c.obj;
+      if (c.state === 'tumble') {                       // ballistic flight, rolling, bouncing
+        c.t += dt;
+        c.vz -= 9.81 * dt;
+        c.x += c.vx * dt; c.y += c.vy * dt; c.z += c.vz * dt; c.roll += c.spin * dt;
+        if (c.z <= 0 && c.vz < 0) {
+          c.z = 0; c.vz = -0.3 * c.vz; c.vx *= 0.55; c.vy *= 0.45; c.spin *= 0.5;
+          if (Math.abs(c.vz) < 0.4 && Math.abs(c.vx) < 0.6) { c.state = 'stunned'; c.t = 0; c.vx = c.vy = 0; c.spin = 0; }
+        }
+        legs.forEach((l, i) => { l.rotation.y = Math.sin(c.phase * 20 + i) * 0.6; });
+        cow.position.set(c.x, c.y, c.z);
+        cow.rotation.x = c.roll;
+        continue;
+      }
+      if (c.state === 'stunned' || c.state === 'rising') {
+        c.t += dt;
+        const lying = Math.PI / 2 * Math.sign(Math.sin(c.roll) || 1);
+        if (c.state === 'stunned') {
+          c.roll += (lying - ((c.roll + Math.PI) % (Math.PI * 2) - Math.PI)) * Math.min(1, dt * 6);
+          legs.forEach((l, i) => { l.rotation.y = 0.3 * Math.sin(c.phase * 9 + i); });   // legs kick
+          if (c.t > 1.6) { c.state = 'rising'; c.t = 0; c.roll = (c.roll + Math.PI) % (Math.PI * 2) - Math.PI; }
+        } else {
+          c.roll *= Math.max(0, 1 - dt * 3.5);
+          if (Math.abs(c.roll) < 0.02) {
+            c.roll = 0; c.stayPut = false; c.state = 'walk'; c.speed = 1.6; c.heading = -Math.PI / 2;
+            c.target = -(this.opts.roadHalf + 3);   // trots off, away from the road
+          }
+        }
+        cow.position.set(c.x, c.y, 0.25 * Math.abs(Math.sin(c.roll)));
+        cow.rotation.x = c.roll;
+        continue;
+      }
+      if (c.state === 'walk') {
+        const step = Math.sign(c.target - c.y) * c.speed * dt;
+        if (Math.abs(c.target - c.y) <= Math.abs(step)) { c.y = c.target; c.state = 'graze'; }
+        else c.y += step;
+        const swing = Math.sin(c.phase * c.speed * 5) * 0.45;
+        legs.forEach((l, i) => { l.rotation.y = (i % 3 === 0 ? swing : -swing); });
+        neck.rotation.y = -0.1;
+      } else {
+        legs.forEach((l) => { l.rotation.y = 0; });
+        neck.rotation.y = 0.55 + 0.08 * Math.sin(c.phase * 2.2);   // head down, grazing
+      }
+      tail.rotation.x = 0.18 * Math.sin(c.phase * 3);   // swishes side to side
+      cow.position.set(c.x, c.y, 0);
+      cow.rotation.z += ((c.heading - cow.rotation.z + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 4);
+      if (this.onRoad(c) && c.state === 'graze' && c.x > carX - 1 && (!nearest || c.x < nearest.x)) nearest = c;
+    }
+    return { nearest, hurried };
+  }
+}
+
+// Brass Era Garage: page logic. Inlined after sim.js and input.js by build.py.
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const $ = (id) => document.getElementById(id);
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const fmt = (v, d = 1) => v.toFixed(d);
+const pct = (v) => `${Math.round(v * 100)}%`;
+const MINUS = '−';
+const signed = (v, d = 1) => { const s = fmt(Math.abs(v), d); return `${+s === 0 ? '' : v > 0 ? '+' : MINUS}${s}`; };
+function status(text, isError = false) { const el = $('status'); el.hidden = !text; el.textContent = text || ''; el.classList.toggle('error', isError); }
+let toastTimer;
+function toast(text) { const el = $('toast'); el.textContent = text; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 1800); }
+
+async function fetchBytes(name, onProgress) {
+  const res = await fetch(name);
+  if (!res.ok) throw new Error(`Could not load ${name} (HTTP ${res.status}).`);
+  const total = +res.headers.get('content-length') || 0;
+  if (!onProgress || !res.body || !total) return new Uint8Array(await res.arrayBuffer());
+  const reader = res.body.getReader(), parts = [];
+  let got = 0;
+  for (;;) { const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length; onProgress(got / total); }
+  const out = new Uint8Array(got);
+  let at = 0;
+  for (const p of parts) { out.set(p, at); at += p.length; }
+  return out;
+}
+
+// ---------- 3D scene ----------
+const viewport = $('viewport');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+viewport.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 400);
+camera.up.set(0, 0, 1);
+const orbit = new OrbitControls(camera, renderer.domElement);
+orbit.enableDamping = true;
+orbit.maxPolarAngle = Math.PI * 0.49;
+orbit.minDistance = 2;
+orbit.maxDistance = 30;
+scene.add(new THREE.HemisphereLight(0xf4f1e6, 0x4a5540, 1.4));
+const sun = new THREE.DirectionalLight(0xfff6e2, 2.4);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 1, far: 30 });
+scene.add(sun, sun.target);
+const ROAD_M = 3000;
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_M + 200, 200), new THREE.MeshStandardMaterial({ roughness: 1 }));
+ground.position.set(ROAD_M / 2, 0, -0.002);
+ground.receiveShadow = true;
+const road = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_M + 200, 3.6), new THREE.MeshStandardMaterial({ roughness: 0.95 }));
+road.position.set(ROAD_M / 2, 0, -0.001);
+road.receiveShadow = true;
+scene.add(ground, road);
+const postMat = new THREE.MeshStandardMaterial({ color: 0xe9e4d4, roughness: 0.8 });
+{
+  const n = ROAD_M / 10 + 1, posts = new THREE.InstancedMesh(new THREE.BoxGeometry(0.06, 0.06, 0.5), postMat, n);
+  const at = new THREE.Matrix4();
+  for (let i = 0; i < n; i++) posts.setMatrixAt(i, at.makeTranslation(i * 10, 2.3, 0.25));   // far side of the road
+  posts.castShadow = true;
+  scene.add(posts);
+}
+const herd = new Herd(scene, { seed: 5, from: 70, to: ROAD_M, gap: [50, 120], roadHalf: 1.7 });   // after the bump course
+function paintScene() {
+  scene.background = new THREE.Color(css('--sky'));
+  scene.fog = new THREE.Fog(css('--sky'), 40, 160);
+  ground.material.color.set(css('--field'));
+  road.material.color.set(css('--road'));
+}
+const barGroup = new THREE.Group();
+scene.add(barGroup);
+const barMat = new THREE.MeshStandardMaterial({ color: 0x8a6a45, roughness: 0.85 });
+function drawBars(bars) {
+  barGroup.clear();
+  for (const b of bars) {
+    const [y0, y1] = { full: [-1.3, 1.3], left: [0.25, 1.3], right: [-1.3, -0.25] }[b.side];
+    const bar = new THREE.Mesh(new THREE.CapsuleGeometry(b.height, y1 - y0, 6, 16), barMat);
+    bar.position.set(b.x, (y0 + y1) / 2, 0);
+    bar.receiveShadow = true;
+    barGroup.add(bar);
+  }
+}
+function resize() {
+  const w = viewport.clientWidth, h = viewport.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(viewport);
+
+// ---------- strip charts ----------
+function stripChart(canvas, series, { lo, hi, ticks, fmtTick, span = 8, fills = [] }) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.clientWidth, h = canvas.clientHeight, dpr = Math.min(devicePixelRatio, 2);
+  if (canvas.width !== Math.round(w * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 40, r: 6, t: 8, b: 16 };
+  const y = (v) => pad.t + (1 - (v - lo) / (hi - lo)) * (h - pad.t - pad.b);
+  const rows = series.rows, now = rows.length ? rows[rows.length - 1][0] : 0;
+  const x = (t) => pad.l + (1 - (now - t) / span) * (w - pad.l - pad.r);
+  ctx.font = '11px "JetBrains Mono", ui-monospace, monospace';
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'middle';
+  for (const t of ticks) {
+    ctx.strokeStyle = t.warn ? css('--warn') : css('--line');
+    ctx.setLineDash(t.warn ? [4, 4] : []);
+    ctx.beginPath(); ctx.moveTo(pad.l, y(t.v)); ctx.lineTo(w - pad.r, y(t.v)); ctx.stroke();
+    ctx.fillStyle = css('--muted');
+    ctx.fillText(fmtTick(t.v), pad.l - 5, y(t.v));
+  }
+  ctx.setLineDash([]);
+  series.lines.forEach(([i, color], k) => {
+    if (!rows.length) return;
+    ctx.strokeStyle = css(color);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    rows.forEach((p, n) => { const px = x(p[0]), py = y(p[i]); n ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+    ctx.stroke();
+    if (fills[k]) {
+      ctx.lineTo(x(rows[rows.length - 1][0]), y(lo)); ctx.lineTo(x(rows[0][0]), y(lo)); ctx.closePath();
+      ctx.globalAlpha = 0.14; ctx.fillStyle = css(color); ctx.fill(); ctx.globalAlpha = 1;
+    }
+  });
+}
+
+// ---------- state ----------
+const inputs = new Inputs();
+inputs.bindPedal($('padBrake'), 'pedal');
+inputs.bindPedal($('padThrottle'), 'throttle');
+let mujoco, manifest, sim, car, carId, roadName = 'bumps';
+const cache = {};                 // per car: config, files, gltf scene
+let bodyGroups = {}, carGroup = null, lastCar = null;
+const trace = [], travel = [];
+let gearWanted = 1;
+
+async function loadCarAssets(id) {
+  if (cache[id]) return cache[id];
+  const base = `cars/${id}/`;
+  const config = await (await fetch(base + 'config.json')).json();
+  const [files, gltf] = await Promise.all([
+    Promise.all(config.files.map(async (f) => [f, await fetchBytes(base + f)])).then(Object.fromEntries),
+    new GLTFLoader().loadAsync(base + 'car.glb'),
+  ]);
+  cache[id] = { config, files, gltf };
+  return cache[id];
+}
+
+function mountCarMeshes(gltf) {
+  if (carGroup) scene.remove(carGroup);
+  carGroup = new THREE.Group();
+  bodyGroups = {};
+  for (const node of [...gltf.scene.children]) {
+    const body = node.name.split('|')[0];
+    if (!bodyGroups[body]) { bodyGroups[body] = new THREE.Group(); carGroup.add(bodyGroups[body]); }
+    node.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+    bodyGroups[body].add(node);
+  }
+  scene.add(carGroup);
+}
+
+function currentInput() {
+  const springs = {};
+  if (car?.suspension) {
+    springs.front = { rate: +$('frontRate').value, damping: +$('frontDamping').value };
+    springs.rear = { rate: +$('rearRate').value, damping: +$('rearDamping').value };
+  }
+  return { throttle: inputs.throttle, pedal: 0, lever: car?.lever ? inputs.lever : 0, steer: +$('steer').value / 100,
+    driver: $('driver').checked, gear: gearWanted, springs, keepRideHeight: $('keepRide').checked, shockFriction: +$('shock').value };
+}
+
+function newSim() {
+  if (sim) sim.dispose();
+  const { config, files } = cache[carId];
+  sim = new CarSim(mujoco, config, files, roadName);
+  sim.reset(currentInput());
+  drawBars(roadName === 'bumps' ? manifest.bars : []);
+  trace.length = 0;
+  travel.length = 0;
+  herd.reset();
+}
+
+async function selectCar(id) {
+  carId = id;
+  document.querySelectorAll('#cars button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.id === id)));
+  status(`Loading the ${manifest.cars.find((c) => c.id === id).short}…`);
+  const assets = await loadCarAssets(id);
+  car = assets.config;
+  mountCarMeshes(assets.gltf);
+  fillPanel();
+  gearWanted = 1;
+  renderGears();
+  newSim();
+  const reach = Math.max(4.5, car.wheelbase * 1.9);
+  lastCar = null;
+  orbit.target.set(car.wheelbase / 2, 0, 0.6);
+  camera.position.set(car.wheelbase / 2 - reach * 0.55, -reach, reach * 0.42);
+  status('');
+}
+
+function fillPanel() {
+  $('carName').textContent = car.name;
+  const nb = (t) => t.replace(/ /g, '\u00a0');   // keep each figure with its unit
+  const power = car.engine.rated_power_w >= 10000 ? `${fmt(car.engine.rated_power_w / 1000, 1)} kW` : `${Math.round(car.engine.rated_power_w)} W`;
+  $('carMeta').textContent = [`${car.year}`, `${car.mass_kg} kg`, `${power} at ${car.engine.governed_rpm} rpm`,
+    `wheelbase ${fmt(car.wheelbase, 2)} m`].map(nb).join(' · ');
+  $('carControls').textContent = car.controls;
+  $('pedalName').textContent = car.pedal ? car.pedal.label.replace('Combined pedal', 'Pedal') : 'Pedal';
+  $('lgPedal').textContent = car.pedal ? car.pedal.label : 'Brake';
+  $('pedalHint').textContent = car.pedal
+    ? `${car.pedal.label} (S, ↓ or the on-screen pedal): ${car.pedal.detail.toLowerCase()}, ${car.pedal.devices.map(devText).join(' + ')}.`
+    : '';
+  $('leverLabel').textContent = car.lever ? car.lever.label : 'Brake lever';
+  $('leverName').textContent = car.lever ? car.lever.label.replace('Hand ', '') : 'Lever';
+  $('lgLever').textContent = car.lever ? car.lever.label : 'Lever';
+  $('lever').disabled = !car.lever;
+  $('barLever').classList.toggle('off', !car.lever);
+  $('leverHint').textContent = car.lever ? `${car.lever.detail}, ${car.lever.devices.map(devText).join(' + ')}. Space toggles it.` : car.lever_note;
+  $('steerKind').textContent = car.steering.box_ratio > 1 ? `${car.steering.kind}, ${car.steering.box_ratio}:1` : car.steering.kind;
+  $('springs').hidden = !car.suspension;
+  $('shockSet').hidden = !car.shocks;
+  $('noSusp').hidden = !!car.suspension;
+  for (const id of ['chart', 'frontGauge', 'rearGauge']) $(id).hidden = !car.suspension;
+  if (car.suspension) {
+    PRESETS.design = { front: [car.suspension.front.design_rate_kn, car.suspension.front.design_damping_kns],
+      rear: [car.suspension.rear.design_rate_kn, car.suspension.rear.design_damping_kns], keep: true };
+    applyPreset('design');
+    $('springHint').textContent = `Rates at the axle. Design ${fmt(car.suspension.front.design_rate_kn, 0)} and ${fmt(car.suspension.rear.design_rate_kn, 0)} kN/m; roll stiffness follows each rate.`;
+  }
+  if (car.shocks) $('shock').value = car.shocks.design_nm;
+  showValues();
+}
+const devText = (d) => d.kind === 'tendon' ? `${d.capacity} N·m at the wheels` : `${d.capacity} N·m per rear wheel`;
+
+function renderGears() {
+  const box = $('gears');
+  box.replaceChildren();
+  [{ label: 'Neutral' }, ...car.gears].forEach((g, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = g.label;
+    b.setAttribute('aria-pressed', String(i === gearWanted));
+    b.addEventListener('click', () => setGear(i));
+    box.append(b);
+  });
+}
+function setGear(i) {
+  gearWanted = Math.max(0, Math.min(car.gears.length, i));
+  [...$('gears').children].forEach((b, k) => b.setAttribute('aria-pressed', String(k === gearWanted)));
+  sim?.set({ gear: gearWanted });
+}
+
+const PRESETS = {
+  soft: { scale: [0.36, 1], keep: true }, sag: { scale: [0.36, 1], keep: false },
+  stiff: { scale: [3.6, 1], keep: true }, bouncy: { scale: [1, 0.13], keep: true },
+};
+function applyPreset(name) {
+  const s = car.suspension, p = PRESETS[name];
+  const val = (axle, i) => p.front ? p[axle][i] : s[axle][i ? 'design_damping_kns' : 'design_rate_kn'] * p.scale[i];
+  $('frontRate').value = Math.round(val('front', 0)); $('rearRate').value = Math.round(val('rear', 0));
+  $('frontDamping').value = val('front', 1).toFixed(2); $('rearDamping').value = val('rear', 1).toFixed(2);
+  $('keepRide').checked = p.keep;
+  onControl();
+}
+document.querySelectorAll('[data-preset]').forEach((b) => b.addEventListener('click', () => applyPreset(b.dataset.preset)));
+
+function showValues() {
+  $('throttleOut').textContent = pct(inputs.throttle);
+  $('throttle').value = Math.round(inputs.throttle * 100);
+  $('leverOut').textContent = car?.lever ? pct(inputs.lever) : 'none';
+  $('lever').value = Math.round(inputs.lever * 100);
+  $('steerSlider').textContent = $('driver').checked ? 'driver' : `${signed(+$('steer').value, 0)}%`;
+  $('steer').disabled = $('driver').checked;
+  $('driftHint').hidden = $('driver').checked;
+  $('frontRateOut').textContent = `${$('frontRate').value} kN/m`;
+  $('rearRateOut').textContent = `${$('rearRate').value} kN/m`;
+  $('frontDampingOut').textContent = `${(+$('frontDamping').value).toFixed(2)} kN·s/m`;
+  $('rearDampingOut').textContent = `${(+$('rearDamping').value).toFixed(2)} kN·s/m`;
+  $('shockOut').textContent = `${$('shock').value} N·m`;
+}
+function onControl() { showValues(); if (sim) sim.set(currentInput()); }
+document.querySelectorAll('#controls input').forEach((el) => el.addEventListener('input', onControl));
+$('throttle').addEventListener('input', () => { inputs.throttle = +$('throttle').value / 100; onControl(); });
+$('lever').addEventListener('input', () => { inputs.lever = +$('lever').value / 100; onControl(); });
+document.querySelectorAll('input[name="road"]').forEach((el) => el.addEventListener('change', () => { roadName = el.value; if (sim) newSim(); }));
+$('restart').addEventListener('click', restart);
+function restart() { if (!sim) return; sim.reset(currentInput()); sim.set({ gear: gearWanted }); trace.length = 0; travel.length = 0; herd.reset(); }
+
+function handleEvents(events) {
+  for (const e of events) {
+    if (e.type === 'gear') setGear(e.value);
+    else if (e.type === 'gearStep') setGear(gearWanted + e.value);
+    else if (e.type === 'driver') { $('driver').checked = !$('driver').checked; toast($('driver').checked ? 'Driver holds the line' : 'You steer'); onControl(); }
+    else if (e.type === 'restart') restart();
+    else if (e.type === 'lever') { if (!car.lever) { inputs.lever = 0; toast(car.lever_note); } onControl(); }
+  }
+}
+
+// ---------- readouts ----------
+function showReadout(r) {
+  $('speed').textContent = fmt(r.speed * 3.6);
+  $('distance').textContent = fmt(r.x);
+  $('gearHud').textContent = r.gear ? car.gears[r.gear - 1].label : 'Neutral';
+  $('rpm').textContent = Math.round(Math.max(0, r.rpm));
+  $('seatRms').textContent = fmt(r.seatRmsG, 2);
+  for (const w of ['front_left', 'front_right', 'rear_left', 'rear_right']) $(w).classList.toggle('down', r.wheels.has(w));
+  $('wheelsText').textContent = `${r.wheels.size} of 4 on the road`;
+  for (const axle of ['front', 'rear']) {
+    const a = r.axles[axle];
+    if (!a) continue;
+    $(`${axle}Travel`).textContent = pct(a.used);
+    $(`${axle}Offset`).textContent = `${signed(a.offsetMm)} mm`;
+    $(`${axle}Bar`).style.width = `${Math.min(100, a.used * 100)}%`;
+    $(`${axle}Gauge`).classList.toggle('on-stops', a.used >= 1);
+  }
+}
+function showInputs(a, columnDeg) {
+  const set = (id, v) => { $(id).querySelector('i').style.height = `${Math.round(v * 100)}%`; };
+  set('barThrottle', a.throttle); set('barPedal', a.pedal); set('barLever', a.lever);
+  $('outThrottle').textContent = pct(a.throttle); $('outPedal').textContent = pct(a.pedal); $('outLever').textContent = pct(a.lever);
+  $('padBrake').querySelector('.fill').style.height = `${a.pedal * 100}%`;
+  $('padThrottle').querySelector('.fill').style.height = `${Math.max(0, a.throttle - inputs.throttle) * 100}%`;
+  const wheelDeg = columnDeg * car.steering.box_ratio;
+  $('wheelRot').setAttribute('transform', `rotate(${-wheelDeg})`);
+  $('steerOut').textContent = `${signed(wheelDeg, 0)}°`;
+}
+
+// ---------- main loop ----------
+let lastFrame = 0, lastReadout = 0, simSeconds = 0, wallSeconds = 0;
+function frame(now) {
+  requestAnimationFrame(frame);
+  const wall = Math.min(0.05, (now - (lastFrame || now)) / 1000);
+  lastFrame = now;
+  const a = inputs.update(wall);
+  if (!sim) { renderer.render(scene, camera); return; }
+  if (a.steering && $('driver').checked) { $('driver').checked = false; toast('You steer: driver off (T to hand back)'); }
+  handleEvents(a.events);
+  if (a.steering) $('steer').value = Math.round(a.steer * 100);
+  const lever = car.lever ? a.lever : 0;
+  sim.set({ throttle: a.throttle, pedal: car.pedal ? a.pedal : 0, lever, driver: $('driver').checked,
+    steer: a.steering ? a.steer : +$('steer').value / 100 });
+  const dt = sim.model.opt.timestep;
+  const steps = Math.min(60, Math.round(wall / dt));
+  sim.step(steps);
+  simSeconds += steps * dt; wallSeconds += wall;
+  const poses = sim.poses();
+  for (const [name, p] of Object.entries(poses)) {
+    const g = bodyGroups[name];
+    if (g) { g.position.set(p[0], p[1], p[2]); g.quaternion.set(p[4], p[5], p[6], p[3]); }
+  }
+  herd.update(wall, poses.chassis[0] + car.wheelbase + car.front_radius, Math.hypot(sim.data.qvel[0], sim.data.qvel[1]));
+  const target = new THREE.Vector3(poses.chassis[0] + car.wheelbase / 2, poses.chassis[1], 0.6);
+  if (lastCar) { const delta = target.clone().sub(lastCar); camera.position.add(delta); orbit.target.add(delta); }
+  lastCar = target;
+  sun.position.set(target.x - 4, target.y - 6, 9);
+  sun.target.position.copy(target);
+  orbit.update();
+  renderer.render(scene, camera);
+  const t = sim.data.time;
+  trace.push([t, a.throttle, car.pedal ? a.pedal : 0, lever]);
+  while (trace.length && t - trace[0][0] > 8.2) trace.shift();
+  stripChart($('trace'), { rows: trace, lines: [[1, '--throttle'], [2, '--brake'], [3, '--lever']] },
+    { lo: 0, hi: 1.08, ticks: [{ v: 0 }, { v: 1 }], fmtTick: (v) => (v ? '100%' : '0'), fills: [true, true, false] });
+  if (car.suspension) {
+    const fa = sim.axles.front.joints[0], ra = sim.axles.rear.joints[0], q = sim.data.qpos;
+    travel.push([t, q[fa.qpos] / fa.range * 100 * sim.axles.front.sign, q[ra.qpos] / ra.range * 100 * sim.axles.rear.sign]);
+    while (travel.length && t - travel[0][0] > 8.2) travel.shift();
+    stripChart($('chart'), { rows: travel, lines: [[1, '--brass'], [2, '--green']] },
+      { lo: -120, hi: 120, ticks: [{ v: -100, warn: true }, { v: 0 }, { v: 100, warn: true }], fmtTick: (v) => (v ? `${v > 0 ? '+' : MINUS}100%` : '0') });
+  }
+  const r = now - lastReadout > 100 ? sim.readout() : null;
+  showInputs({ throttle: a.throttle, pedal: car.pedal ? a.pedal : 0, lever }, r ? r.columnDeg : lastColumn);
+  if (r) {
+    lastReadout = now;
+    lastColumn = r.columnDeg;
+    showReadout(r);
+    showValues();
+    if (wallSeconds > 1) $('rate').textContent = `${fmt(simSeconds / wallSeconds, 2)}× real time`;
+    if (wallSeconds > 3) { simSeconds = 0; wallSeconds = 0; }
+  }
+}
+let lastColumn = 0;
+
+// ---------- start ----------
+async function start() {
+  resize();
+  paintScene();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintScene);
+  new MutationObserver(paintScene).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  $('keys').replaceChildren(...KEYMAP.flatMap(([k, v]) => { const dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = k; dd.textContent = v; return [dt, dd]; }));
+  requestAnimationFrame(frame);
+  try {
+    if (typeof WebAssembly !== 'object') throw new Error('This browser has no WebAssembly support.');
+    manifest = await (await fetch('manifest.json')).json();
+    $('mjv').textContent = manifest.mujoco_version;
+    const nav = $('cars');
+    for (const c of manifest.cars) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.id = c.id;
+      b.setAttribute('aria-pressed', 'false');
+      b.innerHTML = `<span></span><small></small>`;
+      b.querySelector('span').textContent = c.short.replace(/ \d{4}$/, '');
+      b.querySelector('small').textContent = String(c.year);
+      b.addEventListener('click', () => { if (mujoco && c.id !== carId) selectCar(c.id).catch(fail); });
+      nav.append(b);
+    }
+    const wasm = await fetchBytes('mujoco.wasm', (f) => status(`Loading the MuJoCo physics engine… ${Math.round(f * 100)}%`));
+    status('Starting MuJoCo…');
+    const { default: loadMujoco } = await import(`https://cdn.jsdelivr.net/npm/@mujoco/mujoco@${manifest.mujoco_version}/mujoco.js`);
+    mujoco = await loadMujoco({ wasmBinary: wasm.buffer });
+    const first = manifest.cars.find((c) => c.id === 'model_t_1909') || manifest.cars[0];
+    await selectCar(first.id);
+  } catch (err) { fail(err); }
+}
+function fail(err) {
+  console.error(err);
+  const blocked = /WebAssembly|wasm|CompileError|Content Security/i.test(String(err));
+  status(blocked ? `The physics engine could not start here: ${err.message}. Run it locally with the command under "About this simulation".`
+    : `Could not start the simulation: ${err.message}`, true);
+}
+start();
+
+</script>
+
+</body></html>

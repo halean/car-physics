@@ -1,0 +1,228 @@
+{
+ "id": "mercedes_1901",
+ "name": "Mercedes 35 HP",
+ "short": "Mercedes 1901",
+ "year": 1901,
+ "controls": "A raked steering wheel through a 6:1 box, a gate-change four-speed lever, a foot brake on the countershaft and a hand brake on the rear drums.",
+ "source_sha256": "03137461989920316137fc16a607e261e896132d5dd09a9b3a4a8f5e86f17b89",
+ "stage": "full",
+ "mass_kg": 1200,
+ "engine": {
+  "rated_power_w": 25700,
+  "governed_rpm": 950,
+  "no_load_rpm": 1000,
+  "shift_seconds": 0.5,
+  "brake_ramp_seconds": 0.25
+ },
+ "gears": [
+  {
+   "name": "first",
+   "label": "1st"
+  },
+  {
+   "name": "second",
+   "label": "2nd"
+  },
+  {
+   "name": "third",
+   "label": "3rd"
+  },
+  {
+   "name": "fourth",
+   "label": "4th"
+  }
+ ],
+ "pedal": {
+  "label": "Foot brake",
+  "detail": "A water-cooled drum on the countershaft, through the differential",
+  "devices": [
+   {
+    "kind": "tendon",
+    "capacity": 1400
+   }
+  ]
+ },
+ "lever": {
+  "label": "Hand brake",
+  "detail": "30 cm drums on the rear wheels",
+  "devices": [
+   {
+    "kind": "joints",
+    "capacity": 500
+   }
+  ]
+ },
+ "lever_note": null,
+ "declutch_on_pedal": false,
+ "steering": {
+  "kind": "Steering wheel",
+  "box_ratio": 6.0,
+  "limit_deg": 25
+ },
+ "wheelbase": 2.345,
+ "bodies": [
+  "chassis",
+  "knuckle_left",
+  "knuckle_right",
+  "tie_rod",
+  "column",
+  "drag_link",
+  "front_axle",
+  "rear_axle",
+  "steering_wheel",
+  "rear_left",
+  "front_left",
+  "rear_right",
+  "front_right"
+ ],
+ "rear_radius": 0.51,
+ "front_radius": 0.455,
+ "seat": [
+  1.25,
+  0.0,
+  1.1
+ ],
+ "suspension": {
+  "front": {
+   "joints": [
+    "front_axle_heave",
+    "front_axle_roll"
+   ],
+   "lever_m": 1.0,
+   "sign": 1,
+   "design_rate_kn": 60.0,
+   "design_damping_kns": 3.4
+  },
+  "rear": {
+   "joints": [
+    "rear_axle_swing",
+    "rear_axle_roll"
+   ],
+   "lever_m": 0.6020797289396147,
+   "sign": 1,
+   "design_rate_kn": 104.0,
+   "design_damping_kns": 6.786
+  }
+ },
+ "shocks": null,
+ "parity": {
+  "first_gear_at": 0.5,
+  "pedal_at": 4.0,
+  "seconds": 8.0,
+  "rows": [
+   [
+    0.5,
+    0.0001564711809409415,
+    3.465303581942791e-05,
+    0.00013673093123390363
+   ],
+   [
+    1.0,
+    0.13964021116325326,
+    5.22096670147443e-05,
+    0.83883251760661
+   ],
+   [
+    1.5,
+    0.9836128567015856,
+    0.00034462190175160994,
+    2.5335126822947283
+   ],
+   [
+    2.0,
+    2.673256802999216,
+    0.0022739486028890508,
+    4.221931362833526
+   ],
+   [
+    2.5,
+    5.2072125358733485,
+    0.008417285845063661,
+    5.894452969829521
+   ],
+   [
+    3.0,
+    8.257813135092817,
+    0.019912180198160632,
+    6.146475366840937
+   ],
+   [
+    3.5,
+    11.32689062749047,
+    0.03241671103333828,
+    6.138108796614215
+   ],
+   [
+    4.0,
+    14.395543077099138,
+    0.044771508673598845,
+    6.136896039094868
+   ],
+   [
+    4.5,
+    17.388593273101204,
+    0.05697385458929263,
+    5.863996346224696
+   ],
+   [
+    5.0,
+    20.32227985751466,
+    0.06911260684557975,
+    5.879960534108902
+   ],
+   [
+    5.5,
+    23.26072001822483,
+    0.08135102825347314,
+    5.875264767511994
+   ],
+   [
+    6.0,
+    26.198619406012963,
+    0.09358147488835082,
+    5.8759608631614055
+   ],
+   [
+    6.5,
+    29.13654004260954,
+    0.10580045976092584,
+    5.875897741217382
+   ],
+   [
+    7.0,
+    32.07446557941266,
+    0.11802368671370339,
+    5.875898764786354
+   ],
+   [
+    7.5,
+    35.01238970840785,
+    0.13024559145891978,
+    5.8758996701522
+   ],
+   [
+    8.0,
+    37.9503140508912,
+    0.1424669187356081,
+    5.875899459648073
+   ]
+  ]
+ },
+ "files": [
+  "chassis.obj",
+  "column.obj",
+  "drag_link.obj",
+  "front_axle.obj",
+  "front_left.obj",
+  "front_right.obj",
+  "knuckle_left.obj",
+  "knuckle_right.obj",
+  "model_bumps.xml",
+  "model_flat.xml",
+  "rear_axle.obj",
+  "rear_left.obj",
+  "rear_right.obj",
+  "steering_wheel.obj",
+  "tie_rod.obj"
+ ]
+}

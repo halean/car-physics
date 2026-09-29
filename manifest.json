@@ -1,0 +1,133 @@
+{
+ "mujoco_version": "3.14.0",
+ "bars": [
+  {
+   "x": 10.0,
+   "height": 0.04,
+   "side": "full"
+  },
+  {
+   "x": 16.0,
+   "height": 0.04,
+   "side": "left"
+  },
+  {
+   "x": 21.0,
+   "height": 0.04,
+   "side": "right"
+  },
+  {
+   "x": 27.0,
+   "height": 0.03,
+   "side": "full"
+  },
+  {
+   "x": 29.5,
+   "height": 0.03,
+   "side": "full"
+  },
+  {
+   "x": 36.0,
+   "height": 0.05,
+   "side": "left"
+  },
+  {
+   "x": 38.5,
+   "height": 0.05,
+   "side": "right"
+  },
+  {
+   "x": 45.0,
+   "height": 0.015,
+   "side": "full"
+  },
+  {
+   "x": 46.0,
+   "height": 0.015,
+   "side": "full"
+  },
+  {
+   "x": 47.0,
+   "height": 0.015,
+   "side": "full"
+  },
+  {
+   "x": 48.0,
+   "height": 0.015,
+   "side": "full"
+  },
+  {
+   "x": 49.0,
+   "height": 0.015,
+   "side": "full"
+  },
+  {
+   "x": 50.0,
+   "height": 0.015,
+   "side": "full"
+  },
+  {
+   "x": 51.0,
+   "height": 0.015,
+   "side": "full"
+  },
+  {
+   "x": 52.0,
+   "height": 0.015,
+   "side": "full"
+  },
+  {
+   "x": 53.0,
+   "height": 0.015,
+   "side": "full"
+  },
+  {
+   "x": 54.0,
+   "height": 0.015,
+   "side": "full"
+  },
+  {
+   "x": 55.0,
+   "height": 0.015,
+   "side": "full"
+  }
+ ],
+ "cars": [
+  {
+   "id": "panhard_1891",
+   "short": "Panhard 1891",
+   "name": "Panhard et Levassor",
+   "year": 1891
+  },
+  {
+   "id": "benz_velo_1894",
+   "short": "Benz Velo 1894",
+   "name": "Benz Velo",
+   "year": 1894
+  },
+  {
+   "id": "renault_1898",
+   "short": "Renault 1898",
+   "name": "Renault Type A",
+   "year": 1898
+  },
+  {
+   "id": "mercedes_1901",
+   "short": "Mercedes 1901",
+   "name": "Mercedes 35 HP",
+   "year": 1901
+  },
+  {
+   "id": "model_t_1909",
+   "short": "Model T 1909",
+   "name": "Ford Model T",
+   "year": 1909
+  },
+  {
+   "id": "model_t_shocks",
+   "short": "Model T + shocks",
+   "name": "Ford Model T with friction shocks",
+   "year": 1909
+  }
+ ]
+}

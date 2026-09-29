@@ -1,0 +1,193 @@
+{
+ "id": "benz_velo_1894",
+ "name": "Benz Velo",
+ "short": "Benz Velo 1894",
+ "year": 1894,
+ "controls": "A crank-handle wheel on a vertical column, a belt-shift lever for the two speeds, a foot band brake and a hand brake. The governed engine sets the pace.",
+ "source_sha256": "6ecd8208f8c7f5f09e52fd920d7631fb45293ea324a863ece430b4a8a706a7e2",
+ "stage": "full",
+ "mass_kg": 280,
+ "engine": {
+  "rated_power_w": 1100,
+  "governed_rpm": 450,
+  "no_load_rpm": 470,
+  "shift_seconds": 0.5,
+  "brake_ramp_seconds": 0.25
+ },
+ "gears": [
+  {
+   "name": "low",
+   "label": "Low belt"
+  },
+  {
+   "name": "high",
+   "label": "High belt"
+  }
+ ],
+ "pedal": {
+  "label": "Foot brake",
+  "detail": "A band on the countershaft drum, through the differential",
+  "devices": [
+   {
+    "kind": "tendon",
+    "capacity": 350
+   }
+  ]
+ },
+ "lever": {
+  "label": "Hand brake",
+  "detail": "A band on a drum at each rear sprocket",
+  "devices": [
+   {
+    "kind": "joints",
+    "capacity": 100
+   }
+  ]
+ },
+ "lever_note": null,
+ "declutch_on_pedal": false,
+ "steering": {
+  "kind": "Crank handwheel",
+  "box_ratio": 1.0,
+  "limit_deg": 30
+ },
+ "wheelbase": 1.34,
+ "bodies": [
+  "chassis",
+  "knuckle_left",
+  "knuckle_right",
+  "tie_rod",
+  "column",
+  "drag_link",
+  "rear_left",
+  "front_left",
+  "rear_right",
+  "front_right"
+ ],
+ "rear_radius": 0.425,
+ "front_radius": 0.275,
+ "seat": [
+  0.45,
+  0.0,
+  0.8999999999999999
+ ],
+ "suspension": null,
+ "shocks": null,
+ "parity": {
+  "first_gear_at": 0.5,
+  "pedal_at": 4.0,
+  "seconds": 8.0,
+  "rows": [
+   [
+    0.5,
+    -0.00023961571116128195,
+    2.2618166406361374e-08,
+    8.461779149660371e-06
+   ],
+   [
+    1.0,
+    0.04837153048468578,
+    -3.752977988367714e-08,
+    0.29070062817155035
+   ],
+   [
+    1.5,
+    0.33940806203356527,
+    -4.824972204451027e-06,
+    0.8724238793678752
+   ],
+   [
+    2.0,
+    0.9213214593447464,
+    -3.911773861006779e-05,
+    1.4540071858137025
+   ],
+   [
+    2.5,
+    1.7939373151858793,
+    -0.00015294033529596136,
+    2.035234503114407
+   ],
+   [
+    3.0,
+    2.957077679686358,
+    -0.0004215842878714383,
+    2.6161060639924107
+   ],
+   [
+    3.5,
+    4.408639144944223,
+    -0.000944541468941048,
+    3.1501325827345226
+   ],
+   [
+    4.0,
+    6.003585720905263,
+    -0.0016628241872760844,
+    3.2008561347480753
+   ],
+   [
+    4.5,
+    7.490577711471544,
+    -0.0022846845861000395,
+    2.6297465978581007
+   ],
+   [
+    5.0,
+    8.615681974842557,
+    -0.002581712061202945,
+    1.872259698382824
+   ],
+   [
+    5.5,
+    9.362157403914791,
+    -0.0026850896876880856,
+    1.1152333940400996
+   ],
+   [
+    6.0,
+    9.730235836892378,
+    -0.002708303744511232,
+    0.3586707129686861
+   ],
+   [
+    6.5,
+    9.772600616898613,
+    -0.002709765345566088,
+    4.0762338121702105e-05
+   ],
+   [
+    7.0,
+    9.772621094333772,
+    -0.0027097657890049927,
+    4.09347051538638e-05
+   ],
+   [
+    7.5,
+    9.772641561851902,
+    -0.002709766423582633,
+    4.093524410350048e-05
+   ],
+   [
+    8.0,
+    9.772662029370029,
+    -0.002709767057976573,
+    4.093497397352417e-05
+   ]
+  ]
+ },
+ "files": [
+  "chassis.obj",
+  "column.obj",
+  "drag_link.obj",
+  "front_left.obj",
+  "front_right.obj",
+  "knuckle_left.obj",
+  "knuckle_right.obj",
+  "model_bumps.xml",
+  "model_flat.xml",
+  "rear_left.obj",
+  "rear_right.obj",
+  "tie_rod.obj"
+ ]
+}

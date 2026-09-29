@@ -1,0 +1,244 @@
+{
+ "id": "model_t_shocks",
+ "name": "Ford Model T with friction shocks",
+ "short": "Model T + shocks",
+ "year": 1909,
+ "controls": "As the Model T, plus aftermarket Hartford-type friction shock absorbers: a scissor at each corner whose knee is clamped between friction discs.",
+ "source_sha256": "fbcb6b5418b1cdda1b49d4722871027bc9906b86281d8cb6e20f24e25ca77ca5",
+ "stage": "shocks",
+ "mass_kg": 545,
+ "engine": {
+  "rated_power_w": 14900,
+  "governed_rpm": 1600,
+  "no_load_rpm": 1700,
+  "shift_seconds": 0.5,
+  "brake_ramp_seconds": 0.25
+ },
+ "gears": [
+  {
+   "name": "low",
+   "label": "Low pedal"
+  },
+  {
+   "name": "high",
+   "label": "High (lever)"
+  }
+ ],
+ "pedal": {
+  "label": "Brake pedal",
+  "detail": "The transmission brake, through the differential",
+  "devices": [
+   {
+    "kind": "tendon",
+    "capacity": 600
+   }
+  ]
+ },
+ "lever": {
+  "label": "Hand lever",
+  "detail": "Bands on the rear hubs",
+  "devices": [
+   {
+    "kind": "joints",
+    "capacity": 200
+   }
+  ]
+ },
+ "lever_note": null,
+ "declutch_on_pedal": false,
+ "steering": {
+  "kind": "Steering wheel",
+  "box_ratio": 4.0,
+  "limit_deg": 25
+ },
+ "wheelbase": 2.54,
+ "bodies": [
+  "chassis",
+  "knuckle_left",
+  "knuckle_right",
+  "tie_rod",
+  "column",
+  "drag_link",
+  "front_axle",
+  "rear_axle",
+  "steering_wheel",
+  "rear_left",
+  "front_left",
+  "rear_right",
+  "front_right",
+  "shock_front_left_a",
+  "shock_front_left_b",
+  "shock_front_right_a",
+  "shock_front_right_b",
+  "shock_rear_left_a",
+  "shock_rear_left_b",
+  "shock_rear_right_a",
+  "shock_rear_right_b"
+ ],
+ "rear_radius": 0.381,
+ "front_radius": 0.381,
+ "seat": [
+  1.2,
+  0.0,
+  1.0
+ ],
+ "suspension": {
+  "front": {
+   "joints": [
+    "front_axle_swing",
+    "front_axle_roll"
+   ],
+   "lever_m": 0.7702343655745281,
+   "sign": -1,
+   "design_rate_kn": 27.98,
+   "design_damping_kns": 1.559
+  },
+  "rear": {
+   "joints": [
+    "rear_axle_swing",
+    "rear_axle_roll"
+   ],
+   "lever_m": 1.2577046516930215,
+   "sign": 1,
+   "design_rate_kn": 26.05,
+   "design_damping_kns": 1.549
+  }
+ },
+ "shocks": {
+  "joints": [
+   "shock_front_left_b_joint",
+   "shock_front_right_b_joint",
+   "shock_rear_left_b_joint",
+   "shock_rear_right_b_joint"
+  ],
+  "design_nm": 40.0
+ },
+ "parity": {
+  "first_gear_at": 0.5,
+  "pedal_at": 4.0,
+  "seconds": 8.0,
+  "rows": [
+   [
+    0.5,
+    -2.358433905822153e-05,
+    -6.14724262247e-05,
+    0.00026594290582576793
+   ],
+   [
+    1.0,
+    0.16100385814902557,
+    -6.585680006696025e-05,
+    0.960387900137381
+   ],
+   [
+    1.5,
+    1.1214969507279753,
+    8.492580889028627e-05,
+    2.879317294628754
+   ],
+   [
+    2.0,
+    3.042171895303768,
+    0.001379119445699788,
+    4.799548604017
+   ],
+   [
+    2.5,
+    5.918861618596954,
+    0.005850335958651635,
+    6.600545547250906
+   ],
+   [
+    3.0,
+    9.290614579765371,
+    0.013398160506563327,
+    6.770337601236184
+   ],
+   [
+    3.5,
+    12.675323381947555,
+    0.02107567179281379,
+    6.768773328811241
+   ],
+   [
+    4.0,
+    16.059301064360035,
+    0.028741410466343483,
+    6.767202604165513
+   ],
+   [
+    4.5,
+    19.368132760486983,
+    0.036535325865647936,
+    6.499078429054478
+   ],
+   [
+    5.0,
+    22.61463866759205,
+    0.045072623505045394,
+    6.493965540868617
+   ],
+   [
+    5.5,
+    25.861477171649174,
+    0.05358797590816852,
+    6.493596293928294
+   ],
+   [
+    6.0,
+    29.10827398724274,
+    0.06210360391031156,
+    6.493617195762001
+   ],
+   [
+    6.5,
+    32.35507122737902,
+    0.07061395433223318,
+    6.493616989290096
+   ],
+   [
+    7.0,
+    35.601868567155215,
+    0.0791191927197866,
+    6.493616945009038
+   ],
+   [
+    7.5,
+    38.84866591435851,
+    0.08761933461530147,
+    6.493616948047625
+   ],
+   [
+    8.0,
+    42.09546327500467,
+    0.09611437861042735,
+    6.493616948050224
+   ]
+  ]
+ },
+ "files": [
+  "chassis.obj",
+  "column.obj",
+  "drag_link.obj",
+  "front_axle.obj",
+  "front_left.obj",
+  "front_right.obj",
+  "knuckle_left.obj",
+  "knuckle_right.obj",
+  "model_bumps.xml",
+  "model_flat.xml",
+  "rear_axle.obj",
+  "rear_left.obj",
+  "rear_right.obj",
+  "shock_front_left_a.obj",
+  "shock_front_left_b.obj",
+  "shock_front_right_a.obj",
+  "shock_front_right_b.obj",
+  "shock_rear_left_a.obj",
+  "shock_rear_left_b.obj",
+  "shock_rear_right_a.obj",
+  "shock_rear_right_b.obj",
+  "steering_wheel.obj",
+  "tie_rod.obj"
+ ]
+}

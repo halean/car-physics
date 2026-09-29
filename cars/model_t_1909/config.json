@@ -1,0 +1,220 @@
+{
+ "id": "model_t_1909",
+ "name": "Ford Model T",
+ "short": "Model T 1909",
+ "year": 1909,
+ "controls": "Three pedals (low, reverse, brake), a hand lever for high gear and the parking brake, and a hand throttle on the right of the steering column.",
+ "source_sha256": "bf43552080c41af8453fa091dcf19be981a9676655fe78843586b09ddb898a9e",
+ "stage": "full",
+ "mass_kg": 545,
+ "engine": {
+  "rated_power_w": 14900,
+  "governed_rpm": 1600,
+  "no_load_rpm": 1700,
+  "shift_seconds": 0.5,
+  "brake_ramp_seconds": 0.25
+ },
+ "gears": [
+  {
+   "name": "low",
+   "label": "Low pedal"
+  },
+  {
+   "name": "high",
+   "label": "High (lever)"
+  }
+ ],
+ "pedal": {
+  "label": "Brake pedal",
+  "detail": "The transmission brake, through the differential",
+  "devices": [
+   {
+    "kind": "tendon",
+    "capacity": 600
+   }
+  ]
+ },
+ "lever": {
+  "label": "Hand lever",
+  "detail": "Bands on the rear hubs",
+  "devices": [
+   {
+    "kind": "joints",
+    "capacity": 200
+   }
+  ]
+ },
+ "lever_note": null,
+ "declutch_on_pedal": false,
+ "steering": {
+  "kind": "Steering wheel",
+  "box_ratio": 4.0,
+  "limit_deg": 25
+ },
+ "wheelbase": 2.54,
+ "bodies": [
+  "chassis",
+  "knuckle_left",
+  "knuckle_right",
+  "tie_rod",
+  "column",
+  "drag_link",
+  "front_axle",
+  "rear_axle",
+  "steering_wheel",
+  "rear_left",
+  "front_left",
+  "rear_right",
+  "front_right"
+ ],
+ "rear_radius": 0.381,
+ "front_radius": 0.381,
+ "seat": [
+  1.2,
+  0.0,
+  1.0
+ ],
+ "suspension": {
+  "front": {
+   "joints": [
+    "front_axle_swing",
+    "front_axle_roll"
+   ],
+   "lever_m": 0.7702343655745281,
+   "sign": -1,
+   "design_rate_kn": 27.98,
+   "design_damping_kns": 1.559
+  },
+  "rear": {
+   "joints": [
+    "rear_axle_swing",
+    "rear_axle_roll"
+   ],
+   "lever_m": 1.2577046516930215,
+   "sign": 1,
+   "design_rate_kn": 26.05,
+   "design_damping_kns": 1.549
+  }
+ },
+ "shocks": null,
+ "parity": {
+  "first_gear_at": 0.5,
+  "pedal_at": 4.0,
+  "seconds": 8.0,
+  "rows": [
+   [
+    0.5,
+    -7.168386522094456e-05,
+    -6.509698836879058e-05,
+    0.000527021723516957
+   ],
+   [
+    1.0,
+    0.16102963961377578,
+    -5.932432530216712e-05,
+    0.9605558115755393
+   ],
+   [
+    1.5,
+    1.121585471748014,
+    0.00012912379058006152,
+    2.879288003460696
+   ],
+   [
+    2.0,
+    3.042231341066164,
+    0.001562714796108947,
+    4.799601107709931
+   ],
+   [
+    2.5,
+    5.918888181422145,
+    0.00625597669858286,
+    6.599786107597819
+   ],
+   [
+    3.0,
+    9.291916423228523,
+    0.014104426834237968,
+    6.770140891162882
+   ],
+   [
+    3.5,
+    12.677188730345867,
+    0.02220497136304389,
+    6.769684910453245
+   ],
+   [
+    4.0,
+    16.06169892553186,
+    0.030302243117221926,
+    6.768298648364311
+   ],
+   [
+    4.5,
+    19.370752909827125,
+    0.03855473731165645,
+    6.496214560601478
+   ],
+   [
+    5.0,
+    22.617218796721215,
+    0.04758949845512994,
+    6.4944407178671435
+   ],
+   [
+    5.5,
+    25.86397336857042,
+    0.05656634446627902,
+    6.493699883060558
+   ],
+   [
+    6.0,
+    29.110772417984766,
+    0.06554530992473186,
+    6.4935954452066165
+   ],
+   [
+    6.5,
+    32.35756270885053,
+    0.07452081076963155,
+    6.493601358040011
+   ],
+   [
+    7.0,
+    35.60435186170897,
+    0.08349108715160251,
+    6.493603307916777
+   ],
+   [
+    7.5,
+    38.85114110615468,
+    0.09245619132103813,
+    6.493603318376223
+   ],
+   [
+    8.0,
+    42.09793038704806,
+    0.10141616204704773,
+    6.493603288527796
+   ]
+  ]
+ },
+ "files": [
+  "chassis.obj",
+  "column.obj",
+  "drag_link.obj",
+  "front_axle.obj",
+  "front_left.obj",
+  "front_right.obj",
+  "knuckle_left.obj",
+  "knuckle_right.obj",
+  "model_bumps.xml",
+  "model_flat.xml",
+  "rear_axle.obj",
+  "rear_left.obj",
+  "rear_right.obj",
+  "steering_wheel.obj",
+  "tie_rod.obj"
+ ]
+}

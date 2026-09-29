@@ -1,0 +1,1121 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>
+<title>Rolling Downhill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  :root {
+    --paper: #f1f2ec; --panel: #e5e8df; --ink: #1b211e; --muted: #5d6760; --line: #c5cbbf;
+    --green: #1f4a3a; --brass: #b8892b; --warn: #b23a26;
+    --weight: #1b211e; --normal: #2b62a8; --friction: #b23a26; --net: #7a3d9c;
+    --sky: #dfe3da; --field: #a8b592; --road: #c9b58a;
+    --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+    --body: "Barlow", "Segoe UI", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #121614; --panel: #1a201d; --ink: #e5e9e1; --muted: #99a39c; --line: #313a35;
+      --green: #6aae8c; --brass: #d7a84b; --warn: #e0654e;
+      --weight: #e5e9e1; --normal: #6ea3e6; --friction: #e0654e; --net: #c08be0;
+      --sky: #1d2320; --field: #2c3829; --road: #5a4f3a;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #121614; --panel: #1a201d; --ink: #e5e9e1; --muted: #99a39c; --line: #313a35;
+    --green: #6aae8c; --brass: #d7a84b; --warn: #e0654e;
+    --weight: #e5e9e1; --normal: #6ea3e6; --friction: #e0654e; --net: #c08be0;
+    --sky: #1d2320; --field: #2c3829; --road: #5a4f3a;
+  }
+  [hidden] { display: none !important; }
+  body { background: var(--paper); color: var(--ink); font: 16px/1.55 var(--body); }
+  .app { max-width: 1280px; margin: 0 auto; padding-inline: 16px; padding-block: 12px 40px; display: grid; gap: 14px; }
+  nav.site { display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; font: 600 14px var(--display); letter-spacing: .08em; text-transform: uppercase; }
+  nav.site a { color: var(--muted); text-decoration: none; } nav.site a:hover { color: var(--ink); }
+  nav.site .brand { color: var(--ink); } nav.site [aria-current] { color: var(--green); }
+  header h1 { margin: 0; font: 700 38px/1.05 var(--display); text-wrap: balance; }
+  header p { margin: 6px 0 0; max-width: 65ch; font-size: 17px; }
+  h2 { margin: 0; font: 600 14px/1.2 var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+  .stage { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 14px; align-items: start; }
+  @media (max-width: 960px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+  .col { display: grid; gap: 12px; min-width: 0; }
+  .viewport { position: relative; height: clamp(300px, 52vh, 560px); border-radius: 6px; overflow: hidden; background: var(--sky); border: 1px solid var(--line); }
+  .viewport canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .hud { position: absolute; left: 14px; top: 10px; pointer-events: none; display: grid; gap: 2px; }
+  .speed { font: 600 36px/1 var(--mono); font-variant-numeric: tabular-nums; }
+  .speed small, .hud small { font: 600 13px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-left: 4px; }
+  .hud-line { font: 400 14px var(--mono); font-variant-numeric: tabular-nums; }
+  .hud .cow { font: 600 15px var(--display); letter-spacing: .04em; color: var(--ink); }
+  .cow-note { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); max-width: calc(100% - 32px); padding: 8px 14px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); font-size: 15px; }
+  .rrow { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line); padding-block: 4px; }
+  .rrow output { font: 600 14px var(--mono); font-variant-numeric: tabular-nums; }
+  .verdict { margin: 8px 0 0; font-weight: 600; }
+  #react { border: 2px solid var(--brass); }
+  .flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  .flash.go { animation: flash .45s ease-out; }
+  @keyframes flash { 0% { opacity: .85; } 100% { opacity: 0; } }
+  .bang { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%) scale(.6); opacity: 0; pointer-events: none;
+    font: 700 clamp(48px, 10vw, 110px)/1 var(--display); letter-spacing: .04em; color: #fff; -webkit-text-stroke: 3px var(--friction);
+    text-shadow: 0 4px 0 var(--friction); }
+  .bang.go { animation: bang 1.3s cubic-bezier(.2, 1.6, .4, 1) forwards; }
+  @keyframes bang { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.4) rotate(-8deg); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1) rotate(-4deg); }
+    70% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-4deg); }
+    100% { opacity: 0; transform: translate(-50%, -60%) scale(1) rotate(-4deg); } }
+  @media (prefers-reduced-motion: reduce) { .bang.go { animation: bang-calm 1.3s forwards; } @keyframes bang-calm { 0%, 80% { opacity: 1; transform: translate(-50%, -50%); } 100% { opacity: 0; } } }
+  .skid { position: absolute; right: 12px; top: 10px; padding: 4px 10px; border-radius: 4px; background: var(--warn); color: var(--paper); font: 600 14px var(--display); letter-spacing: .08em; text-transform: uppercase; }
+  .status { position: absolute; inset: auto 12px 12px 12px; padding: 10px 12px; border-radius: 4px; background: var(--panel); border: 1px solid var(--line); font-size: 14px; }
+  .status.error { border-color: var(--warn); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .fbd { display: grid; gap: 6px; }
+  .force { display: grid; grid-template-columns: 18px 1fr auto; gap: 8px; align-items: baseline; font-size: 15px; }
+  .force i { width: 18px; height: 4px; border-radius: 2px; align-self: center; }
+  .force output { font: 600 14px var(--mono); font-variant-numeric: tabular-nums; }
+  .force .sub { color: var(--muted); font-size: 13px; }
+  .check { font: 400 14px/1.7 var(--mono); font-variant-numeric: tabular-nums; overflow-x: auto; }
+  .check .eq { display: grid; grid-template-columns: auto auto; gap: 0 14px; justify-content: start; }
+  .check .ok { color: var(--green); font-weight: 600; }
+  #vt { width: 100%; height: 160px; display: block; }
+  .controls { display: grid; gap: 12px; }
+  .field { display: grid; gap: 4px; }
+  .field-head { display: flex; justify-content: space-between; gap: 8px; font-size: 15px; }
+  .field-head output { font: 600 14px var(--mono); font-variant-numeric: tabular-nums; }
+  .hint { font-size: 13.5px; color: var(--muted); margin: 0; }
+  input[type="range"] { width: 100%; accent-color: var(--green); margin: 0; }
+  .buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+  button { font: 600 15px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 4px; padding: 8px 14px; cursor: pointer; }
+  button:hover { border-color: var(--green); }
+  button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+  #brake { background: var(--paper); border: 2px solid var(--friction); color: var(--friction); min-width: 150px; }
+  #brake[aria-pressed="true"] { background: var(--friction); color: var(--paper); }
+  .tries { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+  .try { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
+  .try h3 { margin: 0; font: 700 20px/1.15 var(--display); }
+  .try p { margin: 0; }
+  .try .set { font: 400 13.5px var(--mono); color: var(--muted); }
+  details summary { cursor: pointer; font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--green); }
+  details p { margin: 8px 0 0; }
+  .math { font-family: var(--mono); font-size: 14px; }
+  footer { font-size: 14px; color: var(--muted); max-width: 75ch; }
+  footer a, .try a { color: var(--green); }
+  code { font: 13px var(--mono); overflow-wrap: anywhere; }
+</style>
+
+<div class="app">
+  <nav class="site" aria-label="Site"><span class="brand">Brass Era Garage</span><a href="downhill.html" aria-current="page">1 · Rolling downhill</a><a href="garage.html">The garage</a></nav>
+  <header>
+    <h1>Rolling downhill</h1>
+    <p>An 1891 Panhard et Levassor, 600 kg, engine out of gear, rolls down a slope. What pushes it along, what holds it back, and how strong does its brake need to be? The arrows are the real forces from the simulation.</p>
+  </header>
+  <main class="stage">
+    <section class="col" aria-label="Simulation">
+      <div id="viewport" class="viewport">
+        <div class="hud">
+          <div class="speed"><span id="speed">0.00</span><small>m/s</small></div>
+          <div class="hud-line"><span id="dist">0.0</span><small>m down the slope</small></div>
+          <div class="hud-line"><span id="time">0.0</span><small>s</small></div>
+          <div class="hud-line cow" id="cowAhead"></div>
+        </div>
+        <div id="cowNote" class="cow-note" role="status" hidden></div>
+        <div id="flash" class="flash" aria-hidden="true"></div>
+        <div id="bang" class="bang" aria-hidden="true"></div>
+        <div id="skid" class="skid" hidden>Rear wheels locked: skidding</div>
+        <div id="status" class="status">Loading…</div>
+      </div>
+      <div class="panel" id="reactPanel" hidden aria-live="polite">
+        <h2>Surprise cow: your stop</h2>
+        <div id="reactResult"></div>
+      </div>
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><h2>Speed against time</h2><span class="hint">The slope of this line is the acceleration.</span></div>
+        <canvas id="vt" aria-label="Speed of the car against time"></canvas>
+      </div>
+    </section>
+
+    <aside class="col" aria-label="Controls and forces">
+      <div class="panel controls" id="controls">
+        <h2>Set up the hill</h2>
+        <div class="field"><div class="field-head"><label for="slope">Slope angle θ</label><output id="slopeOut"></output></div>
+          <input type="range" id="slope" min="0" max="25" step="0.5" value="5"></div>
+        <div class="field"><div class="field-head"><label for="mu">Brake friction coefficient μ</label><output id="muOut"></output></div>
+          <input type="range" id="mu" min="0" max="1" step="0.05" value="0.5">
+          <p class="hint">A leather-faced block presses on each rear tyre with P = <span id="pOut">720</span> N. Friction at the block: F = μP per wheel.</p></div>
+        <div class="buttons">
+          <button type="button" id="brake" aria-pressed="false">Brake (B)</button>
+          <button type="button" id="restart">Start again (R)</button>
+          <button type="button" id="slow" aria-pressed="false">Slow motion</button>
+          <button type="button" id="react">Surprise cow</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Forces on the car now</h2>
+        <div class="fbd">
+          <div class="force"><i style="background:var(--weight)"></i><span>Weight <span class="math">mg</span></span><output id="fW"></output></div>
+          <div class="force"><i style="background:var(--weight);opacity:.45"></i><span class="sub">along the slope, <span class="math">mg sin θ</span></span><output id="fWx"></output></div>
+          <div class="force"><i style="background:var(--weight);opacity:.45"></i><span class="sub">into the slope, <span class="math">mg cos θ</span></span><output id="fWz"></output></div>
+          <div class="force"><i style="background:var(--normal)"></i><span>Normal force <span class="math">N</span></span><output id="fN"></output></div>
+          <div class="force"><i style="background:var(--friction)"></i><span>Road friction on the tyres <span class="math">F</span></span><output id="fF"></output></div>
+          <div class="force"><i style="background:var(--net)"></i><span>Net force <span class="math">ΣF</span></span><output id="fNet"></output></div>
+        </div>
+        <p class="hint">Arrows: 1 m per 3000 N, drawn at the centre of mass. Forces along the slope count positive downhill.</p>
+      </div>
+      <div class="panel">
+        <h2>Check: ΣF = m a</h2>
+        <div class="check">
+          <div class="eq"><span>mg sin θ − F</span><output id="cSum"></output>
+            <span>m a (measured)</span><output id="cMa"></output>
+            <span>a (measured)</span><output id="cA"></output></div>
+          <div id="cOk" class="ok"></div>
+        </div>
+        <p class="hint">m = 600 kg. The acceleration comes from the simulated motion; the forces come from the simulated contacts. The two sides are worked out separately.</p>
+      </div>
+    </aside>
+  </main>
+
+  <section aria-label="Try this">
+    <h2 style="margin-bottom:10px">Predict, then check</h2>
+    <div class="tries">
+      <article class="try">
+        <h3>1. Free rolling</h3>
+        <p class="set">θ = 5°, brake off</p>
+        <p>Without friction, a = g sin θ. Work it out before you watch. Then compare with the measured a. Why is the car a little slower?</p>
+        <details><summary>Show the answer</summary>
+          <p><span class="math">g sin 5° = 9.81 × 0.0872 = 0.855 m/s²</span>. The car measures about 0.78 m/s². The difference is the road friction F of about 45 N. It is not the brake: the road has to push back on each tyre to spin its wheel up. Heavy wheels take some of the energy, so the car speeds up more slowly.</p></details>
+      </article>
+      <article class="try">
+        <h3>2. Can the brake hold it?</h3>
+        <p class="set">μ = 0.5, P = 720 N per block, two blocks</p>
+        <p>The brakes can resist at most 2μP. On what slope does that equal mg sin θ? Predict the angle, then try just below and just above it. Press Brake and see if the car stops.</p>
+        <details><summary>Show the answer</summary>
+          <p><span class="math">2μP = 720 N = mg sin θ</span>, so <span class="math">sin θ = 720 / 5886 = 0.122</span> and <span class="math">θ ≈ 7.0°</span>. At 6.5° the car stops and holds. At 7.5° it keeps creeping faster, however long you hold the brake. This model's brake is weak compared with its weight: the same 180 N·m per wheel it was validated with.</p></details>
+      </article>
+      <article class="try">
+        <h3>3. Find the μ</h3>
+        <p class="set">θ = 10°, brake on</p>
+        <p>What brake friction coefficient μ is just enough to hold the car on this hill? Work it out, then try a little below and a little above your answer.</p>
+        <details><summary>Show the answer</summary>
+          <p><span class="math">2μP = mg sin 10°</span>, so <span class="math">μ = 1022 / 1440 ≈ 0.71</span>. At 0.65 it creeps; at 0.75 it holds. Why not use μ = 10? Past a point the blocks lock the wheels, and the tyres slide on the road. Then the limit is the tyres' grip, about μ<sub>road</sub> × N on the rear wheels (μ<sub>road</sub> = 0.8 here), not the brake.</p></details>
+      </article>
+      <article class="try">
+        <h3>4. Stop for the cow</h3>
+        <p class="set">θ = 5°, μ = 0.5</p>
+        <p>Cows wander onto the road now and then. Let the car reach 3 m/s, then brake. How far will it roll before it stops? Use <span class="math">a = (2μP − mg sin θ) / m</span> and <span class="math">v² = 2as</span>, then watch the distance to the cow. Then press <b>Surprise cow</b>: a cow steps out when you least expect it, and the page measures your own reaction time.</p>
+        <details><summary>Show the answer</summary>
+          <p><span class="math">a = (720 − 513) / 600 = 0.35 m/s²</span>, so <span class="math">s = 3² / (2 × 0.35) ≈ 13 m</span>. The simulated car needs about 15.5 m. The brake takes a quarter of a second to bite, and the spinning wheels carry energy that the brake must also absorb (the same effect as in challenge 1). At 5 m/s the stop is nearly three times as long. Speed counts twice in v². On a real road, add the thinking distance: the car keeps going at full speed during your reaction time, so thinking distance is v × t.</p></details>
+      </article>
+    </div>
+  </section>
+
+  <footer>
+    <p>The car is the repository's validated Panhard et Levassor model. With θ = 5° and μ = 0.5 this page reproduces its checked downhill run (6.233 m in 4 s) and its brake stop (4.53 m). Tilting gravity on a flat road is the same physics as tilting the road. The block force P and μ = 0.5 are assumptions: together they give the model's 180 N·m of rim-brake torque per wheel. A driver holds the car on its line, as real drivers do. The cows are scenery: they are not part of the physics, and they always get out of the way. Physics: MuJoCo 3.14, in your browser.</p>
+    <p>Check it yourself: <code>experiments/007_panhard_1891</code> and <code>experiments/web/downhill.js</code> in the project repository.</p>
+  </footer>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.181.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.181.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+// Shared simulation core for every car in the web simulator: no DOM, runs in the browser and Node.
+// It mirrors the cars' validated control.py exactly: governed engine (full torque below governed
+// speed, droop to no-load), clutch/belt engagement ramp, brakes as joint or tendon friction at the
+// capacities in each car's engine.json, a position servo at the steering column. The config comes
+// from build.py (cars.py + each car's own files).
+
+class CarSim {
+  constructor(mujoco, config, files, road) {
+    this.mj = mujoco;
+    this.cfg = config;
+    this.vfs = new mujoco.MjVFS();
+    for (const [name, bytes] of Object.entries(files)) this.vfs.addBuffer(name, bytes);
+    this.model = mujoco.MjModel.mj_loadXML(`model_${road}.xml`, this.vfs);
+    this.data = new mujoco.MjData(this.model);
+    const m = this.model;
+    const id = (type, name) => {
+      const i = mujoco.mj_name2id(m, mujoco.mjtObj[type].value, name);
+      if (i < 0) throw new Error(`${name} is not in the ${config.short} model`);
+      return i;
+    };
+    this.chassis = id('mjOBJ_BODY', 'chassis');
+    this.bodies = config.bodies.map((name) => ({ name, id: id('mjOBJ_BODY', name) }));
+    this.drives = config.gears.map((g) => id('mjOBJ_ACTUATOR', `drive_${g.name}`));
+    this.column = id('mjOBJ_ACTUATOR', 'column');
+    this.diff = id('mjOBJ_TENDON', 'differential');
+    this.rearDofs = ['rear_left_joint', 'rear_right_joint'].map((n) => m.jnt_dofadr[id('mjOBJ_JOINT', n)]);
+    this.columnJoint = id('mjOBJ_JOINT', 'column_joint');
+    const joint = (name) => {
+      const j = id('mjOBJ_JOINT', name);
+      return { id: j, dof: m.jnt_dofadr[j], qpos: m.jnt_qposadr[j], range: m.jnt_range[2 * j + 1],
+        k0: m.jnt_stiffness[j], c0: m.dof_damping[m.jnt_dofadr[j]], ref0: m.qpos_spring[m.jnt_qposadr[j]],
+        f0: m.dof_frictionloss[m.jnt_dofadr[j]] };
+    };
+    this.axles = {};
+    for (const [axle, a] of Object.entries(config.suspension || {})) this.axles[axle] = { ...a, joints: a.joints.map(joint) };
+    this.shocks = config.shocks ? config.shocks.joints.map(joint) : [];
+    this.road = new Set();
+    this.tyre = new Map();
+    for (let g = 0; g < m.ngeom; g++) {
+      const name = mujoco.mj_id2name(m, mujoco.mjtObj.mjOBJ_GEOM.value, g) || '';
+      if (name === 'slope' || name.startsWith('road_')) this.road.add(g);
+      if (name.endsWith('_rolling')) this.tyre.set(g, name.replace('_rolling', ''));
+    }
+    const e = config.engine;
+    this.governed = e.governed_rpm * 2 * Math.PI / 60;
+    this.noLoad = e.no_load_rpm * 2 * Math.PI / 60;
+    this.maxTorque = e.rated_power_w / this.governed;
+    this.reset();
+  }
+
+  static defaults(config) {
+    const springs = {};
+    for (const [axle, a] of Object.entries(config.suspension || {})) springs[axle] = { rate: a.design_rate_kn, damping: a.design_damping_kns };
+    return { throttle: 1, pedal: 0, lever: 0, steer: 0, driver: true, gear: 1,
+      springs, keepRideHeight: true, shockFriction: config.shocks ? config.shocks.design_nm : 0 };
+  }
+
+  reset(input) {
+    this.mj.mj_resetData(this.model, this.data);
+    this.mj.mj_forward(this.model, this.data);
+    this.in = input ? { ...input } : CarSim.defaults(this.cfg);
+    this.gear = 0;
+    this.since = 0;
+    this.seat = [];
+    this.peak = {};
+    this.applyChassis();
+  }
+
+  set(input) {
+    Object.assign(this.in, input);
+    this.applyChassis();
+  }
+
+  // Springs, dampers and shocks: joint parameters MuJoCo reads at every step.
+  applyChassis() {
+    const m = this.model, k = m.jnt_stiffness, c = m.dof_damping, ref = m.qpos_spring, fl = m.dof_frictionloss;
+    for (const [axle, a] of Object.entries(this.axles)) {
+      const s = this.in.springs[axle];
+      const sk = s.rate / a.design_rate_kn, sc = s.damping / a.design_damping_kns;
+      for (const j of a.joints) {
+        const kj = j.k0 * sk;
+        k[j.id] = kj;
+        c[j.dof] = j.c0 * sc;
+        // Same preload torque keeps ride height; otherwise the spring keeps its free shape and sags.
+        ref[j.qpos] = this.in.keepRideHeight ? j.ref0 * j.k0 / kj : j.ref0;
+      }
+    }
+    for (const j of this.shocks) fl[j.dof] = this.in.shockFriction;
+  }
+
+  engineTorque(speed) {
+    if (speed <= this.governed) return this.maxTorque;
+    return this.maxTorque * Math.max(0, (this.noLoad - speed) / (this.noLoad - this.governed));
+  }
+
+  pursuit() {
+    // Pure pursuit to a point on the starting line ~0.8 s ahead (as control.Steer in 009/010).
+    const d = this.data, x = d.xmat, b = 9 * this.chassis, qv = d.qvel;
+    const yaw = Math.atan2(x[b + 3], x[b]);
+    const look = Math.max(4, 0.8 * Math.hypot(qv[0], qv[1]));
+    const error = d.qpos[1] + look * Math.sin(yaw);
+    return -Math.atan(2 * this.cfg.wheelbase * error / (look * look));
+  }
+
+  control() {
+    const m = this.model, d = this.data, cfg = this.cfg, inp = this.in;
+    const gear = Math.round(inp.gear);
+    if (gear !== this.gear) { this.gear = gear; this.since = d.time; }
+    const declutched = cfg.declutch_on_pedal && inp.pedal > 0;
+    const ctrl = d.ctrl, vel = d.actuator_velocity;
+    this.drives.forEach((act, i) => {
+      ctrl[act] = 0;
+      if (gear === i + 1 && !declutched) {
+        const engage = Math.min(1, Math.max(0, (d.time - this.since) / cfg.engine.shift_seconds));
+        ctrl[act] = engage * inp.throttle * this.engineTorque(vel[act]);
+      }
+    });
+    let tendon = 0, joints = 0;
+    for (const [control, value] of [[cfg.pedal, inp.pedal], [cfg.lever, inp.lever]]) {
+      if (!control) continue;
+      for (const dev of control.devices) {
+        if (dev.kind === 'tendon') tendon += value * dev.capacity;
+        else joints += value * dev.capacity;
+      }
+    }
+    m.tendon_frictionloss[this.diff] = tendon;
+    const fl = m.dof_frictionloss;
+    for (const dof of this.rearDofs) fl[dof] = joints;
+    ctrl[this.column] = inp.driver ? this.pursuit() : inp.steer * cfg.steering.limit_deg * Math.PI / 180;
+  }
+
+  seatVz() {
+    const d = this.data, b = 9 * this.chassis, R = d.xmat, qv = d.qvel, bp = this.model.body_pos, s = this.cfg.seat;
+    const r = [0, 1, 2].map((i) => s[i] - bp[3 * this.chassis + i]);
+    const w = [0, 1, 2].map((i) => R[b + 3 * i] * qv[3] + R[b + 3 * i + 1] * qv[4] + R[b + 3 * i + 2] * qv[5]);
+    const rw = [0, 1, 2].map((i) => R[b + 3 * i] * r[0] + R[b + 3 * i + 1] * r[1] + R[b + 3 * i + 2] * r[2]);
+    return qv[2] + (w[0] * rw[1] - w[1] * rw[0]);
+  }
+
+  step(n = 1) {
+    const d = this.data;
+    for (let i = 0; i < n; i++) {
+      this.control();
+      this.mj.mj_step(this.model, d);
+      this.seat.push([d.time, this.seatVz()]);
+      if (this.seat.length > 2000) this.seat.shift();
+      for (const [axle, a] of Object.entries(this.axles)) {
+        const j = a.joints[0];
+        this.peak[axle] = Math.max(this.peak[axle] || 0, Math.abs(d.qpos[j.qpos]) / j.range);
+      }
+    }
+  }
+
+  wheelsOnGround() {
+    const d = this.data, found = new Set(), vec = d.contact;
+    try {
+      for (let i = 0; i < d.ncon; i++) {
+        const c = vec.get(i), a = c.geom1, b = c.geom2;
+        if (this.road.has(a) && this.tyre.has(b)) found.add(this.tyre.get(b));
+        if (this.road.has(b) && this.tyre.has(a)) found.add(this.tyre.get(a));
+        c.delete?.();
+      }
+    } finally {
+      vec.delete();
+    }
+    return found;
+  }
+
+  seatRms() {
+    const s = this.seat, n = 20;
+    if (s.length < 3 * n) return 0;
+    const v = [];
+    for (let i = n - 1; i < s.length; i++) {
+      let sum = 0;
+      for (let k = i - n + 1; k <= i; k++) sum += s[k][1];
+      v.push([s[i][0], sum / n]);
+    }
+    let acc2 = 0;
+    for (let i = 1; i < v.length; i++) acc2 += ((v[i][1] - v[i - 1][1]) / (v[i][0] - v[i - 1][0])) ** 2;
+    return Math.sqrt(acc2 / (v.length - 1)) / 9.81;
+  }
+
+  engineRpm() {
+    const g = this.gear;
+    return g > 0 ? this.data.actuator_velocity[this.drives[g - 1]] * 60 / (2 * Math.PI) : 0;
+  }
+
+  readout() {
+    const d = this.data, out = {
+      time: d.time, x: d.qpos[0], speed: Math.hypot(d.qvel[0], d.qvel[1]), gear: this.gear,
+      rpm: this.engineRpm(), columnDeg: d.qpos[this.model.jnt_qposadr[this.columnJoint]] * 180 / Math.PI,
+      seatRmsG: this.seatRms(), wheels: this.wheelsOnGround(), axles: {},
+    };
+    for (const [axle, a] of Object.entries(this.axles)) {
+      const j = a.joints[0], q = d.qpos[j.qpos];
+      out.axles[axle] = { offsetMm: q * a.lever_m * a.sign * 1000, used: Math.abs(q) / j.range, peak: this.peak[axle] || 0 };
+    }
+    return out;
+  }
+
+  poses() {
+    const d = this.data, p = d.xpos, q = d.xquat, out = {};
+    for (const { name, id } of this.bodies) {
+      out[name] = [p[3 * id], p[3 * id + 1], p[3 * id + 2], q[4 * id], q[4 * id + 1], q[4 * id + 2], q[4 * id + 3]];
+    }
+    return out;
+  }
+
+  dispose() {
+    this.data.delete();
+    this.model.delete();
+    this.vfs.delete();
+  }
+}
+
+// Occasional cows along the road: scenery only (not in the physics model; they never touch the
+// car). A cow standing on the road ambles off to the verge when a car comes near, and hurries if
+// the car is fast. Positions are seeded, so a restart brings the same herd back.
+// THREE comes from the page's module (build.py inlines this file next to the page script).
+
+function mulberry32(seed) {
+  return () => {
+    seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function hideTexture(rng, base, spot) {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 128;
+  const g = c.getContext('2d');
+  g.fillStyle = base; g.fillRect(0, 0, 256, 128);
+  g.fillStyle = spot;
+  for (let i = 0; i < 7; i++) {
+    g.beginPath();
+    const x = rng() * 256, y = rng() * 128, r = 12 + rng() * 26;
+    for (let k = 0; k <= 10; k++) {
+      const a = k / 10 * Math.PI * 2, rr = r * (0.7 + 0.5 * rng());
+      k ? g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr * 0.8) : g.moveTo(x + rr, y);
+    }
+    g.fill();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+// A cow about 2.1 m long and 1.4 m at the withers, facing +x, feet at z = 0.
+function makeCow(rng) {
+  const cow = new THREE.Group();
+  const brown = rng() < 0.3;
+  const hide = new THREE.MeshStandardMaterial({ map: hideTexture(rng, brown ? '#8a5a36' : '#f2efe6', brown ? '#f2efe6' : '#1e1c1a'), roughness: 0.9 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x2a2522, roughness: 0.9 });
+  const pink = new THREE.MeshStandardMaterial({ color: 0xd99a92, roughness: 0.8 });
+  const horn = new THREE.MeshStandardMaterial({ color: 0xe8dcc0, roughness: 0.6 });
+  const mesh = (geo, mat, x, y, z, parent = cow) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; parent.add(m); return m; };
+  // Body: one rounded barrel along x (a capsule is built along y, so turn it).
+  mesh(new THREE.CapsuleGeometry(0.4, 1.15, 6, 14).rotateZ(Math.PI / 2), hide, 0, 0, 1.06).scale.set(1, 0.92, 1.05);
+  mesh(new THREE.SphereGeometry(0.2, 10, 6), pink, -0.2, 0, 0.62);                       // udder
+  const legs = [];
+  for (const [x, y] of [[0.62, 0.24], [0.62, -0.24], [-0.62, 0.24], [-0.62, -0.24]]) {
+    const pivot = new THREE.Group();
+    pivot.position.set(x, y, 0.72);
+    cow.add(pivot);
+    mesh(new THREE.CylinderGeometry(0.075, 0.065, 0.66, 8).rotateX(Math.PI / 2), hide, 0, 0, -0.33, pivot);
+    mesh(new THREE.CylinderGeometry(0.075, 0.08, 0.08, 8).rotateX(Math.PI / 2), dark, 0, 0, -0.68, pivot);
+    legs.push(pivot);
+  }
+  const neck = new THREE.Group();
+  neck.position.set(0.95, 0, 1.2);
+  cow.add(neck);
+  mesh(new THREE.BoxGeometry(0.45, 0.34, 0.36), hide, 0.25, 0, 0.02, neck);
+  mesh(new THREE.BoxGeometry(0.2, 0.3, 0.24), pink, 0.52, 0, -0.06, neck);             // muzzle
+  for (const s of [1, -1]) {
+    mesh(new THREE.ConeGeometry(0.035, 0.18, 6).rotateX(-s * Math.PI / 2.4), horn, 0.18, s * 0.19, 0.22, neck);
+    mesh(new THREE.BoxGeometry(0.06, 0.16, 0.1), hide, 0.12, s * 0.24, 0.1, neck);     // ears
+  }
+  // Tail hangs from the rump: a cylinder is built along y, so stand it on z; pivot at the top.
+  const tail = new THREE.Group();
+  tail.position.set(-0.98, 0, 1.28);
+  cow.add(tail);
+  mesh(new THREE.CylinderGeometry(0.022, 0.018, 0.62, 6).rotateX(Math.PI / 2), hide, 0, 0, -0.31, tail);
+  mesh(new THREE.SphereGeometry(0.05, 8, 6), dark, 0, 0, -0.64, tail).scale.set(1, 1, 1.8);   // switch
+  tail.rotation.y = -0.12;
+  return { cow, legs, neck, tail };
+}
+
+class Herd {
+  // parent: the group the road lives in (x along the road, y across it, z up)
+  constructor(parent, { seed = 7, from = 40, to = 2000, gap = [45, 110], roadHalf = 1.6 } = {}) {
+    this.parent = parent;
+    this.opts = { seed, from, to, gap, roadHalf };
+    this.cows = [];
+    this.reset();
+  }
+
+  reset() {
+    for (const c of this.cows) this.parent.remove(c.obj.cow);
+    this.cows = [];
+    const { seed, from, to, gap, roadHalf } = this.opts;
+    const rng = mulberry32(seed);
+    for (let x = from + rng() * gap[0]; x < to; x += gap[0] + rng() * (gap[1] - gap[0])) {
+      const onRoad = rng() < 0.6;
+      const side = rng() < 0.5 ? -1 : 1;
+      const y = onRoad ? (rng() * 2 - 1) * (roadHalf - 0.5) : side * (roadHalf + 2 + rng() * 6);
+      const obj = makeCow(rng);
+      const heading = rng() * Math.PI * 2;
+      obj.cow.position.set(x, y, 0);
+      obj.cow.rotation.z = heading;
+      obj.cow.scale.setScalar(0.92 + rng() * 0.16);
+      this.parent.add(obj.cow);
+      this.cows.push({ obj, x, y, heading, phase: rng() * 10, state: 'graze', target: null, speed: 0, hurried: false });
+    }
+  }
+
+  clear() {
+    for (const c of this.cows) this.parent.remove(c.obj.cow);
+    this.cows = [];
+  }
+
+  // A cow that walks into the road for the reaction test: it stays until the car is nearly on it.
+  spawn(x, y) {
+    const obj = makeCow(mulberry32((Math.random() * 1e9) | 0));
+    obj.cow.rotation.order = 'ZYX';   // rotation.x rolls the cow about its own long axis
+    this.parent.add(obj.cow);
+    const c = { obj, x, y, z: 0, roll: 0, heading: Math.PI / 2, phase: 0, state: 'graze', target: null, speed: 0,
+      hurried: false, stubborn: true, stayPut: true };
+    this.cows.push(c);
+    return c;
+  }
+
+  // Bowled over by a car moving at vCar (m/s): thrown ahead and up, rolling; lands, lies stunned,
+  // gets up and trots off. A cartoon: the cow is never hurt.
+  knock(c, vCow) {
+    // Thrown ahead at about the car's speed and sideways onto the near verge (the camera's side,
+    // y < 0) so the tumble is in view and the car rolls past.
+    Object.assign(c, { state: 'tumble', vx: vCow, vy: -(2.6 + 0.3 * vCow), vz: 1.2 + 0.25 * vCow, spin: -(5 + 1.5 * vCow), t: 0 });
+  }
+
+  onRoad(c) { return Math.abs(c.y) < this.opts.roadHalf + 0.6; }
+
+  // carX: front of the car along the road; carSpeed in m/s. Returns the nearest cow still on the
+  // road ahead (or null) and whether any cow had to hurry this frame.
+  update(dt, carX, carSpeed) {
+    let nearest = null, hurried = false;
+    for (const c of this.cows) {
+      const ahead = c.x - carX;
+      const warn = c.stubborn ? 2 + 0.3 * carSpeed : 6 + 1.6 * carSpeed;   // most notice a car about 1.6 s away
+      if (c.state === 'graze' && !c.stayPut && this.onRoad(c) && ahead > -2 && ahead < warn) {
+        const side = c.y === 0 ? 1 : Math.sign(c.y);
+        c.target = side * (this.opts.roadHalf + 2.5);
+        c.state = 'walk';
+        c.speed = c.stubborn || ahead < 3 + 0.6 * carSpeed ? 3.2 : 1.3;   // trots if the car is almost on it
+        c.hurried = c.speed > 2;
+        if (c.hurried) hurried = true;
+        c.heading = side > 0 ? Math.PI / 2 : -Math.PI / 2;
+      }
+      c.phase += dt;
+      const { cow, legs, neck, tail } = c.obj;
+      if (c.state === 'tumble') {                       // ballistic flight, rolling, bouncing
+        c.t += dt;
+        c.vz -= 9.81 * dt;
+        c.x += c.vx * dt; c.y += c.vy * dt; c.z += c.vz * dt; c.roll += c.spin * dt;
+        if (c.z <= 0 && c.vz < 0) {
+          c.z = 0; c.vz = -0.3 * c.vz; c.vx *= 0.55; c.vy *= 0.45; c.spin *= 0.5;
+          if (Math.abs(c.vz) < 0.4 && Math.abs(c.vx) < 0.6) { c.state = 'stunned'; c.t = 0; c.vx = c.vy = 0; c.spin = 0; }
+        }
+        legs.forEach((l, i) => { l.rotation.y = Math.sin(c.phase * 20 + i) * 0.6; });
+        cow.position.set(c.x, c.y, c.z);
+        cow.rotation.x = c.roll;
+        continue;
+      }
+      if (c.state === 'stunned' || c.state === 'rising') {
+        c.t += dt;
+        const lying = Math.PI / 2 * Math.sign(Math.sin(c.roll) || 1);
+        if (c.state === 'stunned') {
+          c.roll += (lying - ((c.roll + Math.PI) % (Math.PI * 2) - Math.PI)) * Math.min(1, dt * 6);
+          legs.forEach((l, i) => { l.rotation.y = 0.3 * Math.sin(c.phase * 9 + i); });   // legs kick
+          if (c.t > 1.6) { c.state = 'rising'; c.t = 0; c.roll = (c.roll + Math.PI) % (Math.PI * 2) - Math.PI; }
+        } else {
+          c.roll *= Math.max(0, 1 - dt * 3.5);
+          if (Math.abs(c.roll) < 0.02) {
+            c.roll = 0; c.stayPut = false; c.state = 'walk'; c.speed = 1.6; c.heading = -Math.PI / 2;
+            c.target = -(this.opts.roadHalf + 3);   // trots off, away from the road
+          }
+        }
+        cow.position.set(c.x, c.y, 0.25 * Math.abs(Math.sin(c.roll)));
+        cow.rotation.x = c.roll;
+        continue;
+      }
+      if (c.state === 'walk') {
+        const step = Math.sign(c.target - c.y) * c.speed * dt;
+        if (Math.abs(c.target - c.y) <= Math.abs(step)) { c.y = c.target; c.state = 'graze'; }
+        else c.y += step;
+        const swing = Math.sin(c.phase * c.speed * 5) * 0.45;
+        legs.forEach((l, i) => { l.rotation.y = (i % 3 === 0 ? swing : -swing); });
+        neck.rotation.y = -0.1;
+      } else {
+        legs.forEach((l) => { l.rotation.y = 0; });
+        neck.rotation.y = 0.55 + 0.08 * Math.sin(c.phase * 2.2);   // head down, grazing
+      }
+      tail.rotation.x = 0.18 * Math.sin(c.phase * 3);   // swishes side to side
+      cow.position.set(c.x, c.y, 0);
+      cow.rotation.z += ((c.heading - cow.rotation.z + Math.PI * 3) % (Math.PI * 2) - Math.PI) * Math.min(1, dt * 4);
+      if (this.onRoad(c) && c.state === 'graze' && c.x > carX - 1 && (!nearest || c.x < nearest.x)) nearest = c;
+    }
+    return { nearest, hurried };
+  }
+}
+
+// Rolling downhill: the validated Panhard (1891) on a slope, with its forces drawn.
+// Inlined after sim.js by build.py. The slope tilts gravity on the flat road (the same physics as
+// tilting the road; checked against the car's validated 5-degree runs). The rim-block brake is
+// friction F = mu * P at the tyre, so its torque per rear wheel is mu * P * r.
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const CAR = 'panhard_1891';
+const MU_DESIGN = 0.5;          // assumed block friction; with P below it gives the validated 180 N m
+const SCALE = 1 / 3000;         // arrow metres per newton
+const SPEED_LIMIT = 30;         // m/s: the model has no drag, so on a steep hill it would speed up for ever
+const $ = (id) => document.getElementById(id);
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const MINUS = '−';
+const newtons = (v) => `${Math.round(v).toLocaleString('en-GB')} N`;
+const signedN = (v) => `${Math.round(v) < 0 ? MINUS : ''}${Math.abs(Math.round(v)).toLocaleString('en-GB')} N`;
+function status(text, isError = false) { const el = $('status'); el.hidden = !text; el.textContent = text || ''; el.classList.toggle('error', isError); }
+
+async function fetchBytes(name, onProgress) {
+  const res = await fetch(name);
+  if (!res.ok) throw new Error(`Could not load ${name} (HTTP ${res.status}).`);
+  const total = +res.headers.get('content-length') || 0;
+  if (!onProgress || !res.body || !total) return new Uint8Array(await res.arrayBuffer());
+  const reader = res.body.getReader(), parts = [];
+  let got = 0;
+  for (;;) { const { done, value } = await reader.read(); if (done) break; parts.push(value); got += value.length; onProgress(got / total); }
+  const out = new Uint8Array(got);
+  let at = 0;
+  for (const p of parts) { out.set(p, at); at += p.length; }
+  return out;
+}
+
+// ---------- scene: everything physical sits in `hill`, rotated by the slope angle ----------
+const viewport = $('viewport');
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+viewport.prepend(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(34, 1, 0.05, 400);
+camera.up.set(0, 0, 1);
+const orbit = new OrbitControls(camera, renderer.domElement);
+orbit.enableDamping = true;
+orbit.minDistance = 3;
+orbit.maxDistance = 25;
+scene.add(new THREE.HemisphereLight(0xf4f1e6, 0x4a5540, 1.4));
+const sun = new THREE.DirectionalLight(0xfff6e2, 2.3);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 1, far: 30 });
+scene.add(sun, sun.target);
+const hill = new THREE.Group();
+scene.add(hill);
+const ROAD_M = 3000;             // long enough for a 25-degree run
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_M + 200, 120), new THREE.MeshStandardMaterial({ roughness: 1 }));
+ground.position.set(ROAD_M / 2, 0, -0.003);
+ground.receiveShadow = true;
+const road = new THREE.Mesh(new THREE.PlaneGeometry(ROAD_M + 200, 3.2), new THREE.MeshStandardMaterial({ roughness: 0.95 }));
+road.position.set(ROAD_M / 2, 0, -0.001);
+road.receiveShadow = true;
+hill.add(ground, road);
+const postMat = new THREE.MeshStandardMaterial({ color: 0xe9e4d4, roughness: 0.8 });
+for (const [h, step, offset] of [[0.35, 10, 5], [0.6, 10, 0]]) {   // posts every 5 m, taller every 10 m
+  const n = Math.floor(ROAD_M / step) + 1;
+  const posts = new THREE.InstancedMesh(new THREE.BoxGeometry(0.06, 0.06, h), postMat, n);
+  const at = new THREE.Matrix4();
+  for (let i = 0; i < n; i++) posts.setMatrixAt(i, at.makeTranslation(offset + i * step, 1.9, h / 2));   // far side of the road
+  posts.castShadow = true;
+  hill.add(posts);
+}
+const herd = new Herd(hill, { seed: 11, from: 45, to: ROAD_M, gap: [40, 95], roadHalf: 1.6 });
+function paintScene() {
+  scene.background = new THREE.Color(css('--sky'));
+  scene.fog = new THREE.Fog(css('--sky'), 50, 180);
+  ground.material.color.set(css('--field'));
+  road.material.color.set(css('--road'));
+  for (const [arrow, token] of arrowColors) arrow.setColor(new THREE.Color(css(token)));
+}
+function resize() {
+  const w = viewport.clientWidth, h = viewport.clientHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(viewport);
+
+// Free-body arrows at the centre of mass (in the hill's frame: gravity tilts, the road is flat).
+const arrows = {}, arrowColors = [];
+function makeArrow(name, token, faint = false) {
+  const a = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(), 1, 0x000000, 0.18, 0.1);
+  a.line.material.linewidth = 2;
+  if (faint) { a.line.material.transparent = a.cone.material.transparent = true; a.line.material.opacity = a.cone.material.opacity = 0.45; }
+  a.cone.material.depthTest = a.line.material.depthTest = false;
+  a.renderOrder = 10;
+  hill.add(a);
+  arrows[name] = a;
+  arrowColors.push([a, token]);
+}
+makeArrow('weight', '--weight'); makeArrow('along', '--weight', true); makeArrow('into', '--weight', true);
+makeArrow('normal', '--normal'); makeArrow('friction', '--friction'); makeArrow('net', '--net');
+function setArrow(name, origin, v) {
+  const a = arrows[name], len = v.length() * SCALE;
+  a.visible = len > 0.02;
+  if (!a.visible) return;
+  a.position.copy(origin);
+  a.setDirection(v.clone().normalize());
+  a.setLength(len, Math.min(0.18, len * 0.4), Math.min(0.1, len * 0.25));
+}
+
+// ---------- simulation ----------
+let mujoco, config, files, sim, bodyGroups = {}, mass = 0, blockP = 0;
+let braking = false, brakeCmd = 0, slow = false, lastCar = null, cowNote = null, movedSinceStop = false, paused = false;
+let test = null, lastFront = 0, lastSpeed = 0;   // the surprise-cow reaction test
+const COW_KG = 600;                              // a typical beef cow
+let hitStopUntil = 0, shakeUntil = 0, dust = null;
+const history = [];          // [t, speed, braking]
+const velHist = [];          // [t, vx] for the measured acceleration
+
+function slope() { return +$('slope').value * Math.PI / 180; }
+function applySettings() {
+  const th = slope(), g = sim.model.opt.gravity;
+  g[0] = 9.81 * Math.sin(th); g[1] = 0; g[2] = -9.81 * Math.cos(th);
+  hill.rotation.y = th;
+  config.pedal.devices[0].capacity = +$('mu').value * blockP * config.rear_radius;   // mu * P * r per rear wheel
+  $('slopeOut').textContent = `${(+$('slope').value).toFixed(1)}°`;
+  $('muOut').textContent = (+$('mu').value).toFixed(2);
+}
+function restart() {
+  // The driver keeps the car on its line (as real drivers do; see 010's README on drift).
+  sim.reset({ ...CarSim.defaults(config), gear: 0, throttle: 0, driver: true, steer: 0, pedal: 0, lever: 0 });
+  herd.reset();
+  cowNote = null; movedSinceStop = false; paused = false; status('');
+  test = null;
+  $('cowNote').hidden = true;
+  braking = false; brakeCmd = 0;
+  $('brake').setAttribute('aria-pressed', 'false');
+  history.length = 0; velHist.length = 0;
+  applySettings();
+}
+function showCowNote(text) {
+  if (cowNote === text) return;
+  cowNote = text;
+  $('cowNote').textContent = text;
+  $('cowNote').hidden = false;
+}
+function setBrake(on) {
+  braking = on;
+  $('brake').setAttribute('aria-pressed', String(on));
+  if (on && test?.phase === 'cow') {
+    Object.assign(test, { phase: 'braking', tPress: performance.now(), xPress: lastFront, vPress: lastSpeed });
+  }
+}
+
+function brakeDecel() {   // physics prediction, per unit mass: (2 mu P - m g sin theta) / m
+  return (2 * +$('mu').value * blockP - mass * 9.81 * Math.sin(slope())) / mass;
+}
+
+function startTest() {
+  if (!sim) return;
+  restart();
+  herd.clear();
+  if (slow) $('slow').click();   // reaction times are measured in real time
+  test = { phase: 'waiting', armAt: null };
+  $('reactPanel').hidden = false;
+  $('reactResult').textContent = 'Get ready. Somewhere ahead a cow will step into the road. Press B (or Brake) the moment you see it.';
+}
+
+// Impact: the cow is not in the physics engine, so the page applies a simple momentum model. Car and
+// cow share momentum (perfectly inelastic); the car's velocities are scaled to the shared speed, and
+// the cow is thrown ahead. Then the drama: freeze-frame, shake, flash, dust, and a cartoon tumble.
+function collide(now, front, speed) {
+  const vShared = mass * speed / (mass + COW_KG);
+  const qv = sim.data.qvel;
+  for (let i = 0; i < sim.model.nv; i++) qv[i] *= vShared / speed;
+  herd.knock(test.cow, vShared * 1.35);
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  hitStopUntil = now + (calm ? 0 : 380);
+  shakeUntil = now + (calm ? 0 : 750);
+  if (!calm) { $('flash').classList.remove('go'); void $('flash').offsetWidth; $('flash').classList.add('go'); }
+  $('bang').textContent = 'THUD!';
+  $('bang').classList.remove('go'); void $('bang').offsetWidth; $('bang').classList.add('go');
+  dust = makeDust(test.cow.x - 0.3, now);
+  const ke = 0.5 * mass * speed * speed;
+  Object.assign(test, { phase: 'hit', hitAt: now, vHit: speed, vAfter: vShared, keHit: ke });
+  const braked = test.tPress != null;
+  $('reactResult').innerHTML = '';
+  const rows = [
+    ['Impact speed', `${speed.toFixed(2)} m/s (${(speed * 3.6).toFixed(0)} km/h)`],
+    ['Kinetic energy ½mv²', `${(ke / 1000).toFixed(1)} kJ, like dropping the car from ${(speed * speed / (2 * 9.81)).toFixed(2)} m`],
+    [`Momentum shared with a ${COW_KG} kg cow`, `car slowed from ${speed.toFixed(2)} to ${vShared.toFixed(2)} m/s`],
+  ];
+  if (braked) rows.unshift(['Your reaction time', `${((test.tPress - test.tAppear) / 1000).toFixed(2)} s`]);
+  for (const [k, v] of rows) {
+    const row = document.createElement('div'); row.className = 'rrow';
+    const a1 = document.createElement('span'); a1.textContent = k;
+    const b1 = document.createElement('output'); b1.textContent = v;
+    row.append(a1, b1); $('reactResult').append(row);
+  }
+  const verdict = document.createElement('p');
+  verdict.className = 'verdict';
+  verdict.textContent = braked ? 'You braked, but too late. Try again, and brake the moment the cow appears.'
+    : 'You did not brake. Try again, and press B the moment the cow appears.';
+  const why = document.createElement('p');
+  why.className = 'hint';
+  why.textContent = 'The cow is not part of the physics engine: the page shares the momentum between car and cow '
+    + '(m₁v = (m₁ + m₂)v′), then plays the tumble as a cartoon. The cow is fine, just annoyed.';
+  $('reactResult').append(verdict, why);
+}
+
+function makeDust(x, now) {
+  const n = 90, pos = new Float32Array(n * 3), vel = [];
+  for (let i = 0; i < n; i++) {
+    pos.set([x, (Math.random() - 0.5) * 1.2, 0.1 + Math.random() * 0.4], i * 3);
+    vel.push([1 + Math.random() * 3, (Math.random() - 0.5) * 3, 1 + Math.random() * 2.5]);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color: new THREE.Color(css('--road')).offsetHSL(0, -0.1, 0.12), size: 0.22, transparent: true, opacity: 0.85, depthWrite: false }));
+  hill.add(pts);
+  return { pts, vel, born: now };
+}
+function updateDust(now, dt) {
+  if (!dust) return;
+  const age = (now - dust.born) / 1000, a = dust.pts.geometry.attributes.position;
+  for (let i = 0; i < dust.vel.length; i++) {
+    const v = dust.vel[i];
+    v[2] -= 4 * dt; v[0] *= 1 - dt; v[1] *= 1 - dt;
+    a.setXYZ(i, a.getX(i) + v[0] * dt, a.getY(i) + v[1] * dt, Math.max(0.02, a.getZ(i) + v[2] * dt));
+  }
+  a.needsUpdate = true;
+  dust.pts.material.opacity = Math.max(0, 0.85 * (1 - age / 1.6));
+  if (age > 1.6) { hill.remove(dust.pts); dust = null; }
+}
+
+function runTest(now, front, speed) {
+  if (!test) return;
+  if (test.phase === 'waiting') {
+    if (speed >= 3 && test.armAt === null) test.armAt = now + 1000 + Math.random() * 2500;
+    if (test.armAt !== null && now >= test.armAt) {
+      // Room for a one-second reaction plus the real stop (about 1.2 x v^2/2a here: brake bite, spinning wheels).
+      const a = brakeDecel(), spare = 1.0 * speed + (a > 0 ? 1.2 * speed * speed / (2 * a) : 20) + 5;
+      test.cow = herd.spawn(front + spare, 0);
+      Object.assign(test, { phase: 'cow', tAppear: now, xAppear: front, vAppear: speed });
+      $('reactResult').textContent = 'Cow!';
+    }
+  } else if ((test.phase === 'cow' || test.phase === 'braking') && front > test.cow.x - 0.45 && test.cow.state === 'graze') {
+    collide(now, front, speed);
+  } else if (test.phase === 'braking') {
+    if (speed < 0.03) {
+      test.phase = 'done';
+      const r = (test.tPress - test.tAppear) / 1000, think = test.xPress - test.xAppear, brake = front - test.xPress;
+      const a = brakeDecel(), predicted = a > 0 ? test.vPress ** 2 / (2 * a) : Infinity;
+      const gap = test.cow.x - front;
+      $('reactResult').innerHTML = '';
+      const rows = [
+        ['Your reaction time', `${r.toFixed(2)} s`],
+        ['Thinking distance (the car at full speed while you react)', `${think.toFixed(1)} m`],
+        ['Braking distance', `${brake.toFixed(1)} m`],
+        ['Physics prediction, v² / 2a', `${predicted.toFixed(1)} m (v = ${test.vPress.toFixed(2)} m/s, a = ${a.toFixed(2)} m/s²)`],
+        ['Stopping distance', `${(think + brake).toFixed(1)} m`],
+      ];
+      for (const [k, v] of rows) {
+        const row = document.createElement('div'); row.className = 'rrow';
+        const a1 = document.createElement('span'); a1.textContent = k;
+        const b1 = document.createElement('output'); b1.textContent = v;
+        row.append(a1, b1); $('reactResult').append(row);
+      }
+      const why = document.createElement('p');
+      why.className = 'hint';
+      why.textContent = 'The real stop is longer than v² / 2a: the brake takes a quarter of a second to bite, and the spinning wheels carry energy the brake must also absorb.';
+      $('reactResult').append(why);
+      const verdict = document.createElement('p');
+      verdict.className = 'verdict';
+      verdict.textContent = test.close ? 'Too close: the cow had to trot out of the way. Brake sooner, or add more brake friction μ.'
+        : `You stopped ${gap.toFixed(1)} m before the cow.`;
+      $('reactResult').append(verdict);
+    } else if (brakeDecel() <= 0 && now - test.tPress > 4000) {
+      test.phase = 'done';
+      $('reactResult').textContent = 'The brake cannot stop the car on this slope: 2μP is less than mg sin θ. Make the hill gentler or the brake stronger.';
+    }
+  }
+}
+
+function contactForces() {
+  // Normal and friction force of the road on the tyres, from the constraint solver (elliptic cone:
+  // rows normal, tangent 1, tangent 2 in the contact frame), in the hill frame.
+  const d = sim.data, vec = d.contact, ef = d.efc_force, N = new THREE.Vector3(), T = new THREE.Vector3();
+  try {
+    for (let i = 0; i < d.ncon; i++) {
+      const c = vec.get(i), fr = c.frame, a = c.efc_address;
+      const sign = sim.tyre.has(c.geom2) ? 1 : sim.tyre.has(c.geom1) ? -1 : 0;
+      if (sign && a >= 0) {
+        for (let k = 0; k < 3; k++) {
+          N.setComponent(k, N.getComponent(k) + sign * ef[a] * fr[k]);
+          T.setComponent(k, T.getComponent(k) + sign * (ef[a + 1] * fr[3 + k] + ef[a + 2] * fr[6 + k]));
+        }
+      }
+      c.delete?.();
+    }
+  } finally { vec.delete(); }
+  return { N, T };
+}
+
+function drawChart() {
+  const canvas = $('vt'), ctx = canvas.getContext('2d');
+  const w = canvas.clientWidth, h = canvas.clientHeight, dpr = Math.min(devicePixelRatio, 2);
+  if (canvas.width !== Math.round(w * dpr)) { canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, w, h);
+  const pad = { l: 58, r: 8, t: 8, b: 22 };
+  const tMax = Math.max(10, history.length ? history[history.length - 1][0] : 0);
+  const vMax = Math.max(2, ...history.map((p) => p[1])) * 1.1;
+  const x = (t) => pad.l + t / tMax * (w - pad.l - pad.r);
+  const y = (v) => pad.t + (1 - v / vMax) * (h - pad.t - pad.b);
+  ctx.fillStyle = css('--friction'); ctx.globalAlpha = 0.12;
+  for (let i = 1; i < history.length; i++) if (history[i][2]) ctx.fillRect(x(history[i - 1][0]), pad.t, x(history[i][0]) - x(history[i - 1][0]) + 0.5, h - pad.t - pad.b);
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = css('--line'); ctx.fillStyle = css('--muted');
+  ctx.font = '11px "JetBrains Mono", ui-monospace, monospace';
+  const vStep = vMax > 8 ? 2 : vMax > 4 ? 1 : 0.5;
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for (let v = 0; v <= vMax + 1e-9; v += vStep) { ctx.beginPath(); ctx.moveTo(pad.l, y(v)); ctx.lineTo(w - pad.r, y(v)); ctx.stroke(); ctx.fillText(`${+v.toFixed(1)} m/s`, pad.l - 5, y(v)); }
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  const tStep = tMax > 30 ? 10 : tMax > 12 ? 5 : 2;
+  for (let t = 0; t <= tMax; t += tStep) ctx.fillText(`${t} s`, x(t), h - 6);
+  ctx.strokeStyle = css('--green'); ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  history.forEach((p, i) => (i ? ctx.lineTo(x(p[0]), y(p[1])) : ctx.moveTo(x(p[0]), y(p[1]))));
+  ctx.stroke();
+  ctx.lineWidth = 1;
+}
+
+let lastFrame = 0, lastPanel = 0;
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (!sim) { renderer.render(scene, camera); return; }
+  const wall = Math.min(0.05, (now - (lastFrame || now)) / 1000) * (slow ? 0.25 : 1);
+  lastFrame = now;
+  const d = sim.data, dt = sim.model.opt.timestep;
+  const frozen = now < hitStopUntil;
+  for (let i = 0, n = paused || frozen ? 0 : Math.min(60, Math.round(wall / dt)); i < n; i++) {
+    brakeCmd = Math.max(0, Math.min(1, brakeCmd + (braking ? 1 : -1) * dt / config.engine.brake_ramp_seconds));
+    sim.set({ pedal: brakeCmd });
+    sim.step(1);
+  }
+  sim.mj.mj_subtreeVel(sim.model, d);   // whole car's centre of mass: sum F = m a holds for it
+  const vx = d.subtree_linvel[3 * sim.chassis];
+  if (!paused && Math.hypot(d.qvel[0], d.qvel[1]) > SPEED_LIMIT) {
+    paused = true;
+    status(`Stopped the clock at ${Math.round(SPEED_LIMIT * 3.6)} km/h. An 1891 car could never go this fast, and this model has `
+      + 'no air drag or rolling resistance, so on a slope it would speed up for ever. Press Start again (R).');
+  }
+  velHist.push([d.time, vx]);
+  while (velHist.length > 2 && d.time - velHist[0][0] > 0.2) velHist.shift();
+  history.push([d.time, Math.hypot(d.qvel[0], d.qvel[1]), braking]);
+  if (history.length > 4000) history.splice(0, history.length - 4000);
+  // Car meshes follow their bodies (hill frame).
+  const poses = sim.poses();
+  for (const [name, p] of Object.entries(poses)) {
+    const g = bodyGroups[name];
+    if (g) { g.position.set(p[0], p[1], p[2]); g.quaternion.set(p[4], p[5], p[6], p[3]); }
+  }
+  // Forces at the whole car's centre of mass.
+  const c = sim.chassis, sc = d.subtree_com, com = new THREE.Vector3(sc[3 * c], sc[3 * c + 1], sc[3 * c + 2]);
+  const th = slope(), W = mass * 9.81;
+  const { N, T } = contactForces();
+  const first = velHist[0], last = velHist[velHist.length - 1];
+  const a = last[0] > first[0] ? (last[1] - first[1]) / (last[0] - first[0]) : 0;
+  setArrow('weight', com, new THREE.Vector3(W * Math.sin(th), 0, -W * Math.cos(th)));
+  setArrow('along', com, new THREE.Vector3(W * Math.sin(th), 0, 0));
+  setArrow('into', com, new THREE.Vector3(0, 0, -W * Math.cos(th)));
+  setArrow('normal', com, N);
+  setArrow('friction', com, new THREE.Vector3(T.x, 0, 0));
+  setArrow('net', com.clone().add(new THREE.Vector3(0, 0, 0.9)), new THREE.Vector3(mass * a, 0, 0));
+  // Cows: the nearest one still standing on the road ahead, and how the stop went.
+  const speed = Math.hypot(d.qvel[0], d.qvel[1]);
+  const front = poses.chassis[0] + config.wheelbase + config.front_radius;
+  lastFront = front; lastSpeed = speed;
+  runTest(now, front, speed);
+  updateDust(now, frozen ? 0 : wall);
+  const { nearest, hurried } = herd.update(frozen ? 0 : wall, front, speed);
+  if (speed > 0.3) movedSinceStop = true;
+  if (test) { /* the reaction test reports its own result */ }
+  else if (hurried) showCowNote('Close call! The cow had to trot out of the way. Brake earlier, or harder.');
+  else if (movedSinceStop && speed < 0.03 && nearest && nearest.x - front < 40) {
+    showCowNote(`Stopped ${(nearest.x - front).toFixed(1)} m before the cow.`);
+    movedSinceStop = false;
+  }
+  $('cowAhead').textContent = nearest ? `Cow on the road ${Math.max(0, nearest.x - front).toFixed(0)} m ahead` : '';
+  // Camera follows the car across the slope; the viewer can still orbit.
+  const target = hill.localToWorld(new THREE.Vector3(poses.chassis[0] + 0.8, 0, 0.5));
+  if (lastCar) { const delta = target.clone().sub(lastCar); camera.position.add(delta); orbit.target.add(delta); }
+  lastCar = target;
+  sun.position.set(target.x - 3, target.y - 6, target.z + 9);
+  sun.target.position.copy(target);
+  orbit.update();
+  if (now < shakeUntil) {                           // camera shake, decaying
+    const k = (shakeUntil - now) / 750 * 0.12;
+    const jolt = new THREE.Vector3((Math.random() - 0.5) * k, (Math.random() - 0.5) * k, (Math.random() - 0.5) * k);
+    camera.position.add(jolt); renderer.render(scene, camera); camera.position.sub(jolt);
+  } else renderer.render(scene, camera);
+  if (now - lastPanel > 120) {
+    lastPanel = now;
+    $('speed').textContent = speed.toFixed(2);
+    $('dist').textContent = d.qpos[0].toFixed(1);
+    $('time').textContent = d.time.toFixed(1);
+    const F = -T.x, along = W * Math.sin(th);
+    $('fW').textContent = newtons(W);
+    $('fWx').textContent = newtons(along);
+    $('fWz').textContent = newtons(W * Math.cos(th));
+    $('fN').textContent = newtons(N.length());
+    $('fF').textContent = `${signedN(F)} uphill`;
+    $('fNet').textContent = `${signedN(along - F)} downhill`;
+    $('cSum').textContent = signedN(along - F);
+    $('cMa').textContent = signedN(mass * a);
+    $('cA').textContent = `${a < 0 ? MINUS : ''}${Math.abs(a).toFixed(3)} m/s²`;
+    const diff = Math.abs(along - F - mass * a);
+    $('cOk').textContent = diff < Math.max(15, 0.03 * Math.abs(mass * a)) ? `They agree (within ${Math.round(diff)} N).` : 'Settling… (the car is changing speed quickly)';
+    const r = config.rear_radius, v = Math.abs(d.qvel[0]);
+    const spin = sim.rearDofs.reduce((s, dof) => s + Math.abs(d.qvel[dof]), 0) / sim.rearDofs.length;
+    $('skid').hidden = !(v > 0.2 && 1 - spin * r / v > 0.5);
+    drawChart();
+  }
+}
+
+async function start() {
+  resize();
+  requestAnimationFrame(frame);
+  $('slope').addEventListener('input', () => sim && applySettings());
+  $('mu').addEventListener('input', () => sim && applySettings());
+  $('brake').addEventListener('click', () => setBrake(!braking));
+  $('restart').addEventListener('click', () => sim && restart());
+  $('react').addEventListener('click', startTest);
+  $('slow').addEventListener('click', () => { slow = !slow; $('slow').setAttribute('aria-pressed', String(slow)); $('slow').textContent = slow ? 'Normal speed' : 'Slow motion'; });
+  addEventListener('keydown', (e) => {
+    if (e.target.closest?.('button, input') && e.key !== 'b' && e.key !== 'r') return;
+    if (e.key === 'b' || e.key === 'B') { setBrake(!braking); e.preventDefault(); }
+    if ((e.key === 'r' || e.key === 'R') && sim) { restart(); e.preventDefault(); }
+  });
+  try {
+    if (typeof WebAssembly !== 'object') throw new Error('This browser has no WebAssembly support.');
+    const manifest = await (await fetch('manifest.json')).json();
+    const base = `cars/${CAR}/`;
+    config = await (await fetch(base + 'config.json')).json();
+    const [wasm, gltf] = await Promise.all([
+      fetchBytes('mujoco.wasm', (f) => status(`Loading the MuJoCo physics engine… ${Math.round(f * 100)}%`)),
+      new GLTFLoader().loadAsync(base + 'car.glb'),
+    ]);
+    files = Object.fromEntries(await Promise.all(config.files.map(async (f) => [f, await fetchBytes(base + f)])));
+    for (const node of [...gltf.scene.children]) {
+      const body = node.name.split('|')[0];
+      if (!bodyGroups[body]) { bodyGroups[body] = new THREE.Group(); hill.add(bodyGroups[body]); }
+      node.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      bodyGroups[body].add(node);
+    }
+    status('Starting MuJoCo…');
+    const { default: loadMujoco } = await import(`https://cdn.jsdelivr.net/npm/@mujoco/mujoco@${manifest.mujoco_version}/mujoco.js`);
+    mujoco = await loadMujoco({ wasmBinary: wasm.buffer });
+    sim = new CarSim(mujoco, config, files, 'flat');
+    for (let b = 0; b < sim.model.nbody; b++) mass += sim.model.body_mass[b];
+    blockP = config.pedal.devices[0].capacity / (MU_DESIGN * config.rear_radius);   // the validated torque at mu = 0.5
+    $('pOut').textContent = Math.round(blockP).toLocaleString('en-GB');
+    paintScene();
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintScene);
+    new MutationObserver(paintScene).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    restart();
+    const target = new THREE.Vector3(0.8, 0, 0.5).applyEuler(hill.rotation);
+    orbit.target.copy(target);
+    camera.position.set(target.x - 0.8, target.y - 7.5, target.z + 1.0);
+    lastCar = target;
+    status('');
+  } catch (err) {
+    console.error(err);
+    status(`Could not start the simulation: ${err.message}`, true);
+  }
+}
+start();
+
+</script>
+
+</body></html>
