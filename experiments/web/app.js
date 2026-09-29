@@ -273,6 +273,7 @@ function showValues() {
   $('lever').value = Math.round(inputs.lever * 100);
   $('steerSlider').textContent = $('driver').checked ? 'driver' : `${signed(+$('steer').value, 0)}%`;
   $('steer').disabled = $('driver').checked;
+  $('driftHint').hidden = $('driver').checked;
   $('frontRateOut').textContent = `${$('frontRate').value} kN/m`;
   $('rearRateOut').textContent = `${$('rearRate').value} kN/m`;
   $('frontDampingOut').textContent = `${(+$('frontDamping').value).toFixed(2)} kN·s/m`;

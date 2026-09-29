@@ -88,9 +88,14 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
 - **Brake-anchor clearance** was set to 7 mm, and the rear perches were moved
   inboard of the hub drums, before the first build.
 
-## Result (MuJoCo 3.14.0, full build `a5a8710b…`)
+## Result (MuJoCo 3.14.0, full build `bf435520…`)
 
-**Chassis stage** (`e594b932…`)
+Rebuilt 2026-09-29 from unchanged code and parameters, after the steering
+experiments below were reverted. The `.blend` bytes differ from the first
+build (`a5a8710b…`, `e594b932…`, `5f0f1c4c…`); Blender saves are not
+byte-identical. Every checked figure is the same.
+
+**Chassis stage** (`2a97bc5c…`)
 - All joins touching, nothing disconnected.
 - Gate: 6.11 m.
 - All three planted defects caught.
@@ -131,7 +136,7 @@ blender --background --factory-startup --python-exit-code 1 --python experiments
   differs and was not sourced.
 - *Engine against the hub brakes in low:* 889 N m of drive beats 400 N m of
   brake. The driver must release the low pedal.
-- *Fixed-hands launch:* drifts 7.1 m over 635 m.
+- *Fixed-hands launch:* drifts 7.1 m over 635 m. The next section explains why.
 - *Ackermann:* up to 1.9° over ideal at full lock.
 - *Foot brake in a turn:* works through the open differential; no wheel slid.
 
@@ -216,6 +221,44 @@ free shape sags the car onto its stops, with 101–116% travel.
 Settings changed here are exploration only. They are not validated: the gated
 results above apply to the design values.
 
+## Why the car drifts with the steering wheel held straight
+
+Hold the column at zero through the four-gear launch and the car ends up metres
+to one side. The steering is straight at cruising speed (within 0.0002°). The
+car simply keeps a heading error of about 0.76° that it picked up in the first
+seconds. Experiments on this build (not gated, 2026-09-29):
+
+| Setup | Steer during the launch | Drift after about 600 m |
+| --- | --- | --- |
+| As built | +0.055°, both front wheels together | 6.6 m |
+| Front suspension locked | −0.008° | 1.9 m |
+| Drag link's frame end moved onto the wishbone's swing axis (zero bump steer) | −0.087° | 19.8 m |
+| Same, plus 3 N·m of steering-gear friction at the pitman | −0.003°, then sticks at −0.005° | 12.2 m |
+
+What they show:
+
+1. **Bump steer is the main cause.** Accelerating lifts the front of the body,
+   and the short drag link, running from the frame to the moving axle, turns
+   the wheels. Locking the front suspension removes most of the drift.
+2. **Removing bump steer exposes the next cause.** The classic cure puts the
+   drag link's frame end on the axle's centre of motion. That makes bump steer
+   exactly zero here, but the link then runs lengthwise. Its own inertia during
+   acceleration back-drives the steering (1.5 N·m on the column, against
+   0.06 N·m before). The steering is reversible and the "hands" (the column
+   servo) are not rigid.
+3. **Friction trades one error for another.** Steering-gear friction stops the
+   back-driving but leaves a dead band, and the column sticks slightly off
+   centre.
+4. **Underneath it all, nothing re-centres the steering.** The kingpins are
+   vertical and have no castor. Any small transient leaves a heading error,
+   and 0.005° is enough for metres of drift over 600 m.
+
+Real cars need a driver's small corrections too, which is what the "driver
+holds the line" controller models. The car keeps its original, validated
+steering, and the drift stays a finding. Castor trail with a hands-off steering
+mode would be the experiment to try next; its known risk is front-wheel shimmy.
+The Mercedes (009) drifts for the same reasons.
+
 ## Variant: aftermarket friction shock absorbers
 
 ```bash
@@ -250,7 +293,7 @@ is unchanged.
   about 55 mm at that point, leaving about 24 mm. The stud is declared a mate
   of the spring, as the axle beam already is.
 
-**Result:** the `shocks` build (`5f0f1c4c…`) passes every check:
+**Result:** the `shocks` build (`fbcb6b54…`) passes every check:
 - build checks at 145 poses (41,634 pairs, 227 joins, three planted defects
   caught), the downhill gate and every gated scenario;
 - loop closure within 73 µm (limit 2 mm).

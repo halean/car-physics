@@ -70,6 +70,13 @@ new car, alongside the [car-downhill-check skill](../skills/car-downhill-check/S
     2.4° at full bump; the Mercedes' 0.84 m link gives 0.6°.
   - *In design:* keep the link long and at roll-axis height, and measure bump
     and roll steer before any powered run.
+- **A straight line needs a driver** (010). With the wheel held straight, a
+  launch leaves a small heading error that nothing removes: 0.76° became 6.6 m
+  of drift over 600 m. Fixing its main cause, bump steer, exposed the next one,
+  the steering's reversibility under linkage inertia. Steering friction traded
+  that for a dead band. Without castor there is no self-centring, so the
+  "driver holds the line" controller, like a real driver, is the fix. The
+  experiments are tabled in the 010 README.
 - **Steered wheels need room at every suspension pose** (009, 010). At full lock
   combined with bump or roll, the Mercedes' front tyres reached the frame rails,
   so the frame was narrowed from 0.76 m to 0.66 m. Hubs have touched knuckle
