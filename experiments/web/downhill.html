@@ -38,7 +38,13 @@
   header p { margin: 6px 0 0; max-width: 65ch; font-size: 17px; }
   h2 { margin: 0; font: 600 14px/1.2 var(--display); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
   .stage { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 14px; align-items: start; }
-  @media (max-width: 960px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 960px) {
+    .stage { grid-template-columns: minmax(0, 1fr); }
+    /* Phones and narrow windows: the controls come right after the simulation. */
+    .stage > .col { display: contents; }
+    #viewport { order: 1; } #controls { order: 2; } #reactPanel { order: 3; }
+    .chart-panel { order: 4; } .forces-panel { order: 5; } .check-panel { order: 6; }
+  }
   .col { display: grid; gap: 12px; min-width: 0; }
   .viewport { position: relative; height: clamp(300px, 52vh, 560px); border-radius: 6px; overflow: hidden; background: var(--sky); border: 1px solid var(--line); }
   .viewport canvas { display: block; width: 100%; height: 100%; touch-action: none; }
@@ -127,7 +133,7 @@
         <h2>Surprise cow: your stop</h2>
         <div id="reactResult"></div>
       </div>
-      <div class="panel">
+      <div class="panel chart-panel">
         <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><h2>Speed against time</h2><span class="hint">The slope of this line is the acceleration.</span></div>
         <canvas id="vt" aria-label="Speed of the car against time"></canvas>
       </div>
@@ -148,7 +154,7 @@
           <button type="button" id="react">Surprise cow</button>
         </div>
       </div>
-      <div class="panel">
+      <div class="panel forces-panel">
         <h2>Forces on the car now</h2>
         <div class="fbd">
           <div class="force"><i style="background:var(--weight)"></i><span>Weight <span class="math">mg</span></span><output id="fW"></output></div>
@@ -160,7 +166,7 @@
         </div>
         <p class="hint">Arrows: 1 m per 3000 N, drawn at the centre of mass. Forces along the slope count positive downhill.</p>
       </div>
-      <div class="panel">
+      <div class="panel check-panel">
         <h2>Check: ΣF = m a</h2>
         <div class="check">
           <div class="eq"><span>mg sin θ − F</span><output id="cSum"></output>
