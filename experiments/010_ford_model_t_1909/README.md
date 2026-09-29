@@ -216,6 +216,67 @@ free shape sags the car onto its stops, with 101–116% travel.
 Settings changed here are exploration only. They are not validated: the gated
 results above apply to the design values.
 
+## Variant: aftermarket friction shock absorbers
+
+```bash
+blender --background --factory-startup --python-exit-code 1 --python experiments/010_ford_model_t_1909/generate.py -- \
+  --config experiments/010_ford_model_t_1909/parameters.json --output experiments/010_ford_model_t_1909/output/shocks --stage shocks
+.venv/bin/python experiments/010_ford_model_t_1909/run.py --stage shocks
+.venv/bin/python experiments/010_ford_model_t_1909/compare_shocks.py [--record]
+```
+
+The Model T left the factory with no shock absorbers. The popular add-on was
+the Hartford-type friction shock, a scissor at each corner:
+- one arm pivots on a stud from the frame rail;
+- the other ends in a ball on a stud from the axle;
+- friction discs clamped at the knee resist motion, and tightening a star nut
+  sets the friction.
+
+The `shocks` stage adds four of these to the full car. The validated design car
+is unchanged.
+
+- **Physics.** The frame arm has two joints (yaw and pitch) so the scissor can
+  follow the axle's roll. The axle arm hinges at the knee, and the ball is a
+  connect constraint. The damper is dry friction on the knee joint (joint
+  `frictionloss`, 40 N m, assumed). Through the linkage, that gives about
+  190 N at each wheel near ride height. Each unit weighs 1.8 kg, taken from
+  the chassis, so the car still weighs 545 kg.
+- **Kinematics.** `linkage.suspended_pose` now closes scissor shocks
+  generically (yaw, pitch, knee), so the build checks pose them at every
+  steering and suspension pose. Closure error is about 1e-16 m; the knee
+  swings 15–31° over the travel.
+- **One declared mate.** At full bump the drawn front spring would cut the
+  front ball stud (−21 mm). The drawn spring is rigid; the real one flexes up
+  about 55 mm at that point, leaving about 24 mm. The stud is declared a mate
+  of the spring, as the axle beam already is.
+
+**Result:** the `shocks` build (`5f0f1c4c…`) passes every check:
+- build checks at 145 poses (41,634 pairs, 227 joins, three planted defects
+  caught), the downhill gate and every gated scenario;
+- loop closure within 73 µm (limit 2 mm).
+
+Brakes, launch, hills and turns match the car without shocks within about
+0.1%. On the 40 mm road bump, peak travel falls from 80% to 67% (front) and
+from 81% to 76% (rear).
+
+**On the bump course** (`compare_shocks.py`; no gate on ride, which friction
+can make better or worse):
+
+| | Springs only | With friction shocks |
+| --- | --- | --- |
+| Seat RMS vertical acceleration | 0.218 g | 0.248 g (+13%) |
+| Peak seat acceleration | 1.21 g | 1.29 g (+7%) |
+| Time with a wheel off the ground | 25% | 30% |
+| Peak travel, front / rear | 50% / 86% | 44% / 78% |
+| Bounce after the course (seat velocity RMS) | 0.4 mm/s | 0.2 mm/s |
+
+Dry friction locks the suspension over small bumps, which makes the ride
+harsher and transmits more of each bar to the body. It holds down larger
+motions: less travel and less bounce afterwards. That matches the period
+reputation of friction shocks. On this model the effect is modest, because the
+springs already carry about 0.33 of critical damping for interleaf friction.
+The bounce figures are near zero for both cars.
+
 ## In the browser: Model T Spring Lab
 
 ```bash

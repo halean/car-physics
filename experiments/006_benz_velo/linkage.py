@@ -131,7 +131,47 @@ def suspended_pose(geometry, phi, pose):
     for c in geometry.get('couplings', []):
         if c['joint2'] == 'column_joint':
             q[c['joint1']] = c['ratio']*phi
+    if sus.get('scissors'):
+        q.update(_scissors(geometry, q))
     return q
+
+
+def _scissors(geometry, q):
+    """Close each scissor shock absorber (e.g. Hartford friction type) to its posed axle.
+    Arm A pivots on the frame at F about z (yaw) then y (pitch); arm B hinges on arm A at the
+    knee E about y; arm B's end is tied to the axle at P (a ball, a connect constraint).
+    Yaw keeps the arms' plane through the moved P; the knee stays on its rest side."""
+    T = body_transforms(geometry, q)
+    out = {}
+    for s in geometry['suspension']['scissors']:
+        F, E0, P0 = (np.array(s[k], dtype=float) for k in ('F', 'E', 'P'))
+        P = (T[s['axle']]@np.append(P0, 1))[:3]
+        a, b = np.linalg.norm(E0-F), np.linalg.norm(P0-E0)
+        d0, d = P0-F, P-F
+        yaw = math.atan2(d[1], d[0])-math.atan2(d0[1], d0[0])
+        yaw = (yaw+math.pi) % (2*math.pi)-math.pi
+        h = np.array([math.cos(math.atan2(d[1], d[0])), math.sin(math.atan2(d[1], d[0])), 0.0])
+        u, w = float(d@h), float(d[2])
+        r = math.hypot(u, w)
+        if not abs(a-b) < r < a+b:
+            raise RuntimeError(f"Shock {s['name']} cannot reach its axle at this pose")
+        # Knee in the arms' plane: on the same side of F->P as at rest.
+        h0 = np.array([math.cos(math.atan2(d0[1], d0[0])), math.sin(math.atan2(d0[1], d0[0])), 0.0])
+        ue0, we0 = float((E0-F)@h0), float((E0-F)[2])
+        side = math.copysign(1.0, float(d0@h0)*we0-float(d0[2])*ue0)
+        along = (a*a-b*b+r*r)/(2*r)
+        up = math.sqrt(max(0.0, a*a-along*along))
+        eu = along*u/r-side*up*w/r
+        ew = along*w/r+side*up*u/r
+        E = F+eu*h+np.array([0, 0, ew])
+        Rz = _axis_angle([0, 0, 1], yaw)
+        v0, v1 = E0-F, Rz.T@(E-F)
+        pitch = math.atan2(v0[2]*v1[0]-v0[0]*v1[2], v0[0]*v1[0]+v0[2]*v1[2])
+        RA = Rz@_axis_angle([0, 1, 0], pitch)
+        w0, w1 = P0-E0, RA.T@(P-E)
+        knee = math.atan2(w0[2]*w1[0]-w0[0]*w1[2], w0[0]*w1[0]+w0[2]*w1[2])
+        out[f"{s['arm_a']}_yaw"], out[f"{s['arm_a']}_pitch"], out[f"{s['arm_b']}_joint"] = yaw, pitch, knee
+    return out
 
 
 def ackermann(geometry, phi):

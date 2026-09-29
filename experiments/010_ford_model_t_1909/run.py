@@ -128,7 +128,7 @@ def travel_used(model, geometry, seconds, slope, control=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--stage', choices=('chassis', 'full'), required=True)
+    parser.add_argument('--stage', choices=('chassis', 'full', 'shocks'), required=True)
     parser.add_argument('--viewer', action='store_true')
     args = parser.parse_args()
     out, geometry = export(args.stage)
@@ -167,10 +167,10 @@ def main():
     report['passed'] = report['build']['passed'] and all(report['build_controls'].values()) and gate['passed']
 
     ratios = None
-    if args.stage == 'full':
+    if args.stage in ('full', 'shocks'):
         from control import ENGINE, MAX_TORQUE
         ratios = {g: n*ENGINE['axle_ratio'] for g, n in ENGINE['gearbox_ratios'].items()}
-    if args.stage == 'full' and gate['passed']:
+    if args.stage in ('full', 'shocks') and gate['passed']:
         import dynamics
 
         def make(slope, engine, spool, timestep, extra=()):

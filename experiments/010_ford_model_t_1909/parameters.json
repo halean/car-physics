@@ -13,13 +13,32 @@
   "column_x": 2.4,
   "column_y": 0.42,
   "column_limit_deg": 25,
-  "linkage_heights": [0.2, 0.386, 0.3, 0.31],
+  "linkage_heights": [
+    0.2,
+    0.386,
+    0.3,
+    0.31
+  ],
   "steering_box_ratio": 4.0,
   "drag_arm": 0.2,
-  "drag_arm_vector": [-0.2, 0.0],
-  "pitman_arm_vector": [-0.2, 0.0],
-  "front_pivot": [1.77, 0.0, 0.4],
-  "rear_pivot": [1.25, 0.0, 0.52],
+  "drag_arm_vector": [
+    -0.2,
+    0.0
+  ],
+  "pitman_arm_vector": [
+    -0.2,
+    0.0
+  ],
+  "front_pivot": [
+    1.77,
+    0.0,
+    0.4
+  ],
+  "rear_pivot": [
+    1.25,
+    0.0,
+    0.52
+  ],
   "front_travel_m": 0.075,
   "rear_travel_m": 0.05,
   "roll_travel_deg": 4.0,
@@ -27,5 +46,11 @@
   "rear_spokes": 12,
   "dimension_note": "Wheelbase 100 in (2540 mm), track 56 in (1422 mm), 30 in wheels (Wikipedia). Frame width, heights, pivots and the steering layout are assumptions.",
   "suspension_note": "Transverse semi-elliptic spring on each beam axle (Wikipedia). Each axle is located by a ball: the front by a wishbone to a ball under the crankcase, the rear by the torque tube's ball behind the transmission. So both axles swing and roll about their balls; the springs carry the load.",
-  "steering_note": "Left-hand drive. The Model T's 4:1 reduction is a planetary set under the wheel and its pitman is on the column's foot; here the reduction is the shared joint coupling and the pitman turns on a short vertical shaft in a bracket outboard of the left rail, clear of the wishbone rods. The drag link runs at the front axle's roll-axis height (0.386 m) to keep roll steer small, the lesson from 009."
+  "steering_note": "Left-hand drive. The Model T's 4:1 reduction is a planetary set under the wheel and its pitman is on the column's foot; here the reduction is the shared joint coupling and the pitman turns on a short vertical shaft in a bracket outboard of the left rail, clear of the wishbone rods. The drag link runs at the front axle's roll-axis height (0.386 m) to keep roll steer small, the lesson from 009.",
+  "shock_absorbers": {
+    "arm_m": 0.2,
+    "friction_nm": 40.0,
+    "frame_pivot_z": 0.62,
+    "note": "Aftermarket Hartford-type friction shock absorbers (stage 'shocks' only): a scissor per corner whose knee is clamped between friction discs. 40 N m of knee friction gives about 190 N at each wheel (the scissor turns ~4.8 rad of knee angle per metre of axle travel near ride height). Arm length, mounting and friction are assumptions; real units were adjusted by a star nut."
+  }
 }

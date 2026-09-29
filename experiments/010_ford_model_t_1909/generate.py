@@ -160,11 +160,64 @@ def build_full(V, p, m):
         'half-shafts in the axle housing'])
 
 
+def add_shocks(V, p, m):
+    """Aftermarket Hartford-type friction shock absorbers, one per corner (stage 'shocks').
+    A scissor: arm A pivots on a stud from the frame rail (yaw, then pitch); arm B hinges on
+    arm A at the knee, where clamped friction discs resist relative rotation; arm B's end is a
+    ball on a stud rising from the axle (a connect constraint). The knee's dry friction is the
+    damper. Returns physics bodies, loop closures and the scissor list for the solver."""
+    wb, fr, rr, fw = p['wheelbase'], p['front_radius'], p['rear_radius'], p['frame_width']
+    cfg = p['shock_absorbers']
+    arm = cfg['arm_m']
+    bodies, loops, scissors = {}, [], []
+    for axle, body, x_axle, z_axle, plane, frame_dx, stud_dx in (
+            ('front', 'front_axle', wb, fr, .43, .30, .05), ('rear', 'rear_axle', 0.0, rr, .49, -.30, -.07)):
+        for s, side in ((1, 'left'), (-1, 'right')):
+            y = s*plane
+            F = Vector((x_axle+frame_dx, y, cfg['frame_pivot_z']))
+            P = Vector((x_axle+stud_dx, y, z_axle+.049))
+            # Knee: equal arms, raised above the line F-P (clear of axle, perches and drums).
+            mid, d = (F+P)/2, P-F
+            up = math.sqrt(arm**2-(d.length/2)**2)
+            perp = Vector((-d.z, 0, d.x)).normalized()
+            if perp.z < 0:
+                perp = -perp
+            E = mid+perp*up
+            a_name, b_name = f'shock_{axle}_{side}_a', f'shock_{axle}_{side}_b'
+            tag = f'{axle.title()} shock {side}'
+            part(rod(f'{tag} frame stud', (F.x, s*(fw/2-.025), F.z), (F.x, y+s*.015, F.z), .02, m['frame'], V),
+                 joins=[f'Frame rail {s}'])
+            part(rod(f'{tag} frame arm', tuple(F), tuple(E), .012, m['steel'], V), a_name,
+                 joins=[f'{tag} frame stud'], mates=[f'{tag} frame stud'])
+            part(rod(f'{tag} friction discs', (E.x, y-.02, E.z), (E.x, y+.02, E.z), .04, m['brass'], V), a_name,
+                 joins=[f'{tag} frame arm'], mates=[f'{tag} axle arm'])
+            part(rod(f'{tag} axle arm', tuple(E), tuple(P), .012, m['steel'], V), b_name,
+                 joins=[f'{tag} friction discs', f'{tag} axle stud', f'{tag} frame arm'],
+                 mates=[f'{tag} friction discs', f'{tag} axle stud', f'{tag} frame arm'])
+            stud_base = z_axle+(.019 if axle == 'rear' else 0.0)   # rear: clear of the brake anchor inside
+            part(rod(f'{tag} axle stud', (x_axle, y, stud_base), tuple(P), .012, m['iron'], V), body,
+                 joins=['Front beam' if axle == 'front' else 'Rear axle'])
+            if axle == 'front':
+                # The drawn spring is rigid; the real one flexes up with the axle (about 55 mm at this
+                # stud's y for 75 mm of bump), so like the beam the stud is a declared mate of it.
+                bpy.data.objects[f'{tag} axle stud']['mates'] = ['Front spring']
+                spring = bpy.data.objects['Front spring']
+                spring['mates'] = list(spring['mates'])+[f'{tag} axle stud']
+            bodies[a_name] = dict(parent='chassis', origin=list(F), joint=[
+                dict(name='yaw', type='hinge', axis=[0, 0, 1], pos=list(F)),
+                dict(name='pitch', type='hinge', axis=[0, 1, 0], pos=list(F))])
+            bodies[b_name] = dict(parent=a_name, origin=list(E),
+                                  joint=dict(type='hinge', axis=[0, 1, 0], frictionloss=cfg['friction_nm']))
+            loops.append(dict(body1=b_name, body2=body, point=list(P)))
+            scissors.append(dict(name=tag, arm_a=a_name, arm_b=b_name, axle=body, F=list(F), E=list(E), P=list(P)))
+    return bodies, loops, scissors
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--stage', choices=('chassis', 'full'), required=True)
+    parser.add_argument('--stage', choices=('chassis', 'full', 'shocks'), required=True)
     parser.add_argument('--render', action='store_true')
     args = parser.parse_args(sys.argv[sys.argv.index('--')+1:])
     p = json.loads(args.config.read_text())
@@ -273,7 +326,8 @@ def main():
         wheels += [dict(name=f'rear_{side}', center=[0, s*rt/2, rr], radius=rr, parent='rear_axle', driven=True),
                    dict(name=f'front_{side}', center=[wb, s*ft/2, fr], radius=fr, parent=f'knuckle_{side}',
                         driven=False)]
-    drive = build_full(V, p, m) if args.stage == 'full' else None
+    drive = build_full(V, p, m) if args.stage in ('full', 'shocks') else None
+    shocks = add_shocks(V, p, m) if args.stage == 'shocks' else None
 
     # --- Assembly for the physics adapter.
     bodies = {'chassis': dict(parent=None, origin=[0, 0, 0], joint='free')}
@@ -309,6 +363,10 @@ def main():
                       check_poses=[dict(front_swing=-t/lf, rear_swing=rt_travel/lr),
                                    dict(front_swing=t/lf, rear_swing=-rt_travel/lr),
                                    dict(front_roll=rad, rear_roll=rad), dict(front_roll=-rad, rear_roll=-rad)])
+    if shocks:
+        bodies.update(shocks[0])
+        loops = loops+shocks[1]
+        suspension['scissors'] = shocks[2]
     bpy.context.view_layer.update()
     objects = [o for o in V.objects if o.type in {'MESH', 'CURVE'}]
     for obj in objects:

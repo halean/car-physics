@@ -1,6 +1,6 @@
 """Model T over a bumpy road: the sprung car against the same car with its axles locked.
 
-.venv/bin/python experiments/010_ford_model_t_1909/bumpy_road.py [--record]
+.venv/bin/python experiments/010_ford_model_t_1909/bumpy_road.py [--record] [--stage shocks]
 Run after run.py --stage full (spring preloads come from its report). Uses the tested
 build unchanged; the rigid control only welds the two axles to the frame.
 
@@ -56,8 +56,8 @@ def course():
             for i, (x, h, side) in enumerate(BARS)]
 
 
-def geometries():
-    physics = HERE/'output/full/physics'
+def geometries(stage='full'):
+    physics = HERE/'output'/stage/'physics'
     g = json.loads((physics/'geometry.json').read_text())
     report = json.loads((physics/'report.json').read_text())
     assert report['source_sha256'] == g['source_sha256'], 'report is from another build: rerun run.py'
@@ -123,8 +123,10 @@ def run(model, geometry, record=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--record', action='store_true')
+    parser.add_argument('--stage', choices=('full', 'shocks'), default='full',
+                        help="'shocks': the variant with aftermarket friction shock absorbers")
     args = parser.parse_args()
-    physics, sprung_g, rigid_g = geometries()
+    physics, sprung_g, rigid_g = geometries(args.stage)
     ratios = {g: n*ENGINE['axle_ratio'] for g, n in ENGINE['gearbox_ratios'].items()}
     engine = dict(torque_nm=MAX_TORQUE, ratios=ratios)
     models = {name: vehicle.make_model(g, physics, 0, engine=engine, extra=course(), path_name=f'bumpy_{name}.xml')

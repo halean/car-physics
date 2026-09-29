@@ -131,7 +131,7 @@ def make_model(geometry, out, slope_rad=0.0, *, engine=None, spool=False, extra=
                     j.update(damping='.01', solreffriction='.004 1', solimpfriction='.999 .999 .001 .5 2')
                 else:
                     j.update(damping=str(jspec.get('damping', .5)), armature=str(jspec.get('armature', .01)))
-                for key in ('stiffness', 'springref'):
+                for key in ('stiffness', 'springref', 'frictionloss'):   # frictionloss: dry friction, e.g. a friction shock
                     if key in jspec:
                         j[key] = f'{jspec[key]:.9g}'
                 if 'range_deg' in jspec:

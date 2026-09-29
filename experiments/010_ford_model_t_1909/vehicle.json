@@ -10,10 +10,26 @@
     "column": 1.5,
     "front_axle": 25.0,
     "rear_axle": 60.0,
-    "steering_wheel": 5.0
+    "steering_wheel": 5.0,
+    "shock_front_left_a": 1.2,
+    "shock_front_left_b": 0.6,
+    "shock_front_right_a": 1.2,
+    "shock_front_right_b": 0.6,
+    "shock_rear_left_a": 1.2,
+    "shock_rear_left_b": 0.6,
+    "shock_rear_right_a": 1.2,
+    "shock_rear_right_b": 0.6
   },
-  "chassis_com": [1.2, 0.0, 0.7],
-  "chassis_inertia": [80, 320, 340],
+  "chassis_com": [
+    1.2,
+    0.0,
+    0.7
+  ],
+  "chassis_inertia": [
+    80,
+    320,
+    340
+  ],
   "tire_friction": 0.8,
   "steering_servo": {
     "kp": 1000,
@@ -22,18 +38,40 @@
     "note": "Acts at the pitman; with the 4:1 planetary reduction, 60 N m there is 15 N m at the steering wheel."
   },
   "suspension": {
-    "front_axle_swing": {"stiffness": 16600, "damping": 925},
-    "front_axle_roll": {"stiffness": 7000, "damping": 440},
-    "rear_axle_swing": {"stiffness": 41200, "damping": 2450},
-    "rear_axle_roll": {"stiffness": 8750, "damping": 550},
+    "front_axle_swing": {
+      "stiffness": 16600,
+      "damping": 925
+    },
+    "front_axle_roll": {
+      "stiffness": 7000,
+      "damping": 440
+    },
+    "rear_axle_swing": {
+      "stiffness": 41200,
+      "damping": 2450
+    },
+    "rear_axle_roll": {
+      "stiffness": 8750,
+      "damping": 550
+    },
     "note": "Transverse leaf springs as linear springs on the axle joints. Front: 28 kN/m at the axle (about 70 mm static deflection under ~200 kg sprung), as a moment about the wishbone ball 0.77 m behind. Rear: 26 kN/m at the axle (about 80 mm), about the torque-tube ball 1.26 m ahead. Roll rate from a single spring whose ends sit 1.0 m (front) and 0.9 m (rear) apart: k x half-span^2 x 2, i.e. soft, as the Model T was. Damping about 0.33 of critical (interleaf friction; the Model T had no dampers). Preloads are calibrated at run time to the design ride height."
   },
   "tire": {
     "contact_shape": "ellipsoid",
     "section_half_width_m": 0.04,
-    "contact_solref": [-2300, -48],
-    "contact_solimp": [0.5, 0.95, 0.01, 0.5, 2],
+    "contact_solref": [
+      -2300,
+      -48
+    ],
+    "contact_solimp": [
+      0.5,
+      0.95,
+      0.01,
+      0.5,
+      2
+    ],
     "note": "30 x 3 front and 30 x 3.5 rear clinchers: shared compliant contact (k 2300 s^-2, b 48 s^-1 per unit mass), round crown 40 mm half-width."
   },
-  "assumptions": "Mass split, centre of mass (front engine), inertia, spring rates and damping are estimates."
+  "assumptions": "Mass split, centre of mass (front engine), inertia, spring rates and damping are estimates.",
+  "shock_note": "Stage 'shocks': each friction shock is 1.8 kg (frame arm with disc pack 1.2 kg, axle arm 0.6 kg), taken from the chassis total so the car still weighs 545 kg."
 }
